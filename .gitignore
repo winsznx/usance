@@ -1,0 +1,42 @@
+# Private planning material — never published
+/internal/
+design.md
+
+# Dependencies
+node_modules/
+.pnpm-store/
+# Foundry libraries. `make bootstrap` reinstalls them via `forge install`, and vendoring 781
+# upstream files would bury every real diff in this repository.
+/lib/
+
+# Build output
+dist/
+build/
+out/
+.next/
+target/
+cache/
+broadcast/
+*.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local artifacts
+artifacts/
+# Content-addressed evidence store. Original bytes live under services/evidence/fixtures/ where
+# they are manifested and hash-verified; this is a working cache, not the record.
+services/evidence/.store/
+coverage/
+lcov.info
+.DS_Store
+*.log
+
+# Test / tooling
+playwright-report/
+test-results/
+.turbo/

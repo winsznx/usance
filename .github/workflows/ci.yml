@@ -1,0 +1,317 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# The deterministic jobs must not need network access beyond installing dependencies. Live
+# integration checks are separate jobs that are allowed to be flaky, because a public RPC having
+# a bad afternoon is not a reason to block a merge.
+#
+# Every action is pinned to a major version. Nothing here floats on a branch ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Solidity formatting is checked against the whole tree, so `make lint` needs the libraries
+      # present even though it compiles nothing.
+      - name: Install contract dependencies
+        run: |
+          forge install foundry-rs/forge-std --no-git
+          forge install OpenZeppelin/openzeppelin-contracts@v5.1.0 --no-git
+
+      - run: make lint
+
+  contracts:
+    name: Contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Install contract dependencies
+        run: |
+          forge install foundry-rs/forge-std --no-git
+          forge install OpenZeppelin/openzeppelin-contracts@v5.1.0 --no-git
+
+      - name: Format check
+        working-directory: contracts
+        run: forge fmt --check
+
+      - name: Build
+        working-directory: contracts
+        run: forge build --sizes
+
+      - name: Test
+        working-directory: contracts
+        run: forge test -vv
+        env:
+          FOUNDRY_PROFILE: ci
+
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+      - run: pnpm build
+
+  risk-reference:
+    name: Rust reference engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # The runner image ships a stable rustup toolchain, so this needs no action and nothing to
+      # pin. It also keeps the job free of any network call after checkout.
+      - name: Toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      # `make test-risk` runs exactly this. The reference engine is one of the three
+      # implementations that `make test-differential` proves agree to the wei, so it is a gate in
+      # its own right and not a nice-to-have.
+      - run: cargo test --workspace
+
+  differential:
+    name: Differential conformance (D-01)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          forge install foundry-rs/forge-std --no-git
+          forge install OpenZeppelin/openzeppelin-contracts@v5.1.0 --no-git
+
+      # Regenerates the fixtures from spec/accounting.md, proves they are byte-identical to what
+      # is committed, then runs all three conformance suites against them. This is the check that
+      # stops the browser preview and the contract from ever disagreeing.
+      - name: Prove all implementations agree
+        run: make test-differential
+
+  clean-room:
+    name: Clean-room reproducibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      # Checked out into its own directory with no dependency cache anywhere in the job, because
+      # the property under test is "somebody who has never seen this repository can build it".
+      # A warm pnpm store would hide a missing lockfile entry, and reusing the default workspace
+      # would let an earlier job's leftovers stand in for a dependency that bootstrap forgets.
+      - uses: actions/checkout@v4
+        with:
+          path: clean-room
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: make bootstrap
+        working-directory: clean-room
+        run: make bootstrap
+
+      - name: make test
+        working-directory: clean-room
+        run: make test
+
+      - name: make test-differential
+        working-directory: clean-room
+        run: make test-differential
+
+  chaingpt-audit:
+    name: ChainGPT contract audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Deliberately NOT continue-on-error, and deliberately a separate job from static analysis.
+    # A gate that cannot fail is a gate nobody has to satisfy, and this one has to be able to
+    # block: `scripts/chaingpt-audit.mjs` exits non-zero on a finding at or above the configured
+    # severity floor, on partial coverage, and on an audit that did not happen at all.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      # Node 24: the gate loads the workspace TypeScript through Node's own type transform, which
+      # is the version the script was verified against. It refuses to run rather than degrade if
+      # the runtime cannot provide it.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # On a protected branch the gate runs strict: no key, or a partial run, is a red build.
+      # Everywhere else --allow-unavailable lets an outage or an unset secret through, because a
+      # contributor cannot fix either one. Neither mode can turn a finding into a pass, and
+      # neither tolerates the positive control failing.
+      - name: Audit contracts/src and gate on the findings
+        env:
+          CHAINGPT_API_KEY: ${{ secrets.CHAINGPT_API_KEY }}
+          PROTECTED_BRANCH: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          if [ "$PROTECTED_BRANCH" = "true" ]; then
+            make audit-contracts
+          else
+            make audit-contracts AUDIT_FLAGS=--allow-unavailable
+          fi
+
+      # Uploaded whatever the verdict, because the run that failed is the one worth reading.
+      - name: Keep the audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaingpt-audit-${{ github.sha }}
+          path: artifacts/security/chaingpt/
+          if-no-files-found: warn
+
+  security:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Slither's false-positive rate on this codebase has not been triaged, so it advises rather
+    # than blocks. The ChainGPT audit is a separate job precisely so that this allowance does not
+    # extend to it.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          pip install slither-analyzer
+          forge install foundry-rs/forge-std --no-git
+          forge install OpenZeppelin/openzeppelin-contracts@v5.1.0 --no-git
+
+      - name: Slither
+        working-directory: contracts
+        run: slither . --config-file ../.github/slither.config.json || true
+
+  e2e:
+    # NOT IMPLEMENTED. There is no Playwright suite and no deployment to point one at, so there is
+    # nothing this job could run. It is gated off rather than stubbed out, which makes it report
+    # "skipped" — never "success" — for as long as that stays true. A step that echoed a reason
+    # and exited 0 would put a green check next to the words "end to end" and that check would be
+    # a lie about coverage nobody has.
+    #
+    # Blocked by: no browser suite, and an unfunded deployer (`make deployer`).
+    # To enable: set the repository variable E2E_ENABLED to "true". `make test-e2e` already exits
+    # non-zero on its own, so enabling it early fails loudly instead of passing quietly.
+    name: E2E browser suite (not implemented — skipped, see ci.yml)
+    if: ${{ vars.E2E_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: make test-e2e
+
+  integrations:
+    name: Live integration verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Third-party endpoints, so this reports rather than blocks.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify every claim in docs/INTEGRATIONS.md
+        run: make verify-integrations

@@ -1,0 +1,13 @@
+{
+  "name": "@usance/domain",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json --emitDeclarationOnly false --outDir dist || true"
+  },
+  "devDependencies": { "vitest": "^2.1.8", "typescript": "^5.7.2" }
+}

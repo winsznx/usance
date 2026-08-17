@@ -1,0 +1,17 @@
+# Cargo workspace root.
+#
+# Only Rust crates the protocol owns live here; the Solidity, TypeScript and Python trees are
+# built by their own toolchains and are deliberately not wired into cargo. Keeping the workspace
+# at the repository root is what lets `cargo test` from a fresh clone run the reference model
+# against `fixtures/canonical/`, which is the whole reason the crate exists.
+
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "BUSL-1.1"
+publish = false
+repository = "https://github.com/usance/usance"
+version = "0.1.0"

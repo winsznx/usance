@@ -1,0 +1,2876 @@
+{
+  "$schema": "./scenario.schema.json",
+  "version": 1,
+  "generatedBy": "scripts/gen_fixtures.py",
+  "spec": "spec/accounting.md",
+  "note": "Frozen conformance fixtures. Solidity, Rust and TypeScript must reproduce every expected value exactly. A one-wei disagreement is a failure.",
+  "constants": {
+    "BPS": 10000,
+    "WAD": "1000000000000000000",
+    "USD": "1000000000000000000",
+    "SECONDS_PER_YEAR": 31536000,
+    "UINT256_MAX": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+  },
+  "statusOrder": [
+    "NORMAL",
+    "NO_NEW_RISK",
+    "REDUCE_ONLY",
+    "MARGIN_CALL",
+    "LIQUIDATING",
+    "SETTLED",
+    "BAD_DEBT"
+  ],
+  "scenarios": [
+    {
+      "id": "S01-empty-account",
+      "description": "No collateral, no debt. Every derived value is zero and health is unbounded.",
+      "now": 1750000000,
+      "assets": [],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [],
+        "totalRecognizedUsd18": "0",
+        "borrowLimitUsd18": "0",
+        "maintenanceLimitUsd18": "0",
+        "liquidationLimitUsd18": "0",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 0
+    },
+    {
+      "id": "S02-single-asset-no-debt",
+      "description": "1,000 USTBx at $1. Haircuts bind; the exit curve does not at this size.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "833111270578125000000",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S03-single-asset-with-debt",
+      "description": "Same position carrying $500 of debt at index 1.0. Comfortably inside the borrow limit.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "500000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "500000000000000000000",
+        "availableBorrowUsd18": "333111270578125000000",
+        "healthFactorWad": "1764235631812500000",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S04-debt-above-borrow-limit",
+      "description": "Debt exceeds the initial-LTV limit but not maintenance. New risk is blocked, the position is not yet in trouble.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "880000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "880000000000000000000",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "1002406608984375000",
+        "status": "NO_NEW_RISK",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S05-debt-above-maintenance",
+      "description": "Maintenance breached but liquidation not yet. Reduce-only, health just below 1.0. Limits here are 833.11 / 882.11 / 911.52, so 900 sits in the reduce-only band.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "900000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "900000000000000000000",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "980130906562500000",
+        "status": "REDUCE_ONLY",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S06-debt-above-liquidation",
+      "description": "Liquidation threshold breached. Margin call.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "990000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "990000000000000000000",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "891028096875000000",
+        "status": "MARGIN_CALL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S07-stale-oracle",
+      "description": "Price is one second past its maximum age. Capacity is frozen at zero even though the recognised value still computes.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1749913599,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "100000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "100000000000000000000",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "8821178159062500000",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "ORACLE_STALE"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S08-stale-passport",
+      "description": "Evidence is older than the policy allows. Same outcome: no new risk.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "100000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749395199,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "100000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "12000000000000000000000",
+            "haircutMarkUsd18": "10952884800000000000000",
+            "stressedExitUsd18": "11940000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "10952884800000000000000",
+            "cappedUsd18": "6571730880000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "6571730880000000000000",
+        "borrowLimitUsd18": "4271625072000000000000",
+        "maintenanceLimitUsd18": "4731646233600000000000",
+        "liquidationLimitUsd18": "5125950086400000000000",
+        "debtUsd18": "100000000000000000000",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "47316462336000000000",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "PASSPORT_STALE"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S09-claim-conflict",
+      "description": "Two extraction paths disagreed. The asset keeps its value but the account cannot take on new risk while the conflict is open.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "100000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "CONFLICTED",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "12000000000000000000000",
+            "haircutMarkUsd18": "10952884800000000000000",
+            "stressedExitUsd18": "11940000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "10952884800000000000000",
+            "cappedUsd18": "6571730880000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "6571730880000000000000",
+        "borrowLimitUsd18": "4271625072000000000000",
+        "maintenanceLimitUsd18": "4731646233600000000000",
+        "liquidationLimitUsd18": "5125950086400000000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "CLAIM_CONFLICT"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S10-asset-suspended",
+      "description": "Issuer-level suspension. Existing exposure remains measurable; new risk is blocked.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "100000000000000000000",
+          "assetStatus": "SUSPENDED",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "1000000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "12000000000000000000000",
+            "haircutMarkUsd18": "10952884800000000000000",
+            "stressedExitUsd18": "11940000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "10952884800000000000000",
+            "cappedUsd18": "6571730880000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "6571730880000000000000",
+        "borrowLimitUsd18": "4271625072000000000000",
+        "maintenanceLimitUsd18": "4731646233600000000000",
+        "liquidationLimitUsd18": "5125950086400000000000",
+        "debtUsd18": "1000000000000000000000",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "4731646233600000000",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "ASSET_SUSPENDED"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S11-exit-curve-binds",
+      "description": "5,000 NVDAx at $120 is $600,000 of market value, into the 92% tier. The exit curve is now the binding constraint rather than the haircut stack.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "5000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "600000000000000000000000",
+            "haircutMarkUsd18": "547644240000000000000000",
+            "stressedExitUsd18": "486000000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "486000000000000000000000",
+            "cappedUsd18": "291600000000000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "291600000000000000000000",
+        "borrowLimitUsd18": "189540000000000000000000",
+        "maintenanceLimitUsd18": "209952000000000000000000",
+        "liquidationLimitUsd18": "227448000000000000000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "189540000000000000000000",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S12-exit-curve-beyond-last-tier",
+      "description": "10,000 NVDAx is $1.2m, past the final threshold. The worst tier applies.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "10000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "1200000000000000000000000",
+            "haircutMarkUsd18": "1095288480000000000000000",
+            "stressedExitUsd18": "972000000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "972000000000000000000000",
+            "cappedUsd18": "583200000000000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "583200000000000000000000",
+        "borrowLimitUsd18": "379080000000000000000000",
+        "maintenanceLimitUsd18": "419904000000000000000000",
+        "liquidationLimitUsd18": "454896000000000000000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "379080000000000000000000",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S13-concentration-binds",
+      "description": "A portfolio that is 60%-capped on the equity leg. The cap is computed against the uncapped total, so it bites before the limits are summed.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "10000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        },
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "10000000000000000000000",
+            "haircutMarkUsd18": "9801309065625000000000",
+            "stressedExitUsd18": "9990000000000000000000",
+            "redemptionFloorUsd18": "9900000000000000000000",
+            "recognizedUsd18": "9801309065625000000000",
+            "cappedUsd18": "9801309065625000000000"
+          },
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "120000000000000000000000",
+            "haircutMarkUsd18": "109528848000000000000000",
+            "stressedExitUsd18": "110400000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "109528848000000000000000",
+            "cappedUsd18": "71598094239375000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "81399403305000000000000",
+        "borrowLimitUsd18": "54869873961375000000000",
+        "maintenanceLimitUsd18": "60371806011412500000000",
+        "liquidationLimitUsd18": "64961730937743750000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "54869873961375000000000",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 2
+    },
+    {
+      "id": "S14-mixed-portfolio-with-debt",
+      "description": "Realistic two-asset portfolio carrying debt. Exercises ordered summation across differing LTVs and decimals.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "50000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        },
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+          "symbol": "NVDAx",
+          "decimals": 18,
+          "quantity": "500000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "120000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 3600
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 6500,
+            "maintenanceLtvBps": 7200,
+            "liquidationLtvBps": 7800,
+            "maxConcentrationBps": 6000,
+            "haircuts": {
+              "marketBps": 400,
+              "liquidityBps": 250,
+              "issuerBps": 150,
+              "settlementBps": 100,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "25000000000000000000000",
+                "recoveryBps": 9950
+              },
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9780
+              },
+              {
+                "thresholdUsd18": "400000000000000000000000",
+                "recoveryBps": 9200
+              },
+              {
+                "thresholdUsd18": "1000000000000000000000000",
+                "recoveryBps": 8100
+              }
+            ],
+            "maxOracleAgeSeconds": 3600,
+            "maxPassportAgeSeconds": 604800,
+            "exitCurveLength": 4
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "30000000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "50000000000000000000000",
+            "haircutMarkUsd18": "49006545328125000000000",
+            "stressedExitUsd18": "49950000000000000000000",
+            "redemptionFloorUsd18": "49500000000000000000000",
+            "recognizedUsd18": "49006545328125000000000",
+            "cappedUsd18": "49006545328125000000000"
+          },
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000b02",
+            "marketValueUsd18": "60000000000000000000000",
+            "haircutMarkUsd18": "54764424000000000000000",
+            "stressedExitUsd18": "58680000000000000000000",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "54764424000000000000000",
+            "cappedUsd18": "54764424000000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "103770969328125000000000",
+        "borrowLimitUsd18": "77252439128906250000000",
+        "maintenanceLimitUsd18": "83536276075312500000000",
+        "liquidationLimitUsd18": "88292337875156250000000",
+        "debtUsd18": "30000000000000000000000",
+        "availableBorrowUsd18": "47252439128906250000000",
+        "healthFactorWad": "2784542535843750000",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 2
+    },
+    {
+      "id": "S15-reservation-reduces-capacity",
+      "description": "An in-flight execution has reserved $2,000. Available borrowing drops by exactly that amount even though debt has not changed.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "10000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "1000000000000000000000",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "2000000000000000000000",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "10000000000000000000000",
+            "haircutMarkUsd18": "9801309065625000000000",
+            "stressedExitUsd18": "9990000000000000000000",
+            "redemptionFloorUsd18": "9900000000000000000000",
+            "recognizedUsd18": "9801309065625000000000",
+            "cappedUsd18": "9801309065625000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "9801309065625000000000",
+        "borrowLimitUsd18": "8331112705781250000000",
+        "maintenanceLimitUsd18": "8821178159062500000000",
+        "liquidationLimitUsd18": "9115217431031250000000",
+        "debtUsd18": "1000000000000000000000",
+        "availableBorrowUsd18": "5331112705781250000000",
+        "healthFactorWad": "8821178159062500000",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S16-accrued-index",
+      "description": "Borrow index has grown to 1.0537. Debt is reconstructed from scaled principal and rounds up.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "10000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "4000000000000000000000",
+        "borrowIndex": "1053700000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "10000000000000000000000",
+            "haircutMarkUsd18": "9801309065625000000000",
+            "stressedExitUsd18": "9990000000000000000000",
+            "redemptionFloorUsd18": "9900000000000000000000",
+            "recognizedUsd18": "9801309065625000000000",
+            "cappedUsd18": "9801309065625000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "9801309065625000000000",
+        "borrowLimitUsd18": "8331112705781250000000",
+        "maintenanceLimitUsd18": "8821178159062500000000",
+        "liquidationLimitUsd18": "9115217431031250000000",
+        "debtUsd18": "4214800000000000000000",
+        "availableBorrowUsd18": "4116312705781250000000",
+        "healthFactorWad": "2092905513680957578",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S17-sequencer-down",
+      "description": "The L2 sequencer is down. Prices exist but cannot be arbitraged, so they are not prices we lend against.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": false,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "SEQUENCER_DOWN"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S18-sequencer-grace",
+      "description": "The sequencer restarted 600 seconds ago, inside the 3,600-second grace period.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749999400,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "SEQUENCER_GRACE"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S19-guardian-override",
+      "description": "A healthy account that a guardian has placed in reduce-only. The override is a floor: it restricts and cannot be undone by favourable inputs.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "REDUCE_ONLY"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "990000000000000000000",
+            "recognizedUsd18": "980130906562500000000",
+            "cappedUsd18": "980130906562500000000"
+          }
+        ],
+        "totalRecognizedUsd18": "980130906562500000000",
+        "borrowLimitUsd18": "833111270578125000000",
+        "maintenanceLimitUsd18": "882117815906250000000",
+        "liquidationLimitUsd18": "911521743103125000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "REDUCE_ONLY",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S20-dust-rounding",
+      "description": "One wei of a token. Every downstream value truncates to zero without underflowing.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1",
+            "haircutMarkUsd18": "0",
+            "stressedExitUsd18": "0",
+            "redemptionFloorUsd18": "0",
+            "recognizedUsd18": "0",
+            "cappedUsd18": "0"
+          }
+        ],
+        "totalRecognizedUsd18": "0",
+        "borrowLimitUsd18": "0",
+        "maintenanceLimitUsd18": "0",
+        "liquidationLimitUsd18": "0",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S21-redemption-floor-binds",
+      "description": "Redemption floor set below the haircut mark and the exit value, so it becomes the binding term of the min().",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9000,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1000000000000000000000",
+            "haircutMarkUsd18": "980130906562500000000",
+            "stressedExitUsd18": "999000000000000000000",
+            "redemptionFloorUsd18": "900000000000000000000",
+            "recognizedUsd18": "900000000000000000000",
+            "cappedUsd18": "900000000000000000000"
+          }
+        ],
+        "totalRecognizedUsd18": "900000000000000000000",
+        "borrowLimitUsd18": "765000000000000000000",
+        "maintenanceLimitUsd18": "810000000000000000000",
+        "liquidationLimitUsd18": "837000000000000000000",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "765000000000000000000",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S22-zero-price-invalid",
+      "description": "A zero answer is not a price. The oracle is invalid and capacity is zero.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1000000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "0",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "0",
+            "haircutMarkUsd18": "0",
+            "stressedExitUsd18": "0",
+            "redemptionFloorUsd18": "0",
+            "recognizedUsd18": "0",
+            "cappedUsd18": "0"
+          }
+        ],
+        "totalRecognizedUsd18": "0",
+        "borrowLimitUsd18": "0",
+        "maintenanceLimitUsd18": "0",
+        "liquidationLimitUsd18": "0",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "0",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NO_NEW_RISK",
+        "gates": [
+          "ORACLE_INVALID"
+        ]
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S23-six-decimal-rounding",
+      "description": "A 6-decimal money-market token at a non-round price. Market value, the haircut chain and every limit carry a remainder, so rounding direction is observable.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+          "symbol": "USMMx",
+          "decimals": 6,
+          "quantity": "1000001",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1234567890123456789",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7777,
+            "maintenanceLtvBps": 8333,
+            "liquidationLtvBps": 8888,
+            "maxConcentrationBps": 3333,
+            "haircuts": {
+              "marketBps": 137,
+              "liquidityBps": 71,
+              "issuerBps": 233,
+              "settlementBps": 59,
+              "crosschainBps": 17
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "37000000000000000000000",
+                "recoveryBps": 9871
+              },
+              {
+                "thresholdUsd18": "211000000000000000000000",
+                "recoveryBps": 9337
+              },
+              {
+                "thresholdUsd18": "1300000000000000000000000",
+                "recoveryBps": 8111
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+            "marketValueUsd18": "1234569124691346912",
+            "haircutMarkUsd18": "1171877694426420166",
+            "stressedExitUsd18": "1218643182982828536",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "1171877694426420166",
+            "cappedUsd18": "390586835552325841"
+          }
+        ],
+        "totalRecognizedUsd18": "390586835552325841",
+        "borrowLimitUsd18": "303759382009043806",
+        "maintenanceLimitUsd18": "325476010065753123",
+        "liquidationLimitUsd18": "347153579438907207",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "303759382009043806",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S24-eight-decimal-rounding",
+      "description": "An 8-decimal commodity token, matching Chainlink's native answer scale, with a redemption floor that does not divide evenly.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000d04",
+          "symbol": "XAUx",
+          "decimals": 8,
+          "quantity": "333333333",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "2387654321098765432",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 7200
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9413,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7101,
+            "maintenanceLtvBps": 7907,
+            "liquidationLtvBps": 8501,
+            "maxConcentrationBps": 4999,
+            "haircuts": {
+              "marketBps": 313,
+              "liquidityBps": 197,
+              "issuerBps": 89,
+              "settlementBps": 151,
+              "crosschainBps": 41
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "19000000000000000000000",
+                "recoveryBps": 9907
+              },
+              {
+                "thresholdUsd18": "97000000000000000000000",
+                "recoveryBps": 9601
+              },
+              {
+                "thresholdUsd18": "503000000000000000000000",
+                "recoveryBps": 8803
+              }
+            ],
+            "maxOracleAgeSeconds": 7200,
+            "maxPassportAgeSeconds": 1209600,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000d04",
+            "marketValueUsd18": "7958847729037037036",
+            "haircutMarkUsd18": "7347233531018285698",
+            "stressedExitUsd18": "7884830445156992591",
+            "redemptionFloorUsd18": "7491663367342562961",
+            "recognizedUsd18": "7347233531018285698",
+            "cappedUsd18": "3672882042156041020"
+          }
+        ],
+        "totalRecognizedUsd18": "3672882042156041020",
+        "borrowLimitUsd18": "2608113538135004728",
+        "maintenanceLimitUsd18": "2904147830732781634",
+        "liquidationLimitUsd18": "3122317024036850471",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "2608113538135004728",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S25-mixed-decimals-portfolio",
+      "description": "18, 8 and 6 decimal assets in one portfolio. Exercises ordered summation across differing scales where each leg truncates independently.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "7777000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        },
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+          "symbol": "USMMx",
+          "decimals": 6,
+          "quantity": "4444444",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1234567890123456789",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7777,
+            "maintenanceLtvBps": 8333,
+            "liquidationLtvBps": 8888,
+            "maxConcentrationBps": 3333,
+            "haircuts": {
+              "marketBps": 137,
+              "liquidityBps": 71,
+              "issuerBps": 233,
+              "settlementBps": 59,
+              "crosschainBps": 17
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "37000000000000000000000",
+                "recoveryBps": 9871
+              },
+              {
+                "thresholdUsd18": "211000000000000000000000",
+                "recoveryBps": 9337
+              },
+              {
+                "thresholdUsd18": "1300000000000000000000000",
+                "recoveryBps": 8111
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        },
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000d04",
+          "symbol": "XAUx",
+          "decimals": 8,
+          "quantity": "123456789",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "2387654321098765432",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 7200
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9413,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7101,
+            "maintenanceLtvBps": 7907,
+            "liquidationLtvBps": 8501,
+            "maxConcentrationBps": 4999,
+            "haircuts": {
+              "marketBps": 313,
+              "liquidityBps": 197,
+              "issuerBps": 89,
+              "settlementBps": 151,
+              "crosschainBps": 41
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "19000000000000000000000",
+                "recoveryBps": 9907
+              },
+              {
+                "thresholdUsd18": "97000000000000000000000",
+                "recoveryBps": 9601
+              },
+              {
+                "thresholdUsd18": "503000000000000000000000",
+                "recoveryBps": 8803
+              }
+            ],
+            "maxOracleAgeSeconds": 7200,
+            "maxPassportAgeSeconds": 1209600,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "3141592653589793238",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "7777000000000000000000",
+            "haircutMarkUsd18": "7622478060336562500000",
+            "stressedExitUsd18": "7769223000000000000000",
+            "redemptionFloorUsd18": "7699230000000000000000",
+            "recognizedUsd18": "7622478060336562500000",
+            "cappedUsd18": "7622478060336562500000"
+          },
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+            "marketValueUsd18": "5486967851851856785",
+            "haircutMarkUsd18": "5208339579387757169",
+            "stressedExitUsd18": "5416185966562967832",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "5208339579387757169",
+            "cappedUsd18": "5208339579387757169"
+          },
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000d04",
+            "marketValueUsd18": "2947721357248285320",
+            "haircutMarkUsd18": "2721197582039145937",
+            "stressedExitUsd18": "2920307548625876266",
+            "redemptionFloorUsd18": "2774690113577810971",
+            "recognizedUsd18": "2721197582039145937",
+            "cappedUsd18": "2721197582039145937"
+          }
+        ],
+        "totalRecognizedUsd18": "7630407597497989403106",
+        "borrowLimitUsd18": "6485089199379973981279",
+        "maintenanceLimitUsd18": "6866722014602528420740",
+        "liquidationLimitUsd18": "7095847058395654441532",
+        "debtUsd18": "3141592653589793238",
+        "availableBorrowUsd18": "6481947606726384188041",
+        "healthFactorWad": "2185745502923860607566",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 3
+    },
+    {
+      "id": "S26-concentration-cap-remainder",
+      "description": "A 3,333 bps concentration cap against an uncapped total that does not divide by 10,000, so the cap itself carries a remainder.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+          "symbol": "USTBx",
+          "decimals": 18,
+          "quantity": "1111000000000000000000",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1000000000000000000",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9900,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 8500,
+            "maintenanceLtvBps": 9000,
+            "liquidationLtvBps": 9300,
+            "maxConcentrationBps": 10000,
+            "haircuts": {
+              "marketBps": 50,
+              "liquidityBps": 25,
+              "issuerBps": 100,
+              "settlementBps": 25,
+              "crosschainBps": 0
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "100000000000000000000000",
+                "recoveryBps": 9990
+              },
+              {
+                "thresholdUsd18": "500000000000000000000000",
+                "recoveryBps": 9960
+              },
+              {
+                "thresholdUsd18": "2000000000000000000000000",
+                "recoveryBps": 9900
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        },
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+          "symbol": "USMMx",
+          "decimals": 6,
+          "quantity": "9999999",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1234567890123456789",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7777,
+            "maintenanceLtvBps": 8333,
+            "liquidationLtvBps": 8888,
+            "maxConcentrationBps": 3333,
+            "haircuts": {
+              "marketBps": 137,
+              "liquidityBps": 71,
+              "issuerBps": 233,
+              "settlementBps": 59,
+              "crosschainBps": 17
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "37000000000000000000000",
+                "recoveryBps": 9871
+              },
+              {
+                "thresholdUsd18": "211000000000000000000000",
+                "recoveryBps": 9337
+              },
+              {
+                "thresholdUsd18": "1300000000000000000000000",
+                "recoveryBps": 8111
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        },
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000d04",
+          "symbol": "XAUx",
+          "decimals": 8,
+          "quantity": "87654321",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "2387654321098765432",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 7200
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": true,
+            "redemptionFloorBps": 9413,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7101,
+            "maintenanceLtvBps": 7907,
+            "liquidationLtvBps": 8501,
+            "maxConcentrationBps": 4999,
+            "haircuts": {
+              "marketBps": 313,
+              "liquidityBps": 197,
+              "issuerBps": 89,
+              "settlementBps": 151,
+              "crosschainBps": 41
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "19000000000000000000000",
+                "recoveryBps": 9907
+              },
+              {
+                "thresholdUsd18": "97000000000000000000000",
+                "recoveryBps": 9601
+              },
+              {
+                "thresholdUsd18": "503000000000000000000000",
+                "recoveryBps": 8803
+              }
+            ],
+            "maxOracleAgeSeconds": 7200,
+            "maxPassportAgeSeconds": 1209600,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000a01",
+            "marketValueUsd18": "1111000000000000000000",
+            "haircutMarkUsd18": "1088925437190937500000",
+            "stressedExitUsd18": "1109889000000000000000",
+            "redemptionFloorUsd18": "1099890000000000000000",
+            "recognizedUsd18": "1088925437190937500000",
+            "cappedUsd18": "1088925437190937500000"
+          },
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+            "marketValueUsd18": "12345677666666677766",
+            "haircutMarkUsd18": "11718764053622453634",
+            "stressedExitUsd18": "12186418424766677622",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "11718764053622453634",
+            "cappedUsd18": "11718764053622453634"
+          },
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000d04",
+            "marketValueUsd18": "2092882182986282578",
+            "haircutMarkUsd18": "1932050301101571113",
+            "stressedExitUsd18": "2073418378684510150",
+            "redemptionFloorUsd18": "1970029998844987790",
+            "recognizedUsd18": "1932050301101571113",
+            "cappedUsd18": "1932050301101571113"
+          }
+        ],
+        "totalRecognizedUsd18": "1102576251545661524747",
+        "borrowLimitUsd18": "936072253335611282838",
+        "maintenanceLimitUsd18": "991325811730808352892",
+        "liquidationLimitUsd18": "1024758730039397957392",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "936072253335611282838",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 3
+    },
+    {
+      "id": "S27-debt-rounding-up",
+      "description": "Scaled principal and an index chosen so debt reconstruction has a remainder. Pins the round-up rule in accounting.md 3.1: rounding down here would under-state what is owed.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+          "symbol": "USMMx",
+          "decimals": 6,
+          "quantity": "50000001",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1234567890123456789",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7777,
+            "maintenanceLtvBps": 8333,
+            "liquidationLtvBps": 8888,
+            "maxConcentrationBps": 3333,
+            "haircuts": {
+              "marketBps": 137,
+              "liquidityBps": 71,
+              "issuerBps": 233,
+              "settlementBps": 59,
+              "crosschainBps": 17
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "37000000000000000000000",
+                "recoveryBps": 9871
+              },
+              {
+                "thresholdUsd18": "211000000000000000000000",
+                "recoveryBps": 9337
+              },
+              {
+                "thresholdUsd18": "1300000000000000000000000",
+                "recoveryBps": 8111
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "1000000000000000001",
+        "borrowIndex": "1053700000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+            "marketValueUsd18": "61728395740740729573",
+            "haircutMarkUsd18": "58593827299371403481",
+            "stressedExitUsd18": "60932099435685174161",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "58593827299371403481",
+            "cappedUsd18": "19529322638880488780"
+          }
+        ],
+        "totalRecognizedUsd18": "19529322638880488780",
+        "borrowLimitUsd18": "15187954216257356124",
+        "maintenanceLimitUsd18": "16273784554979111300",
+        "liquidationLimitUsd18": "17357661961436978427",
+        "debtUsd18": "1053700000000000002",
+        "availableBorrowUsd18": "14134254216257356122",
+        "healthFactorWad": "15444419241699830377",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    },
+    {
+      "id": "S28-haircut-order-sensitivity",
+      "description": "Five distinct haircuts on a value with a remainder at every step. Swapping any adjacent pair changes the truncated result, which is what makes the frozen order load-bearing.",
+      "now": 1750000000,
+      "assets": [
+        {
+          "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+          "symbol": "USMMx",
+          "decimals": 6,
+          "quantity": "7654321",
+          "assetStatus": "ACTIVE",
+          "price": {
+            "answerUsd18": "1234567890123456789",
+            "updatedAt": 1750000000,
+            "maxAgeSeconds": 86400
+          },
+          "passport": {
+            "status": "ACTIVE",
+            "committedAt": 1749996400,
+            "redemptionSupported": false,
+            "redemptionFloorBps": 0,
+            "singleSource": false
+          },
+          "policy": {
+            "initialLtvBps": 7777,
+            "maintenanceLtvBps": 8333,
+            "liquidationLtvBps": 8888,
+            "maxConcentrationBps": 3333,
+            "haircuts": {
+              "marketBps": 137,
+              "liquidityBps": 71,
+              "issuerBps": 233,
+              "settlementBps": 59,
+              "crosschainBps": 17
+            },
+            "exitCurve": [
+              {
+                "thresholdUsd18": "37000000000000000000000",
+                "recoveryBps": 9871
+              },
+              {
+                "thresholdUsd18": "211000000000000000000000",
+                "recoveryBps": 9337
+              },
+              {
+                "thresholdUsd18": "1300000000000000000000000",
+                "recoveryBps": 8111
+              }
+            ],
+            "maxOracleAgeSeconds": 86400,
+            "maxPassportAgeSeconds": 2592000,
+            "exitCurveLength": 3
+          }
+        }
+      ],
+      "account": {
+        "scaledPrincipal": "0",
+        "borrowIndex": "1000000000000000000",
+        "reservedUsd18": "0",
+        "statusOverride": "NORMAL"
+      },
+      "sequencer": {
+        "up": true,
+        "lastRestartAt": 1749913600,
+        "gracePeriodSeconds": 3600
+      },
+      "expected": {
+        "perAsset": [
+          {
+            "assetId": "0x0000000000000000000000000000000000000000000000000000000000000c03",
+            "marketValueUsd18": "9449778927297667892",
+            "haircutMarkUsd18": "8969919075960654887",
+            "stressedExitUsd18": "9327876779135527976",
+            "redemptionFloorUsd18": null,
+            "recognizedUsd18": "8969919075960654887",
+            "cappedUsd18": "2989674028017686273"
+          }
+        ],
+        "totalRecognizedUsd18": "2989674028017686273",
+        "borrowLimitUsd18": "2325069491589354614",
+        "maintenanceLimitUsd18": "2491295367547137971",
+        "liquidationLimitUsd18": "2657222276102119559",
+        "debtUsd18": "0",
+        "availableBorrowUsd18": "2325069491589354614",
+        "healthFactorWad": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "status": "NORMAL",
+        "gates": []
+      },
+      "assetCount": 1
+    }
+  ],
+  "scenarioCount": 28
+}

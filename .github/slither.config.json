@@ -1,0 +1,10 @@
+{
+  "//": "Test and mock contracts are deliberately hostile and deliberately unsafe. Running detectors over them produces noise that buries findings in src/.",
+  "filter_paths": "../lib|test/|script/",
+  "exclude_informational": true,
+  "exclude_low": false,
+  "solc_remaps": [
+    "forge-std/=../lib/forge-std/src/",
+    "@openzeppelin/contracts/=../lib/openzeppelin-contracts/contracts/"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@usance/chaingpt",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit", "build": "echo ok" },
+  "dependencies": { "@usance/schemas": "workspace:*", "zod": "^3.24.1" },
+  "devDependencies": { "vitest": "^2.1.8", "typescript": "^5.7.2" }
+}

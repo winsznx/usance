@@ -1,0 +1,7 @@
+# Local content-addressed object store.
+#
+# Ignored rather than committed because it is a cache of bytes that are already reproducible from
+# fixtures/manifest.json — every object is keyed by the digest of its own content, so a missing
+# object is re-fetchable and a present one is verifiable. Committing it would also mean committing
+# whatever an operator happened to ingest locally.
+.objects/

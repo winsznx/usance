@@ -1,0 +1,26 @@
+{
+  "name": "@usance/evidence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "echo ok",
+    "manifest": "vite-node scripts/build-manifest.ts"
+  },
+  "dependencies": {
+    "@usance/schemas": "workspace:*",
+    "@usance/chaingpt": "workspace:*",
+    "viem": "^2.21.55",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "vite-node": "^2.1.8",
+    "vitest": "^2.1.8",
+    "typescript": "^5.7.2"
+  }
+}

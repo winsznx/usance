@@ -1,0 +1,525 @@
+/*
+ * Usance design system.
+ *
+ * Follows the Duna direction in the project design file: a nearly achromatic, warm, editorial
+ * surface. Espresso is the only filled action colour — no fintech blue, no crypto neon. Elevation
+ * comes from hairline borders and background tint rather than shadows. Pills for controls,
+ * generous radii on cards, aggressive negative tracking on display type.
+ *
+ * The one place saturated colour appears is risk state, and even there it is muted and always
+ * paired with a text label, because colour alone is not an accessible signal for "your account is
+ * in trouble".
+ */
+
+:root {
+  /* Duna palette */
+  --aubergine-ink: #1b0624;
+  --espresso: #160f0c;
+  --onyx: #0d0d0d;
+  --smoke: #1a1816;
+  --charcoal: #292421;
+  --graphite: #444444;
+  --warm-ash: #766a7c;
+  --stone: #898683;
+  --bone: #edece7;
+  --mist: #eeeeee;
+  --linen: #f7f7f5;
+  --paper: #ffffff;
+
+  /* Risk semantics — desaturated so they read as information, not decoration */
+  --risk-healthy: #2f5d3f;
+  --risk-attention: #7a5a1e;
+  --risk-restricted: #8a3f1d;
+  --risk-critical: #7d2323;
+  --risk-healthy-bg: #eef3ef;
+  --risk-attention-bg: #f6f1e5;
+  --risk-restricted-bg: #f8efe9;
+  --risk-critical-bg: #f8ecec;
+
+  --hairline: rgba(27, 6, 36, 0.12);
+  --hairline-strong: rgba(27, 6, 36, 0.22);
+
+  --radius-card: 16px;
+  --radius-image: 24px;
+  --radius-input: 8px;
+  --radius-pill: 999px;
+  --radius-large-button: 60px;
+
+  --page-max: 1200px;
+
+  --font-sans:
+    "GT America", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--linen);
+  color: var(--aubergine-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-feature-settings: "tnum", "zero";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numeric columns must align. Tabular figures are load-bearing in a financial table. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "zero";
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 400;
+}
+
+.display {
+  font-size: clamp(40px, 7.4vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.heading-lg {
+  font-size: clamp(30px, 4.4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+}
+
+.heading {
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.subheading {
+  font-size: 24px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.body-lg {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.caption {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--stone);
+}
+
+.micro {
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+
+.muted {
+  color: var(--warm-ash);
+}
+
+.shell {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ------------------------------------------------------------------ surfaces */
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  padding: 24px;
+}
+
+.card-flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.panel {
+  background: var(--bone);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--hairline);
+  border: 0;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ controls */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  padding: 11px 22px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease;
+  min-height: 44px; /* thumb target on mobile */
+}
+
+.btn-primary {
+  background: var(--espresso);
+  color: var(--paper);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2a201c;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--hairline-strong);
+  color: var(--aubergine-ink);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bone);
+}
+
+.btn-lg {
+  border-radius: var(--radius-large-button);
+  padding: 18px 30px;
+  font-size: 17px;
+}
+
+.btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  background: var(--mist);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 18px;
+  color: var(--aubergine-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--espresso);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  background: var(--bone);
+  color: var(--charcoal);
+  border: 1px solid var(--hairline);
+}
+
+.tag-dark {
+  background: var(--espresso);
+  color: var(--paper);
+  border-color: var(--espresso);
+}
+
+/* ------------------------------------------------------------------ risk states */
+
+.risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-pill);
+  padding: 5px 14px;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+
+.risk::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.risk-NORMAL {
+  color: var(--risk-healthy);
+  background: var(--risk-healthy-bg);
+  border-color: rgba(47, 93, 63, 0.2);
+}
+.risk-NO_NEW_RISK {
+  color: var(--risk-attention);
+  background: var(--risk-attention-bg);
+  border-color: rgba(122, 90, 30, 0.2);
+}
+.risk-REDUCE_ONLY {
+  color: var(--risk-restricted);
+  background: var(--risk-restricted-bg);
+  border-color: rgba(138, 63, 29, 0.2);
+}
+.risk-MARGIN_CALL,
+.risk-LIQUIDATING,
+.risk-BAD_DEBT {
+  color: var(--risk-critical);
+  background: var(--risk-critical-bg);
+  border-color: rgba(125, 35, 35, 0.2);
+}
+.risk-SETTLED {
+  color: var(--graphite);
+  background: var(--bone);
+}
+
+/* ------------------------------------------------------------------ tables */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--stone);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Wide content scrolls inside its own container; the page body never scrolls sideways. */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ------------------------------------------------------------------ layout helpers */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.section {
+  padding: clamp(56px, 9vw, 104px) 0;
+}
+
+@media (max-width: 860px) {
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ stat */
+
+.stat-value {
+  font-size: clamp(28px, 3.6vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--stone);
+}
+
+/* ------------------------------------------------------------------ feedback */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bone) 25%, var(--mist) 50%, var(--bone) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-input);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+  * {
+    transition: none !important;
+  }
+}
+
+.notice {
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--charcoal);
+  border-radius: var(--radius-input);
+  padding: 16px 18px;
+  background: var(--paper);
+}
+
+.notice-warn {
+  border-left-color: var(--risk-attention);
+  background: var(--risk-attention-bg);
+}
+
+.notice-stop {
+  border-left-color: var(--risk-restricted);
+  background: var(--risk-restricted-bg);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--graphite);
+  word-break: break-all;
+}
+
+/* Progress through an asynchronous action. Named stages, never a bare spinner. */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 15px;
+  color: var(--stone);
+}
+
+.steps li:last-child {
+  border-bottom: 0;
+}
+
+.steps li[data-state="done"] {
+  color: var(--aubergine-ink);
+}
+
+.steps li[data-state="active"] {
+  color: var(--aubergine-ink);
+}
+
+.step-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-strong);
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+}
+
+.steps li[data-state="done"] .step-dot {
+  background: var(--espresso);
+  border-color: var(--espresso);
+  color: var(--paper);
+}
+
+.steps li[data-state="active"] .step-dot {
+  border-color: var(--espresso);
+  border-width: 2px;
+}

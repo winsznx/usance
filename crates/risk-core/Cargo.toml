@@ -1,0 +1,21 @@
+# risk-core has no dependencies, and none are permitted — not even for the test suite.
+#
+# This crate is the artefact an auditor reads to decide whether Usance values collateral
+# correctly. A reviewer must be able to rebuild it from this repository alone, with no registry
+# snapshot to trust and no third-party arithmetic in the path between a fixture and a recognised
+# value. The 256-bit intermediates and the fixture reader are therefore written here rather than
+# pulled in, and there is no `[dependencies]` or `[dev-dependencies]` table to grow one by
+# accident.
+
+[package]
+name = "risk-core"
+description = "Deterministic reference model for the Usance risk pipeline (spec/accounting.md)"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[lib]
+name = "risk_core"
+path = "src/lib.rs"
