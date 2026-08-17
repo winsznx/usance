@@ -23,9 +23,18 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.62.11
         version: 5.101.4(react@19.0.0)
+      '@usance/chaingpt':
+        specifier: workspace:*
+        version: link:../../packages/chaingpt
       '@usance/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@usance/evidence':
+        specifier: workspace:*
+        version: link:../../services/evidence
+      '@usance/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       '@usance/xlayer':
         specifier: workspace:*
         version: link:../../packages/xlayer
@@ -54,15 +63,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.2
         version: 19.2.4(@types/react@19.2.18)
-      '@usance/chaingpt':
-        specifier: workspace:*
-        version: link:../../packages/chaingpt
-      '@usance/evidence':
-        specifier: workspace:*
-        version: link:../../services/evidence
-      '@usance/schemas':
-        specifier: workspace:*
-        version: link:../../packages/schemas
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
