@@ -63,7 +63,7 @@
       "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x3e0da382ec33324a1e25763d70d6b58b9cb9b548aa062b95c4be675d02efbe60",
+        "0xca0b395935d24722a6032752799a86323a56a960fd3d6837f4259b1eeec4ee0a",
         "proof/live-risk-scenario.json"
       ],
       "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 fixture S02, reproduced by a fourth independent deployment."
@@ -72,7 +72,7 @@
       "claim": "A borrow within the limit succeeds onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xdb71289b04c95bfbd867bc4d5ec7b9e4b189b546d18f114663afa6003e4357cb"
+        "0x3fc7d62934203ac8facf92f15d7554b707e947540ae3261d98364c6b5ff7ecdf"
       ],
       "detail": "$416.56 against $833.11 of capacity."
     },
@@ -80,7 +80,7 @@
       "claim": "After a material risk deterioration, new borrowing is rejected by the contract.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xa027fae7ae5e566fdf25de4fbc577ca23aa783faf2899a3b71a81c063abbfe9a",
+        "0x76e91aa035d918315f320e4ee5f3bd64c5762c500041a23c37050616e2863a6c",
         "proof/live-risk-scenario.json"
       ],
       "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow submitted with an explicit gas limit mined at block 38596307, burned 243878 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status 1 is NO_NEW_RISK."
@@ -89,7 +89,7 @@
       "claim": "Risk-reducing actions remain available while new risk is blocked.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x7c6d70f02682fcb9275f014e22800cb0de18f576407f8aa4fc5381e7ee0bc0d2"
+        "0x633d364fb750dd8462c5648a03a52c4a17fe12002e82380d1c3f4613689d1fc0"
       ],
       "detail": "Repay-all succeeded under NO_NEW_RISK, clearing debt to zero and returning the account to NORMAL."
     },
@@ -190,10 +190,10 @@
       "claim": "Liquidation is progressive and routed on expected recovery.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1",
+        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
         "proof/live-liquidation.json"
       ],
-      "detail": "Mined on X Layer testnet. An account walked NORMAL to NO_NEW_RISK to MARGIN_CALL as the collateral price fell, then 519.39 of 1000 tUSTB was seized \u2014 51.9% of the position, bounded by the close factor \u2014 retiring $411.36 of $791.46 debt and shrinking the breach from $85.76 to $40.94. The position was not closed. Account state was never set directly."
+      "detail": "Mined on X Layer testnet. An account walked NORMAL to NO_NEW_RISK to MARGIN_CALL as the collateral price fell, then 521.869 of 1000 tUSTB was seized \u2014 bounded by the close factor \u2014 retiring $390.59 of $791.46 debt and shrinking the breach from $85.77 to $63.46. The position was not closed and the account correctly remained MARGIN_CALL, because seizing collateral removes borrowing capacity as well as debt. Account state was never set directly."
     },
     {
       "claim": "Generated verification artifacts prove they describe the current world.",
@@ -207,16 +207,16 @@
       "claim": "A single liquidation does not always cure a breach, and the protocol says so before acting.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1",
+        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
         "proof/live-liquidation.json"
       ],
-      "detail": "Seizing collateral removes borrowing capacity as well as debt. At a 90% maintenance LTV and a 5% bonus, each dollar retired repairs 5.5 cents, so curing an $85.76 breach would need $1,815.93 of repayment against $791.46 of debt. planFor reports curesTheBreach=false and the amount that would be required, then deleverages within the close factor."
+      "detail": "Mined on X Layer testnet. The planner reported curesTheBreach=false and a $1,977.80 debt-to-cure against $791.46 of actual debt before acting, then the liquidation seized 521.869 tUSTB, retired $390.59, shrank the breach from $85.77 to $63.46, and correctly left the account MARGIN_CALL. Seizing collateral removes borrowing capacity as well as debt, so repair per dollar is 1-(1+t)m \u2014 about 0.05 at these parameters."
     },
     {
       "claim": "A cured account cannot be liquidated.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1",
+        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
         "proof/live-liquidation.json"
       ],
       "detail": "After repaying to NORMAL, a liquidation with identical arguments to the one that had just succeeded was refused. Eligibility is recomputed from live inputs on every call, so the same code path that authorised the first refuses the replay."
@@ -262,6 +262,25 @@
       "claim": "A corroborated (two-path) Franklin Passport.",
       "proofLevel": "NOT_YET_PROVEN",
       "detail": "Blocked by the ChainGPT gateway limit on dense filings."
+    },
+    {
+      "claim": "Third-party liquidators are paid an explicit incentive out of liquidation proceeds.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
+        "proof/live-liquidation.json",
+        "contracts/test/LiquidatorEconomics.t.sol"
+      ],
+      "detail": "Mined on X Layer testnet by keeper 0xac575403, an address distinct from the borrower and holding only the LIQUIDATOR role. Of 413.320249 tUSD of route proceeds, the keeper received 20.666012 (5.000%), the treasury 0xDd280E77 received 2.066601 (0.500%), and 390.587636 (94.500%) retired debt. The three destinations account for every unit, measured by onchain balance delta. Before this the whole amount retired the borrower's own debt, so no third party had any reason to liquidate anything."
+    },
+    {
+      "claim": "Protocol fees are bounded by constants that governance cannot raise.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/src/core/FeeController.sol",
+        "contracts/test/LiquidatorEconomics.t.sol"
+      ],
+      "detail": "Every ceiling is a Solidity constant, not a settable parameter: governance that can raise its own limit has no limit. The liquidator incentive and the protocol liquidation fee are also bounded jointly, because two individually-safe parameters can be ruinous together. Not yet exercised against a governance attack on a live deployment, so this is UNIT_TESTED."
     }
   ]
 }

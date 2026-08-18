@@ -53,6 +53,7 @@ const CORE = {
   FinancingEngine: "financingEngine",
   ClearingHouse: "clearingHouse",
   ChainlinkFeedAdapter: "oracleAdapter",
+  FeeController: "feeController",
 };
 
 const creates = broadcast.transactions.filter((t) => t.transactionType === "CREATE");

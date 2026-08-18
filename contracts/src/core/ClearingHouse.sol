@@ -514,10 +514,13 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
 
         // Without a FeeController every unit goes to the debt, which is the old behaviour. Failing
         // closed here would brick liquidation on a core that has not been attached yet.
-        uint256 toKeeper;
-        uint256 toProtocol;
+        // Initialised explicitly. These defaults ARE the no-FeeController behaviour — every unit
+        // retires debt and nobody is paid — and leaving that to implicit zero-init made the most
+        // important fallback in the function invisible.
+        uint256 toKeeper = 0;
+        uint256 toProtocol = 0;
         uint256 toDebt = proceedsTokens;
-        address treasury;
+        address treasury = address(0);
         if (address(fees) != address(0)) {
             (toKeeper, toProtocol, toDebt) = fees.splitLiquidationProceeds(proceedsTokens);
             treasury = fees.treasury();

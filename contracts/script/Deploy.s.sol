@@ -12,6 +12,7 @@ import {RiskPolicyRegistry} from "../src/core/RiskPolicyRegistry.sol";
 import {CollateralVault} from "../src/core/CollateralVault.sol";
 import {LiquidityVault} from "../src/core/LiquidityVault.sol";
 import {FinancingEngine} from "../src/core/FinancingEngine.sol";
+import {FeeController} from "../src/core/FeeController.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {ChainlinkFeedAdapter} from "../src/adapters/ChainlinkFeedAdapter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -61,6 +62,7 @@ contract Deploy is Script {
         LiquidityVault liquidityVault;
         FinancingEngine financing;
         ClearingHouse clearing;
+        FeeController fees;
     }
 
     function run() external {
@@ -85,7 +87,7 @@ contract Deploy is Script {
         }
 
         Core memory c = _deployCore(vm.addr(pk), settlementToken);
-        _wire(c);
+        _wire(c, vm.addr(pk));
         _configureSettlement(c, vm.addr(pk), settlementToken, settlementFeed);
         _handOverAuthority(c, vm.addr(pk));
         vm.stopBroadcast();
@@ -136,7 +138,7 @@ contract Deploy is Script {
         );
     }
 
-    function _wire(Core memory c) internal {
+    function _wire(Core memory c, address deployer) internal {
         c.collateralVault.setClearingHouse(address(c.clearing));
         c.financing.setClearingHouse(address(c.clearing));
         // The liquidity vault takes instructions from both: ClearingHouse moves cash,
@@ -150,6 +152,29 @@ contract Deploy is Script {
         // must be able to advance the epoch those changes invalidate. A named capability rather
         // than a role, so granting it conveys exactly one power and not cash authority.
         c.policyRegistry.setEpochBumper(address(c.clearing), true);
+
+        // Protocol economics. Deployed as part of the core rather than attached afterwards, so a
+        // fresh deployment has a working liquidation market instead of a dormant one — and so the
+        // manifest can never describe a protocol whose keeper incentive is unset.
+        // The treasury must not be the deploy key. On testnet the deploy key is also the account
+        // that borrows in every scenario, so aliasing them makes a liquidation receipt unreadable:
+        // one balance gets counted as both "protocol fee" and "returned to borrower", and the
+        // reported proceeds come out overstated by exactly the fee. Found by a live run.
+        address treasury = vm.envOr("USANCE_TREASURY", address(0));
+        if (treasury == address(0)) {
+            if (block.chainid != X_LAYER_TESTNET) {
+                revert MissingConfig("USANCE_TREASURY required on mainnet");
+            }
+            treasury =
+                address(uint160(uint256(keccak256(abi.encodePacked("usance-testnet-treasury", deployer)))));
+        }
+        if (treasury == deployer) revert MissingConfig("USANCE_TREASURY must differ from the deploy key");
+        c.fees = new FeeController(c.authority, c.policyRegistry, treasury);
+        console2.log("treasury", treasury);
+        c.clearing.setFeeController(c.fees);
+        // Raising a fee changes what an outstanding quote means, so it must be able to advance the
+        // epoch those quotes are stamped with.
+        c.policyRegistry.setEpochBumper(address(c.fees), true);
     }
 
     /// @dev The ADMISSION role goes to the broadcasting EOA, not to `address(this)`. Under
@@ -241,6 +266,7 @@ contract Deploy is Script {
         console2.log("financingEngine", address(c.financing));
         console2.log("clearingHouse", address(c.clearing));
         console2.log("oracleAdapter", address(c.oracle));
+        console2.log("feeController", address(c.fees));
         console2.log("USANCE_DEPLOYMENT_END");
     }
 }

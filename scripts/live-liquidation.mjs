@@ -19,7 +19,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createPublicClient, createWalletClient, parseAbi, formatUnits, decodeErrorResult } from "viem";
+import { createPublicClient, createWalletClient, parseAbi, formatUnits, decodeErrorResult, keccak256, stringToBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { xlayerTransport } from "./_rpc.mjs";
 import { repoRoot, writeArtifact, digestOf } from "./_artifact.mjs";
@@ -38,10 +38,33 @@ if (liq.clearingHouse.toLowerCase() !== C.clearingHouse.toLowerCase()) {
 const pk = process.env.DEPLOYER_PRIVATE_KEY;
 if (!pk) { console.error("DEPLOYER_PRIVATE_KEY not set"); process.exit(1); }
 const account = privateKeyToAccount(pk);
+
+/**
+ * The keeper is a different address from the borrower, on purpose.
+ *
+ * Running both roles from one key would let the incentive land back where it started and prove
+ * nothing about whether a third party is actually paid to do this work. The key is derived from the
+ * deployer's so the scenario stays reproducible from one secret, and it is funded with only enough
+ * OKB to send one transaction.
+ */
+const keeperPk = keccak256(stringToBytes(`usance-keeper/${pk.slice(2, 10)}`));
+const keeper = privateKeyToAccount(keeperPk);
 const chain = { id: 1952, name: "X Layer Testnet", nativeCurrency: { name: "OKB", symbol: "OKB", decimals: 18 }, rpcUrls: { default: { http: [] } } };
 const pub = createPublicClient({ chain, transport: xlayerTransport() });
 const wallet = createWalletClient({ account, chain, transport: xlayerTransport() });
+const keeperWallet = createWalletClient({ account: keeper, chain, transport: xlayerTransport() });
 
+const AUTH = parseAbi([
+  "function LIQUIDATOR() view returns (bytes32)",
+  "function hasRole(bytes32,address) view returns (bool)",
+  "function grantRole(bytes32,address)",
+]);
+const FEES = parseAbi([
+  "function treasury() view returns (address)",
+  "function liquidatorIncentiveBps() view returns (uint16)",
+  "function protocolLiquidationFeeBps() view returns (uint16)",
+  "function liquidationTakeBps() view returns (uint16)",
+]);
 const CH = parseAbi([
   "function addCollateral(bytes32,uint256)", "function borrow(uint256,uint64)", "function repay(uint256,bool) returns (uint256)",
   "function accountHealth(address) view returns ((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint8,uint32),(bytes32,uint256,uint256,uint256,uint256,uint256,uint256)[])",
@@ -70,11 +93,13 @@ const txs = [];
 const usd = (v) => `$${Number(formatUnits(v, 18)).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 const tok = (v) => Number(formatUnits(v, 18)).toLocaleString(undefined, { maximumFractionDigits: 4 });
 
-async function send(label, to, abi, functionName, args) {
-  const hash = await wallet.writeContract({ address: to, abi, functionName, args, account, chain });
+async function send(label, to, abi, functionName, args, as) {
+  const signer = as === "keeper" ? keeperWallet : wallet;
+  const from = as === "keeper" ? keeper : account;
+  const hash = await signer.writeContract({ address: to, abi, functionName, args, account: from, chain });
   const r = await pub.waitForTransactionReceipt({ hash, timeout: 180_000 });
   console.log(`    ${r.status === "success" ? "OK  " : "FAIL"} ${label.padEnd(34)} ${hash.slice(0, 18)}…  block ${r.blockNumber}`);
-  txs.push({ label, hash, blockNumber: Number(r.blockNumber), status: r.status });
+  txs.push({ label, hash, blockNumber: Number(r.blockNumber), status: r.status, from: from.address });
   if (r.status !== "success") throw new Error(`${label} reverted`);
   return r;
 }
@@ -195,11 +220,83 @@ console.log(`    quote                  proceeds ${formatUnits(qProceeds, 6)}  f
 
 // ---------------------------------------------------------------- 4. mine it
 console.log("\n4. Liquidate");
+// Fund the keeper with just enough gas, and give it the role. A keeper that cannot pay for its own
+// transaction is a keeper the borrower is subsidising.
+const keeperGas = await pub.getBalance({ address: keeper.address });
+if (keeperGas < 2n * 10n ** 15n) {
+  const topUp = 4n * 10n ** 15n - keeperGas;
+  const fundHash = await wallet.sendTransaction({ to: keeper.address, value: topUp, account, chain });
+  await pub.waitForTransactionReceipt({ hash: fundHash, timeout: 180_000 });
+  console.log(`    OK   fund keeper gas                  ${formatUnits(topUp, 18)} OKB`);
+}
+const hasRole = await pub.readContract({
+  address: C.authority, abi: AUTH, functionName: "hasRole",
+  args: [await pub.readContract({ address: C.authority, abi: AUTH, functionName: "LIQUIDATOR" }), keeper.address],
+});
+if (!hasRole) {
+  await send("grantRole(LIQUIDATOR, keeper)", C.authority, AUTH, "grantRole",
+    [await pub.readContract({ address: C.authority, abi: AUTH, functionName: "LIQUIDATOR" }), keeper.address]);
+}
+
+const settlementOf = (who) =>
+  pub.readContract({ address: F.settlementToken, abi: ERC20, functionName: "balanceOf", args: [who] });
+
+const treasury = await pub.readContract({ address: C.feeController, abi: FEES, functionName: "treasury" });
+const [incentiveBps, protocolBps] = await Promise.all([
+  pub.readContract({ address: C.feeController, abi: FEES, functionName: "liquidatorIncentiveBps" }),
+  pub.readContract({ address: C.feeController, abi: FEES, functionName: "protocolLiquidationFeeBps" }),
+]);
+console.log(`    keeper                 ${keeper.address}`);
+console.log(`    economics              keeper ${Number(incentiveBps) / 100}%  protocol ${Number(protocolBps) / 100}%`);
+
+const before = {
+  keeper: await settlementOf(keeper.address),
+  treasury: await settlementOf(treasury),
+  borrower: await settlementOf(account.address),
+  vault: await settlementOf(C.liquidityVault),
+};
+
 const liqReceipt = await send(
   `executeLiquidation ${tok(seizeAmount)} tUSTB`,
   C.clearingHouse, CH, "executeLiquidation",
   [account.address, ASSET, seizeAmount, L.directSettlementRoute, 0n],
+  "keeper",
 );
+
+const afterBal = {
+  keeper: await settlementOf(keeper.address),
+  treasury: await settlementOf(treasury),
+  borrower: await settlementOf(account.address),
+  vault: await settlementOf(C.liquidityVault),
+};
+
+const paid = {
+  keeper: afterBal.keeper - before.keeper,
+  treasury: afterBal.treasury - before.treasury,
+  borrower: afterBal.borrower - before.borrower,
+  vault: afterBal.vault - before.vault,
+};
+
+// Distinct addresses, checked rather than assumed. The first live run had the treasury aliased onto
+// the deploy key — which is also the borrower — so one balance was read as two roles and the
+// reported proceeds came out overstated by exactly the protocol fee.
+if (treasury.toLowerCase() === account.address.toLowerCase()) {
+  console.error("\nThe treasury and the borrower are the same address. Balance deltas cannot be");
+  console.error("attributed to a role, so this run cannot produce a readable receipt.");
+  process.exit(1);
+}
+const proceeds = paid.keeper + paid.treasury + paid.borrower + paid.vault;
+
+/** Within a wei, for the rounding the integer split legitimately produces. */
+const within = (a, b) => (a > b ? a - b : b - a) <= 1n;
+
+console.log("\n   Who received what:");
+console.log(`    keeper incentive       ${formatUnits(paid.keeper, 6)} tUSD`);
+console.log(`    protocol fee           ${formatUnits(paid.treasury, 6)} tUSD  -> ${treasury}`);
+console.log(`    debt retirement        ${formatUnits(paid.vault, 6)} tUSD  -> LiquidityVault`);
+console.log(`    returned to borrower   ${formatUnits(paid.borrower, 6)} tUSD`);
+console.log(`    ------------------------------------`);
+console.log(`    total proceeds         ${formatUnits(proceeds, 6)} tUSD`);
 
 // ---------------------------------------------------------------- 5. read the result back
 console.log("\n5. Read the result back from the chain");
@@ -220,12 +317,20 @@ const checks = [
   ["exposure was reduced", breachAfter < breachBefore, `breach ${usd(breachBefore)} -> ${usd(breachAfter)}`],
   ["outcome matched the plan", curesTheBreach ? after.statusOrdinal < 3 : true, curesTheBreach ? `cured, now ${after.status}` : `deleveraged, still ${after.status} as planned`],
   ["debt was not created", after.debt <= breached.debt, `${usd(after.debt)}`],
-  // The close factor bounds what a single round SEIZES, which is checked above against the plan.
-  // Debt retired can exceed the planned target when the route pays better than quoted, and it did
-  // here: every unit of proceeds goes to the debt, so favourable execution is a windfall to the
-  // borrower rather than a liquidator's margin. Asserting the retirement stayed under the close
-  // factor would be asserting that over-delivery is a fault.
-  ["debt retired was at least the plan", breached.debt - after.debt >= repayTarget, `retired ${usd(breached.debt - after.debt)} against a ${usd(repayTarget)} target`],
+  // Debt retirement is now strictly LESS than the seized value, because the keeper and the
+  // protocol are paid out of the same proceeds. The previous version of this check asserted the
+  // retirement met the full target, which encoded the old economics where every unit went to the
+  // debt — it failed the first time a keeper was actually paid, and it was the check that was
+  // wrong, not the protocol.
+  //
+  // What replaces it is stricter: the three destinations must account for every unit the route
+  // returned, and each must be its configured share.
+  ["proceeds were fully accounted", paid.keeper + paid.treasury + paid.vault === proceeds, `${formatUnits(proceeds, 6)} tUSD across three destinations`],
+  ["keeper received its configured share", within(paid.keeper, (proceeds * BigInt(incentiveBps)) / 10_000n), `${formatUnits(paid.keeper, 6)} tUSD at ${Number(incentiveBps) / 100}%`],
+  ["protocol received its configured share", within(paid.treasury, (proceeds * BigInt(protocolBps)) / 10_000n), `${formatUnits(paid.treasury, 6)} tUSD at ${Number(protocolBps) / 100}%`],
+  ["the keeper was paid from the proceeds, not beside them", paid.vault < proceeds, `debt got ${formatUnits(paid.vault, 6)} of ${formatUnits(proceeds, 6)}`],
+  ["the keeper is not the borrower", keeper.address.toLowerCase() !== account.address.toLowerCase(), keeper.address],
+  ["the treasury is not the borrower", treasury.toLowerCase() !== account.address.toLowerCase(), treasury],
 ];
 let bad = 0;
 for (const [name, ok, detail] of checks) { console.log(`  ${ok ? "OK " : "FAIL"} ${name.padEnd(36)} ${detail}`); if (!ok) bad++; }
