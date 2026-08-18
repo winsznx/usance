@@ -1,0 +1,105 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-08-18T11:43:24.102Z",
+    "generatedBy": "scripts/franklin-history.mjs",
+    "gitCommit": "bd0bfd46ba04002db0154b220995ebdd8f2fd87e-dirty",
+    "inputDigest": "0x2f8b9dc8fe06f1058aee0abd5920b54b8211d8dc960295a49cef49fe0fd56173",
+    "schema": 1
+  },
+  "instrument": "franklin-fobxx",
+  "method": "Deterministic parser over each filing, compared on normalized claim values. Classification is made by policy from the diff; no model decides whether a change is a risk deterioration.",
+  "filings": [
+    {
+      "fixtureId": "franklin-fobxx-2024",
+      "contentHash": "0xac0749471e472b2bfef410e8140f1bbb3ad1cb9eb2744279f4ada0172d89d69b",
+      "effectiveAt": 1722470400,
+      "claimCount": 5
+    },
+    {
+      "fixtureId": "franklin-fobxx-2025",
+      "contentHash": "0x1655264ca2cb0cdd5b1830687cd1320990f49b1ad849e4d04adf1caad3e8a81a",
+      "effectiveAt": 1754006400,
+      "claimCount": 5
+    },
+    {
+      "fixtureId": "franklin-fobxx-2026",
+      "contentHash": "0xd8952c1b64098fab2a7781766bf5d9c9ddc0ee567e1055e654c09cd14f8091cc",
+      "effectiveAt": 1785542400,
+      "claimCount": 5
+    }
+  ],
+  "transitions": [
+    {
+      "from": "franklin-fobxx-2024",
+      "to": "franklin-fobxx-2025",
+      "classification": "NO_MATERIAL_CHANGE",
+      "materialChanges": 0,
+      "coverageDifferences": 0,
+      "changes": [],
+      "coverage": {
+        "fieldsInScope": 17,
+        "fieldsComparedOnBothSides": 5,
+        "comparedFields": [
+          "transfer.permissionModel",
+          "backing.model",
+          "redemption.supported",
+          "redemption.estimatedWindowSeconds",
+          "corporateActions.mechanism"
+        ],
+        "fieldsAbsentFromBoth": 12,
+        "absentFields": [
+          "issuer.legalStructure",
+          "issuer.jurisdiction",
+          "issuer.regulatoryStatus",
+          "holder.rights",
+          "transfer.restrictions",
+          "backing.custodian",
+          "backing.assets",
+          "redemption.gateable",
+          "redemption.floorBps",
+          "eligibility.investorClass",
+          "eligibility.jurisdictionRestrictions",
+          "corporateActions.noticePeriodSeconds"
+        ],
+        "note": "5 of 17 fields were comparable; the rest were absent from both filings and say nothing about stability"
+      },
+      "contentHashesDiffer": true
+    },
+    {
+      "from": "franklin-fobxx-2025",
+      "to": "franklin-fobxx-2026",
+      "classification": "NO_MATERIAL_CHANGE",
+      "materialChanges": 0,
+      "coverageDifferences": 0,
+      "changes": [],
+      "coverage": {
+        "fieldsInScope": 17,
+        "fieldsComparedOnBothSides": 5,
+        "comparedFields": [
+          "transfer.permissionModel",
+          "backing.model",
+          "redemption.supported",
+          "redemption.estimatedWindowSeconds",
+          "corporateActions.mechanism"
+        ],
+        "fieldsAbsentFromBoth": 12,
+        "absentFields": [
+          "issuer.legalStructure",
+          "issuer.jurisdiction",
+          "issuer.regulatoryStatus",
+          "holder.rights",
+          "transfer.restrictions",
+          "backing.custodian",
+          "backing.assets",
+          "redemption.gateable",
+          "redemption.floorBps",
+          "eligibility.investorClass",
+          "eligibility.jurisdictionRestrictions",
+          "corporateActions.noticePeriodSeconds"
+        ],
+        "note": "5 of 17 fields were comparable; the rest were absent from both filings and say nothing about stability"
+      },
+      "contentHashesDiffer": true
+    }
+  ]
+}

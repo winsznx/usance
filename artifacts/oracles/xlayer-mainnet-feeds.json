@@ -1,0 +1,990 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-08-18T11:05:09.007Z",
+    "generatedBy": "scripts/characterize-feeds.mjs",
+    "gitCommit": "67819ac83970a530b3d34cc9367a24fa3ac9e617-dirty",
+    "chainId": 196,
+    "deploymentDigest": null,
+    "inputDigest": "0xe6f2c753e154a245344ebf9fc988b543d4df19bfcd55fd51333d519dc34d2917",
+    "schema": 1
+  },
+  "chain": {
+    "id": 196,
+    "name": "X Layer",
+    "rpc": "https://rpc.xlayer.tech"
+  },
+  "measurement": {
+    "method": "backward round traversal through the aggregator proxy",
+    "roundsRequested": 24,
+    "note": "X Layer testnet publishes no Chainlink feeds, so cadence is measured on mainnet. The testnet deployment uses labelled stand-in aggregators whose cadence is whatever a script sets and says nothing about production behaviour."
+  },
+  "feeds": [
+    {
+      "pair": "ETH / USD",
+      "address": "0x8b85b50535551F8E8cDAF78dA235b5Cf1005907b",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "18446744073709579441",
+          "updatedAt": 1787040230
+        },
+        {
+          "roundId": "18446744073709579440",
+          "updatedAt": 1787035367
+        },
+        {
+          "roundId": "18446744073709579439",
+          "updatedAt": 1787021081
+        },
+        {
+          "roundId": "18446744073709579438",
+          "updatedAt": 1787017357
+        },
+        {
+          "roundId": "18446744073709579437",
+          "updatedAt": 1787009354
+        },
+        {
+          "roundId": "18446744073709579436",
+          "updatedAt": 1786986782
+        },
+        {
+          "roundId": "18446744073709579435",
+          "updatedAt": 1786982069
+        },
+        {
+          "roundId": "18446744073709579434",
+          "updatedAt": 1786963398
+        },
+        {
+          "roundId": "18446744073709579433",
+          "updatedAt": 1786954243
+        },
+        {
+          "roundId": "18446744073709579432",
+          "updatedAt": 1786935182
+        },
+        {
+          "roundId": "18446744073709579431",
+          "updatedAt": 1786928819
+        },
+        {
+          "roundId": "18446744073709579430",
+          "updatedAt": 1786928488
+        },
+        {
+          "roundId": "18446744073709579429",
+          "updatedAt": 1786916421
+        },
+        {
+          "roundId": "18446744073709579428",
+          "updatedAt": 1786894660
+        },
+        {
+          "roundId": "18446744073709579427",
+          "updatedAt": 1786808240
+        },
+        {
+          "roundId": "18446744073709579426",
+          "updatedAt": 1786784677
+        },
+        {
+          "roundId": "18446744073709579425",
+          "updatedAt": 1786763665
+        },
+        {
+          "roundId": "18446744073709579424",
+          "updatedAt": 1786730497
+        },
+        {
+          "roundId": "18446744073709579423",
+          "updatedAt": 1786725364
+        },
+        {
+          "roundId": "18446744073709579422",
+          "updatedAt": 1786721402
+        },
+        {
+          "roundId": "18446744073709579421",
+          "updatedAt": 1786715549
+        },
+        {
+          "roundId": "18446744073709579420",
+          "updatedAt": 1786689493
+        },
+        {
+          "roundId": "18446744073709579419",
+          "updatedAt": 1786647709
+        },
+        {
+          "roundId": "18446744073709579418",
+          "updatedAt": 1786641406
+        }
+      ],
+      "intervalsSeconds": [
+        4863,
+        14286,
+        3724,
+        8003,
+        22572,
+        4713,
+        18671,
+        9155,
+        19061,
+        6363,
+        331,
+        12067,
+        21761,
+        86420,
+        23563,
+        21012,
+        33168,
+        5133,
+        3962,
+        5853,
+        26056,
+        41784,
+        6303
+      ],
+      "errors": [],
+      "latestRoundId": "18446744073709579441",
+      "latestUpdatedAt": 1787040230,
+      "observedMinInterval": 331,
+      "observedMedianInterval": 12067,
+      "observedMaxInterval": 86420,
+      "sampleSize": 23,
+      "windowSeconds": 398824
+    },
+    {
+      "pair": "BTC / USD",
+      "address": "0x4D6f6488a2B3a5f7b088f276887f608a1e9805c4",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "18446744073709566502",
+          "updatedAt": 1787035097
+        },
+        {
+          "roundId": "18446744073709566501",
+          "updatedAt": 1787021197
+        },
+        {
+          "roundId": "18446744073709566500",
+          "updatedAt": 1786990670
+        },
+        {
+          "roundId": "18446744073709566499",
+          "updatedAt": 1786988179
+        },
+        {
+          "roundId": "18446744073709566498",
+          "updatedAt": 1786987398
+        },
+        {
+          "roundId": "18446744073709566497",
+          "updatedAt": 1786981095
+        },
+        {
+          "roundId": "18446744073709566496",
+          "updatedAt": 1786974161
+        },
+        {
+          "roundId": "18446744073709566495",
+          "updatedAt": 1786973110
+        },
+        {
+          "roundId": "18446744073709566494",
+          "updatedAt": 1786967377
+        },
+        {
+          "roundId": "18446744073709566493",
+          "updatedAt": 1786935198
+        },
+        {
+          "roundId": "18446744073709566492",
+          "updatedAt": 1786928667
+        },
+        {
+          "roundId": "18446744073709566491",
+          "updatedAt": 1786919572
+        },
+        {
+          "roundId": "18446744073709566490",
+          "updatedAt": 1786894658
+        },
+        {
+          "roundId": "18446744073709566489",
+          "updatedAt": 1786808179
+        },
+        {
+          "roundId": "18446744073709566488",
+          "updatedAt": 1786721760
+        },
+        {
+          "roundId": "18446744073709566487",
+          "updatedAt": 1786713056
+        },
+        {
+          "roundId": "18446744073709566486",
+          "updatedAt": 1786690723
+        },
+        {
+          "roundId": "18446744073709566485",
+          "updatedAt": 1786680067
+        },
+        {
+          "roundId": "18446744073709566484",
+          "updatedAt": 1786659175
+        },
+        {
+          "roundId": "18446744073709566483",
+          "updatedAt": 1786643176
+        },
+        {
+          "roundId": "18446744073709566482",
+          "updatedAt": 1786639304
+        },
+        {
+          "roundId": "18446744073709566481",
+          "updatedAt": 1786639064
+        },
+        {
+          "roundId": "18446744073709566480",
+          "updatedAt": 1786625796
+        },
+        {
+          "roundId": "18446744073709566479",
+          "updatedAt": 1786620965
+        }
+      ],
+      "intervalsSeconds": [
+        13900,
+        30527,
+        2491,
+        781,
+        6303,
+        6934,
+        1051,
+        5733,
+        32179,
+        6531,
+        9095,
+        24914,
+        86479,
+        86419,
+        8704,
+        22333,
+        10656,
+        20892,
+        15999,
+        3872,
+        240,
+        13268,
+        4831
+      ],
+      "errors": [],
+      "latestRoundId": "18446744073709566502",
+      "latestUpdatedAt": 1787035097,
+      "observedMinInterval": 240,
+      "observedMedianInterval": 9095,
+      "observedMaxInterval": 86479,
+      "sampleSize": 23,
+      "windowSeconds": 414132
+    },
+    {
+      "pair": "USDC / USD",
+      "address": "0xB8a08c178D96C315FbFB5661ABD208477391BC40",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "36893488147419103288",
+          "updatedAt": 1786981736
+        },
+        {
+          "roundId": "36893488147419103287",
+          "updatedAt": 1786895331
+        },
+        {
+          "roundId": "36893488147419103286",
+          "updatedAt": 1786808853
+        },
+        {
+          "roundId": "36893488147419103285",
+          "updatedAt": 1786722435
+        },
+        {
+          "roundId": "36893488147419103284",
+          "updatedAt": 1786636016
+        },
+        {
+          "roundId": "36893488147419103283",
+          "updatedAt": 1786549588
+        },
+        {
+          "roundId": "36893488147419103282",
+          "updatedAt": 1786463158
+        },
+        {
+          "roundId": "36893488147419103281",
+          "updatedAt": 1786376739
+        },
+        {
+          "roundId": "36893488147419103280",
+          "updatedAt": 1786290320
+        },
+        {
+          "roundId": "36893488147419103279",
+          "updatedAt": 1786203901
+        },
+        {
+          "roundId": "36893488147419103278",
+          "updatedAt": 1786117487
+        },
+        {
+          "roundId": "36893488147419103277",
+          "updatedAt": 1786031069
+        },
+        {
+          "roundId": "36893488147419103276",
+          "updatedAt": 1785944647
+        },
+        {
+          "roundId": "36893488147419103275",
+          "updatedAt": 1785858237
+        },
+        {
+          "roundId": "36893488147419103274",
+          "updatedAt": 1785771817
+        },
+        {
+          "roundId": "36893488147419103273",
+          "updatedAt": 1785685393
+        },
+        {
+          "roundId": "36893488147419103272",
+          "updatedAt": 1785598972
+        },
+        {
+          "roundId": "36893488147419103271",
+          "updatedAt": 1785512553
+        },
+        {
+          "roundId": "36893488147419103270",
+          "updatedAt": 1785426144
+        },
+        {
+          "roundId": "36893488147419103269",
+          "updatedAt": 1785339737
+        },
+        {
+          "roundId": "36893488147419103268",
+          "updatedAt": 1785253332
+        },
+        {
+          "roundId": "36893488147419103267",
+          "updatedAt": 1785166928
+        },
+        {
+          "roundId": "36893488147419103266",
+          "updatedAt": 1785080519
+        },
+        {
+          "roundId": "36893488147419103265",
+          "updatedAt": 1784994090
+        }
+      ],
+      "intervalsSeconds": [
+        86405,
+        86478,
+        86418,
+        86419,
+        86428,
+        86430,
+        86419,
+        86419,
+        86419,
+        86414,
+        86418,
+        86422,
+        86410,
+        86420,
+        86424,
+        86421,
+        86419,
+        86409,
+        86407,
+        86405,
+        86404,
+        86409,
+        86429
+      ],
+      "errors": [],
+      "latestRoundId": "36893488147419103288",
+      "latestUpdatedAt": 1786981736,
+      "observedMinInterval": 86404,
+      "observedMedianInterval": 86419,
+      "observedMaxInterval": 86478,
+      "sampleSize": 23,
+      "windowSeconds": 1987646
+    },
+    {
+      "pair": "USDT / USD",
+      "address": "0xb928a0678352005a2e51F614efD0b54C9830dB80",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "36893488147419103288",
+          "updatedAt": 1786981712
+        },
+        {
+          "roundId": "36893488147419103287",
+          "updatedAt": 1786895285
+        },
+        {
+          "roundId": "36893488147419103286",
+          "updatedAt": 1786808867
+        },
+        {
+          "roundId": "36893488147419103285",
+          "updatedAt": 1786722447
+        },
+        {
+          "roundId": "36893488147419103284",
+          "updatedAt": 1786635969
+        },
+        {
+          "roundId": "36893488147419103283",
+          "updatedAt": 1786549551
+        },
+        {
+          "roundId": "36893488147419103282",
+          "updatedAt": 1786463139
+        },
+        {
+          "roundId": "36893488147419103281",
+          "updatedAt": 1786376719
+        },
+        {
+          "roundId": "36893488147419103280",
+          "updatedAt": 1786290314
+        },
+        {
+          "roundId": "36893488147419103279",
+          "updatedAt": 1786203896
+        },
+        {
+          "roundId": "36893488147419103278",
+          "updatedAt": 1786117484
+        },
+        {
+          "roundId": "36893488147419103277",
+          "updatedAt": 1786031066
+        },
+        {
+          "roundId": "36893488147419103276",
+          "updatedAt": 1785944598
+        },
+        {
+          "roundId": "36893488147419103275",
+          "updatedAt": 1785858176
+        },
+        {
+          "roundId": "36893488147419103274",
+          "updatedAt": 1785771756
+        },
+        {
+          "roundId": "36893488147419103273",
+          "updatedAt": 1785685337
+        },
+        {
+          "roundId": "36893488147419103272",
+          "updatedAt": 1785598917
+        },
+        {
+          "roundId": "36893488147419103271",
+          "updatedAt": 1785512494
+        },
+        {
+          "roundId": "36893488147419103270",
+          "updatedAt": 1785426084
+        },
+        {
+          "roundId": "36893488147419103269",
+          "updatedAt": 1785339675
+        },
+        {
+          "roundId": "36893488147419103268",
+          "updatedAt": 1785253256
+        },
+        {
+          "roundId": "36893488147419103267",
+          "updatedAt": 1785166835
+        },
+        {
+          "roundId": "36893488147419103266",
+          "updatedAt": 1785080431
+        },
+        {
+          "roundId": "36893488147419103265",
+          "updatedAt": 1784994026
+        }
+      ],
+      "intervalsSeconds": [
+        86427,
+        86418,
+        86420,
+        86478,
+        86418,
+        86412,
+        86420,
+        86405,
+        86418,
+        86412,
+        86418,
+        86468,
+        86422,
+        86420,
+        86419,
+        86420,
+        86423,
+        86410,
+        86409,
+        86419,
+        86421,
+        86404,
+        86405
+      ],
+      "errors": [],
+      "latestRoundId": "36893488147419103288",
+      "latestUpdatedAt": 1786981712,
+      "observedMinInterval": 86404,
+      "observedMedianInterval": 86419,
+      "observedMaxInterval": 86478,
+      "sampleSize": 23,
+      "windowSeconds": 1987686
+    },
+    {
+      "pair": "OKB / USD",
+      "address": "0x4Ff345b18a2bF894F8627F41501FBf30d5C5e7BE",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "18446744073709577352",
+          "updatedAt": 1787049267
+        },
+        {
+          "roundId": "18446744073709577351",
+          "updatedAt": 1787042513
+        },
+        {
+          "roundId": "18446744073709577350",
+          "updatedAt": 1787036420
+        },
+        {
+          "roundId": "18446744073709577349",
+          "updatedAt": 1787034649
+        },
+        {
+          "roundId": "18446744073709577348",
+          "updatedAt": 1787031467
+        },
+        {
+          "roundId": "18446744073709577347",
+          "updatedAt": 1787025614
+        },
+        {
+          "roundId": "18446744073709577346",
+          "updatedAt": 1787024503
+        },
+        {
+          "roundId": "18446744073709577345",
+          "updatedAt": 1787020301
+        },
+        {
+          "roundId": "18446744073709577344",
+          "updatedAt": 1787018890
+        },
+        {
+          "roundId": "18446744073709577343",
+          "updatedAt": 1787018110
+        },
+        {
+          "roundId": "18446744073709577342",
+          "updatedAt": 1787014688
+        },
+        {
+          "roundId": "18446744073709577341",
+          "updatedAt": 1787013487
+        },
+        {
+          "roundId": "18446744073709577340",
+          "updatedAt": 1787012646
+        },
+        {
+          "roundId": "18446744073709577339",
+          "updatedAt": 1787011895
+        },
+        {
+          "roundId": "18446744073709577338",
+          "updatedAt": 1787011806
+        },
+        {
+          "roundId": "18446744073709577337",
+          "updatedAt": 1787011475
+        },
+        {
+          "roundId": "18446744073709577336",
+          "updatedAt": 1787007063
+        },
+        {
+          "roundId": "18446744073709577335",
+          "updatedAt": 1787005832
+        },
+        {
+          "roundId": "18446744073709577334",
+          "updatedAt": 1787002080
+        },
+        {
+          "roundId": "18446744073709577333",
+          "updatedAt": 1787001632
+        },
+        {
+          "roundId": "18446744073709577332",
+          "updatedAt": 1787001599
+        },
+        {
+          "roundId": "18446744073709577331",
+          "updatedAt": 1787001539
+        },
+        {
+          "roundId": "18446744073709577330",
+          "updatedAt": 1787001509
+        },
+        {
+          "roundId": "18446744073709577329",
+          "updatedAt": 1786997818
+        }
+      ],
+      "intervalsSeconds": [
+        6754,
+        6093,
+        1771,
+        3182,
+        5853,
+        1111,
+        4202,
+        1411,
+        780,
+        3422,
+        1201,
+        841,
+        751,
+        89,
+        331,
+        4412,
+        1231,
+        3752,
+        448,
+        33,
+        60,
+        30,
+        3691
+      ],
+      "errors": [],
+      "latestRoundId": "18446744073709577352",
+      "latestUpdatedAt": 1787049267,
+      "observedMinInterval": 30,
+      "observedMedianInterval": 1231,
+      "observedMaxInterval": 6754,
+      "sampleSize": 23,
+      "windowSeconds": 51449
+    },
+    {
+      "pair": "LINK / USD",
+      "address": "0x98aD882fCc7981B86F10D7252d334EE25BF1507f",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "18446744073709597487",
+          "updatedAt": 1787049093
+        },
+        {
+          "roundId": "18446744073709597486",
+          "updatedAt": 1787042218
+        },
+        {
+          "roundId": "18446744073709597485",
+          "updatedAt": 1787040687
+        },
+        {
+          "roundId": "18446744073709597484",
+          "updatedAt": 1787036365
+        },
+        {
+          "roundId": "18446744073709597483",
+          "updatedAt": 1787034324
+        },
+        {
+          "roundId": "18446744073709597482",
+          "updatedAt": 1787027540
+        },
+        {
+          "roundId": "18446744073709597481",
+          "updatedAt": 1787021086
+        },
+        {
+          "roundId": "18446744073709597480",
+          "updatedAt": 1787018085
+        },
+        {
+          "roundId": "18446744073709597479",
+          "updatedAt": 1787013702
+        },
+        {
+          "roundId": "18446744073709597478",
+          "updatedAt": 1787009920
+        },
+        {
+          "roundId": "18446744073709597477",
+          "updatedAt": 1786992810
+        },
+        {
+          "roundId": "18446744073709597476",
+          "updatedAt": 1786990619
+        },
+        {
+          "roundId": "18446744073709597475",
+          "updatedAt": 1786986987
+        },
+        {
+          "roundId": "18446744073709597474",
+          "updatedAt": 1786983565
+        },
+        {
+          "roundId": "18446744073709597473",
+          "updatedAt": 1786983204
+        },
+        {
+          "roundId": "18446744073709597472",
+          "updatedAt": 1786978221
+        },
+        {
+          "roundId": "18446744073709597471",
+          "updatedAt": 1786975220
+        },
+        {
+          "roundId": "18446744073709597470",
+          "updatedAt": 1786967745
+        },
+        {
+          "roundId": "18446744073709597469",
+          "updatedAt": 1786963183
+        },
+        {
+          "roundId": "18446744073709597468",
+          "updatedAt": 1786955649
+        },
+        {
+          "roundId": "18446744073709597467",
+          "updatedAt": 1786954869
+        },
+        {
+          "roundId": "18446744073709597466",
+          "updatedAt": 1786952617
+        },
+        {
+          "roundId": "18446744073709597465",
+          "updatedAt": 1786947424
+        },
+        {
+          "roundId": "18446744073709597464",
+          "updatedAt": 1786945683
+        }
+      ],
+      "intervalsSeconds": [
+        6875,
+        1531,
+        4322,
+        2041,
+        6784,
+        6454,
+        3001,
+        4383,
+        3782,
+        17110,
+        2191,
+        3632,
+        3422,
+        361,
+        4983,
+        3001,
+        7475,
+        4562,
+        7534,
+        780,
+        2252,
+        5193,
+        1741
+      ],
+      "errors": [],
+      "latestRoundId": "18446744073709597487",
+      "latestUpdatedAt": 1787049093,
+      "observedMinInterval": 361,
+      "observedMedianInterval": 3782,
+      "observedMaxInterval": 17110,
+      "sampleSize": 23,
+      "windowSeconds": 103410
+    },
+    {
+      "pair": "SOL / USD",
+      "address": "0xF959E1B5cA535C28aD24F7f672Bf1A93900810cF",
+      "decimals": 8,
+      "documentedHeartbeat": 86400,
+      "observations": [
+        {
+          "roundId": "36893488147419107387",
+          "updatedAt": 1787029960
+        },
+        {
+          "roundId": "36893488147419107386",
+          "updatedAt": 1787019154
+        },
+        {
+          "roundId": "36893488147419107385",
+          "updatedAt": 1786978343
+        },
+        {
+          "roundId": "36893488147419107384",
+          "updatedAt": 1786962975
+        },
+        {
+          "roundId": "36893488147419107383",
+          "updatedAt": 1786956942
+        },
+        {
+          "roundId": "36893488147419107382",
+          "updatedAt": 1786938931
+        },
+        {
+          "roundId": "36893488147419107381",
+          "updatedAt": 1786929716
+        },
+        {
+          "roundId": "36893488147419107380",
+          "updatedAt": 1786928515
+        },
+        {
+          "roundId": "36893488147419107379",
+          "updatedAt": 1786916748
+        },
+        {
+          "roundId": "36893488147419107378",
+          "updatedAt": 1786916418
+        },
+        {
+          "roundId": "36893488147419107377",
+          "updatedAt": 1786903121
+        },
+        {
+          "roundId": "36893488147419107376",
+          "updatedAt": 1786898048
+        },
+        {
+          "roundId": "36893488147419107375",
+          "updatedAt": 1786846689
+        },
+        {
+          "roundId": "36893488147419107374",
+          "updatedAt": 1786816732
+        },
+        {
+          "roundId": "36893488147419107373",
+          "updatedAt": 1786780051
+        },
+        {
+          "roundId": "36893488147419107372",
+          "updatedAt": 1786761711
+        },
+        {
+          "roundId": "36893488147419107371",
+          "updatedAt": 1786745082
+        },
+        {
+          "roundId": "36893488147419107370",
+          "updatedAt": 1786734036
+        },
+        {
+          "roundId": "36893488147419107369",
+          "updatedAt": 1786729923
+        },
+        {
+          "roundId": "36893488147419107368",
+          "updatedAt": 1786721969
+        },
+        {
+          "roundId": "36893488147419107367",
+          "updatedAt": 1786713444
+        },
+        {
+          "roundId": "36893488147419107366",
+          "updatedAt": 1786688319
+        },
+        {
+          "roundId": "36893488147419107365",
+          "updatedAt": 1786647269
+        },
+        {
+          "roundId": "36893488147419107364",
+          "updatedAt": 1786639884
+        }
+      ],
+      "intervalsSeconds": [
+        10806,
+        40811,
+        15368,
+        6033,
+        18011,
+        9215,
+        1201,
+        11767,
+        330,
+        13297,
+        5073,
+        51359,
+        29957,
+        36681,
+        18340,
+        16629,
+        11046,
+        4113,
+        7954,
+        8525,
+        25125,
+        41050,
+        7385
+      ],
+      "errors": [],
+      "latestRoundId": "36893488147419107387",
+      "latestUpdatedAt": 1787029960,
+      "observedMinInterval": 330,
+      "observedMedianInterval": 11767,
+      "observedMaxInterval": 51359,
+      "sampleSize": 23,
+      "windowSeconds": 390076
+    }
+  ],
+  "recommended": {
+    "expectedUpdateCadenceSeconds": 86400,
+    "softStaleAgeSeconds": 86400,
+    "hardStaleAgeSeconds": 172800,
+    "rationale": "Chainlink's heartbeat is the maximum interval between publications when the price does not move, so it is an upper bound on healthy behaviour rather than a typical one. Soft equals one heartbeat: past this the feed is late. Hard equals two: the feed has missed a full publication cycle and new risk is refused. Only the hard bound is enforced onchain today.",
+    "observedMaxIntervalSeconds": 86479,
+    "observedMaxIsWithinHeartbeat": false
+  }
+}
