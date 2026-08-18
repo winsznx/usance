@@ -9,6 +9,55 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-016 — A generated artifact that records external reality is committed; run output is not
+
+**Decision.** `artifacts/` is ignored by default, with `artifacts/oracles/**` and
+`artifacts/evidence/**` exempted. Test-run output, Slither JSON and Playwright reports stay ignored.
+
+**Why.** A clean-room clone failed. Everything under `artifacts/` was ignored, so the oracle cadence
+measurement and the Franklin semantic history never reached a fresh checkout, and `make test` failed
+there while passing locally — the exact reproducibility failure the clean room exists to catch.
+
+The line is whether a reader could reproduce the artifact alone. 23 rounds of seven Chainlink feeds
+on X Layer mainnet is a measurement of a chain at a moment in time; nobody can re-derive the numbers
+that justified the freshness threshold, and a repository that asks them to trust a threshold whose
+evidence it deleted is asking for trust it has not earned. A Playwright report is reproducible by
+running Playwright.
+
+**Evidence.** A fresh `git clone` now passes `make test`, `make test-differential`, `make lint`,
+`make build`, `make check-proof-currency`, `make test-live-xlayer` and all 84 Playwright tests.
+
+---
+
+## D-017 — Liquidation reports whether one round can cure a breach
+
+**Decision.** `LiquidationManager.planFor` solves for the repayment that actually restores an
+account, bounds a round by a close factor, and returns `curesTheBreach` alongside
+`curingRepayUsd18`. `false` is a normal outcome, not an error.
+
+**Why.** Seizing collateral removes borrowing capacity as well as debt. Retiring `R` costs `R(1+b)`
+of recognised value and removes `R(1+b)m` of maintenance limit, so the repair per dollar is
+`1 - (1+b)m`. At `m = 0.90` and `b = 0.05` that is 0.055.
+
+The first live liquidation on X Layer testnet is what exposed it. The seizure matched the plan
+exactly, the debt fell, and the account stayed in `MARGIN_CALL`:
+
+| | debt | maintenance | breach |
+|---|---|---|---|
+| before | $791.46 | $705.69 | $85.76 |
+| after | $687.64 | $613.19 | $74.45 |
+
+Twenty unit tests missed it because the one that should have caught it compared the
+post-liquidation debt against the *pre*-liquidation maintenance limit — the single number guaranteed
+not to apply afterwards.
+
+**Displaces.** "Restore to maintenance plus a buffer", which assumed the limit held still.
+
+**Evidence.** `0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1`,
+`contracts/test/Liquidation.t.sol` (22 tests).
+
+---
+
 ## D-015 — A validation artifact is valid only if it proves its own freshness
 
 **Decision.** Every generated verification artifact carries a `$provenance` block —

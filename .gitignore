@@ -26,8 +26,19 @@ broadcast/
 *.pem
 *.key
 
-# Local artifacts
+# Generated artifacts.
+#
+# Ignored by default, with the evidence-bearing ones exempted below. The distinction is whether the
+# artifact records something a reader cannot reproduce alone: a measurement of an external chain is
+# evidence and belongs in the repository, a test run's output is not.
+#
+# A clean-room clone found this: everything under artifacts/ was ignored, so two artifacts the test
+# suite asserts on never reached a fresh checkout and `make test` failed there while passing here.
 artifacts/
+!artifacts/oracles/
+!artifacts/oracles/**
+!artifacts/evidence/
+!artifacts/evidence/**
 # Content-addressed evidence store. Original bytes live under services/evidence/fixtures/ where
 # they are manifested and hash-verified; this is a working cache, not the record.
 services/evidence/.store/
