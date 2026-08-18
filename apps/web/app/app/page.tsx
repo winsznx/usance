@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { isXLayer } from "@usance/xlayer";
 import { Footer, Logo, Notice, Steps } from "@/components/primitives";
+import { AccountStatusPanel, type AccountView } from "@/components/account-state";
+import { quoteFor } from "@/lib/quote";
 import { activeChain, loadDeployment, type Deployment } from "@/lib/deployments";
 import { WalletError, connect, detectProvider, ensureChain, signSession } from "@/lib/wallet";
 
@@ -256,7 +258,7 @@ export default function AppHome() {
                 canonical scenarios in the walkthrough.
               </Notice>
             ) : (
-              <PortfolioSummary deployment={deployment} />
+              <PortfolioSummary deployment={deployment} address={address} />
             )}
           </div>
         ) : null}
@@ -267,18 +269,75 @@ export default function AppHome() {
   );
 }
 
-function PortfolioSummary({ deployment }: { deployment: Deployment }) {
+/**
+ * The portfolio, read from the deployed contracts.
+ *
+ * Nothing is rendered until the chain answers. An empty portfolio and an unread one look identical
+ * to a user, and only one of them is safe to show — so the loading and error states are distinct
+ * and neither of them is a zero balance.
+ */
+function PortfolioSummary({ deployment, address }: { deployment: Deployment; address: `0x${string}` | null }) {
+  const [account, setAccount] = useState<AccountView | null | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!address) return;
+    let live = true;
+    quoteFor(address, "BORROW", 0n)
+      .then((q) => {
+        if (!live) return;
+        setAccount({
+          status: q.statusBefore,
+          recognisedUsd: q.recognisedBefore,
+          debtUsd: q.debtBefore,
+          borrowLimitUsd: q.availableBorrowBefore + q.debtBefore,
+          maintenanceLimitUsd: q.maintenanceLimit,
+          liquidationLimitUsd: q.liquidationLimit,
+          epoch: q.riskEpoch,
+        });
+      })
+      .catch((e: unknown) => {
+        if (live) setError((e as Error).message);
+      });
+    return () => {
+      live = false;
+    };
+  }, [address]);
+
+  if (error) {
+    return (
+      <Notice tone="stop" title="Could not read your account">
+        {error} Nothing is shown rather than a zero balance, because an unread account and an empty
+        one look the same and only one of them is safe to act on.
+      </Notice>
+    );
+  }
+
+  if (account === undefined) {
+    return (
+      <div className="card">
+        <div className="skeleton" style={{ height: 18, width: "40%", marginBottom: 12 }} />
+        <div className="skeleton" style={{ height: 44, width: "60%" }} />
+      </div>
+    );
+  }
+
   return (
-    <div className="card">
-      <div className="micro">Deployed contracts</div>
-      <p className="caption" style={{ marginTop: 10 }}>
-        Reading live state from ClearingHouse at{" "}
-        <span className="mono">{deployment.contracts.clearingHouse}</span>.
-      </p>
-      <p className="caption">
-        {deployment.assets.length} admitted asset{deployment.assets.length === 1 ? "" : "s"}, settling
-        in {deployment.settlementAsset.symbol}.
-      </p>
+    <div className="stack" style={{ gap: 20 }}>
+      {account ? <AccountStatusPanel account={account} /> : null}
+
+      <div className="card">
+        <div className="micro">Deployment</div>
+        <p className="caption" style={{ marginTop: 10 }}>
+          Reading live state from ClearingHouse at{" "}
+          <span className="mono">{deployment.contracts.clearingHouse}</span>, under risk epoch{" "}
+          {account ? String(account.epoch) : "—"}.
+        </p>
+        <p className="caption">
+          {deployment.assets.length} admitted asset{deployment.assets.length === 1 ? "" : "s"}, settling
+          in {deployment.settlementAsset.symbol}.
+        </p>
+      </div>
     </div>
   );
 }

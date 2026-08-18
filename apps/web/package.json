@@ -9,7 +9,7 @@
     "start": "next start",
     "passports": "vite-node scripts/build-passports.ts",
     "typecheck": "tsc --noEmit",
-    "test": "echo 'no unit tests in web; see e2e'"
+    "test": "vitest run"
   },
   "dependencies": {
     "next": "15.1.3",
