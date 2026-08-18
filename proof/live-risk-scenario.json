@@ -3,7 +3,7 @@
   "chainId": 1952,
   "network": "X Layer Testnet",
   "account": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
-  "riskEpochAfter": 7,
+  "riskEpochAfter": 4,
   "assetsUsed": {
     "collateral": "tUSTB (TESTNET TEST ASSET — NOT AN ISSUER TOKEN)",
     "settlement": "tUSD (TESTNET TEST ASSET)"
@@ -11,14 +11,14 @@
   "identityWarning": "These are labelled testnet stand-ins. They are NOT Franklin FOBXX or any real issuer token. This proves financial mechanics; the Franklin Passport proves evidence mechanics.",
   "before": {
     "recognised": "980130906562500000000",
-    "available": "416555635289062499999",
-    "debt": "416555635289062500001",
+    "available": "416555626575156088304",
+    "debt": "416555644002968911696",
     "status": "NORMAL"
   },
   "after": {
     "recognised": "490065453281250000000",
     "available": "0",
-    "debt": "416555748569845852260",
+    "debt": "416555757283752264157",
     "status": "NO_NEW_RISK"
   },
   "newRiskBlocked": {
@@ -26,136 +26,129 @@
     "revertReason": "AccountNotHealthy(1)",
     "result": "reverted onchain",
     "submitted": true,
-    "hash": "0xd5e6877fb5466eeab3313f31f8c7b059d7a1027148c1d8c09e87f2a440753b40",
-    "blockNumber": 38582020,
-    "gasUsed": "243878"
+    "hash": "0x6db816f8df700761aa0409bed69d703a00b46af1722d50e0de713f5160afa5ee",
+    "blockNumber": 38586756,
+    "gasUsed": "243900"
   },
   "repaid": {
-    "debtBefore": "416555826995003557958",
+    "debtBefore": "416555844422816381114",
     "debtAfter": "0"
   },
   "transactions": [
     {
-      "label": "borrow $416.56",
-      "hash": "0xf33850bacabf5b35b955873c9fb24d31ccbafef24bf8d4aa8eb9e01431d7d6f8",
-      "blockNumber": 38582000,
-      "status": "success"
-    },
-    {
-      "label": "setAnswer 0.5 (was 1)",
-      "hash": "0xfe2999c7e92c5c98e5e561aa9a258ffb3a39aa2df34d87b52bdcf1b419525aaf",
-      "blockNumber": 38582007,
-      "status": "success"
-    },
-    {
-      "label": "bumpEpoch(COLLATERAL_REPRICED)",
-      "hash": "0x392251befc84c7b1b8972102dd5795a35138f9700b82388b0bdd7a4860925675",
-      "blockNumber": 38582010,
-      "status": "success"
-    },
-    {
-      "label": "approve ClearingHouse (repay)",
-      "hash": "0xfe085800ed75036c1d104f0a7aefde8eb1404df6ce58795f67e0709e7cbb20d9",
-      "blockNumber": 38582030,
-      "status": "success"
-    },
-    {
-      "label": "repay all",
-      "hash": "0x6ca18f245fc8e2f2eb11c186a6040ff092c1a299d5c772a6dac5569ad1058e94",
-      "blockNumber": 38582037,
-      "status": "success"
-    },
-    {
-      "label": "restore feed",
-      "hash": "0x2dc6484ee9a12dd051d01b9d25fd675199692590cf62251f775b983ce6fb3556",
-      "blockNumber": 38582045,
-      "status": "success"
-    }
-  ],
-  "priorTransactions": [
-    {
       "label": "createPolicy(tUSTB)",
-      "hash": "0x41e06ad98e6c04e11af4ca513b1acdd509780b1333d61e3ade46e48769a80d0a",
-      "fromEarlierRun": true,
-      "blockNumber": 38577213,
+      "hash": "0x545992f1f894a93e14693b9506a1f4029da472fac7b8aaa0f895a917957cea66",
+      "blockNumber": 38586660,
       "status": "success"
     },
     {
       "label": "bindRiskPolicy(tUSTB)",
-      "hash": "0x975a282dd3c8fae386539fdfd8f670daec1a367e0ca8d67c27a5d01e38da73a9",
-      "fromEarlierRun": true,
-      "blockNumber": 38577221,
+      "hash": "0x0655e0e3230e5933fd952c3f75b6be28a77b8db6d845b55009edeb36d203aa40",
+      "blockNumber": 38586666,
+      "status": "success"
+    },
+    {
+      "label": "EvidenceRegistry.commit(tUSTB fixture)",
+      "hash": "0x93e6fd95a9fdad63f667d48638cf40aa616b69f162b1590bbcdb820c1fc33f1f",
+      "blockNumber": 38586675,
       "status": "success"
     },
     {
       "label": "commitPassport(tUSTB v1)",
-      "hash": "0xbb9a2f6456bd9aa915fc9e2c7daae64a2344c427ffa71a6fb530d01bd10a493d",
-      "fromEarlierRun": true,
-      "blockNumber": 38577227,
+      "hash": "0xabc235b0ffcc96e40f34017f48355844910fed808ca2f49fb3c3a89e804752bb",
+      "blockNumber": 38586679,
       "status": "success"
     },
     {
       "label": "setCapabilities(HOLD|COLLATERAL)",
-      "hash": "0x526d93b1d81f682391c5b8a9b74d9e4ff8aa2d33807fc1b1c77d1877705a6863",
-      "fromEarlierRun": true,
-      "blockNumber": 38577233,
+      "hash": "0xd31085b6f67c5c446d7a5656b3831fd8d44ba030c620603e857634b6e1fbdf85",
+      "blockNumber": 38586685,
       "status": "success"
     },
     {
       "label": "setStatus(ACTIVE)",
-      "hash": "0x22c025ab543d18f50964f6f6df2991be9212f290ba3576b6b4be656bba1b1c11",
-      "fromEarlierRun": true,
-      "blockNumber": 38577239,
+      "hash": "0xfe16671ddba16e384882aba77fe5401a4ab78d70f8b4b21f414ece7a5e96301a",
+      "blockNumber": 38586689,
       "status": "success"
     },
     {
       "label": "mint tUSD",
-      "hash": "0x514fb0cea97a544ff9366c46a44e388eb2522fa748ee6b1f48977ace760e0582",
-      "fromEarlierRun": true,
-      "blockNumber": 38577245,
+      "hash": "0x6679843214b2a6ea809d0eb032f76cf3b29f60c157d6f649efb2723bc4d20c8c",
+      "blockNumber": 38586695,
       "status": "success"
     },
     {
       "label": "approve LiquidityVault",
-      "hash": "0xd40f9d0fc7bd65fde250e045a64534279d5152359832fc5fdfeba3a7cef0380e",
-      "fromEarlierRun": true,
-      "blockNumber": 38577250,
+      "hash": "0x7142148a12e762ac51471d9dbbca9cb82b585cd31b46e2da7a20bc05fbb49b81",
+      "blockNumber": 38586701,
       "status": "success"
     },
     {
       "label": "supply liquidity",
-      "hash": "0x6621d65d7d62dba3331b44173d78a6092bbbcfed26ff47edacbab7b3ad1a106f",
-      "fromEarlierRun": true,
-      "blockNumber": 38577255,
+      "hash": "0x9784986f14f259b5131a2867ce3a12aa4e990bd6430065eb3d2f943718c62fcc",
+      "blockNumber": 38586707,
       "status": "success"
     },
     {
       "label": "mint tUSTB",
-      "hash": "0x0f510a87ce0c4d12a6e04615e8806dfb37f48c432c8151dfa6c125c205d3d44b",
-      "fromEarlierRun": true,
-      "blockNumber": 38577263,
+      "hash": "0xddfd586f8589b08d0591b5dc5db6c9905885ebcb78c1c02c5c867c053572fcff",
+      "blockNumber": 38586713,
       "status": "success"
     },
     {
       "label": "approve CollateralVault",
-      "hash": "0x05efaed6051ba3ed1af8f2e4d31fe99697ecb748d9c766ae11d7fdb3a2e5ca02",
-      "fromEarlierRun": true,
-      "blockNumber": 38577268,
+      "hash": "0x358de35797da6219626469b684789e17d0c7971a7cca74df5a4f6eba21fdc79f",
+      "blockNumber": 38586719,
       "status": "success"
     },
     {
       "label": "addCollateral 1000 tUSTB",
-      "hash": "0x9dff5a4ec02486a570bc8daeda55fd684fa915cb74e10515d238998b4e27712c",
-      "fromEarlierRun": true,
-      "blockNumber": 38577273,
+      "hash": "0x4e99d75711bbb1e7a025e429dc7f51604a75de5ec4a25a80b5635e0b320b5f02",
+      "blockNumber": 38586727,
+      "status": "success"
+    },
+    {
+      "label": "borrow $416.56",
+      "hash": "0xaa00d60b9d4372a2e6c25a8376ebe39c5a037be6071ca0ef4764a3021106f80a",
+      "blockNumber": 38586735,
+      "status": "success"
+    },
+    {
+      "label": "setAnswer 0.5 (was 1)",
+      "hash": "0xb67c028fa58f0b33a788d1ac34ede6496e6de4eb4c6788976fecff529d5d2bf8",
+      "blockNumber": 38586744,
+      "status": "success"
+    },
+    {
+      "label": "bumpEpoch(COLLATERAL_REPRICED)",
+      "hash": "0xeab8f97134306888e60e8e4243bb0e6ccabff90ad69218e15e92080c08a8453e",
+      "blockNumber": 38586749,
       "status": "success"
     },
     {
       "label": "mint tUSD (interest shortfall)",
-      "hash": "0x8a2e0c603b2eeedd25ed226bffd0389bc45968c01611f6148afaaefe0033f4da",
-      "blockNumber": 38577411,
-      "status": "success",
-      "fromEarlierRun": true
+      "hash": "0xcc7c537f5f060feb745208c7aed52d55f263266782169d6bfae957dcde6d58da",
+      "blockNumber": 38586767,
+      "status": "success"
+    },
+    {
+      "label": "approve ClearingHouse (repay)",
+      "hash": "0xbc18825e620a050ce941b3d589bd9cc816741be9ec5f9a71c621e2ce8df10f07",
+      "blockNumber": 38586772,
+      "status": "success"
+    },
+    {
+      "label": "repay all",
+      "hash": "0x792edb7d6aa4696ca6215f75a28de95f8530dcfe65d4bded8f22728a61545520",
+      "blockNumber": 38586777,
+      "status": "success"
+    },
+    {
+      "label": "restore feed",
+      "hash": "0x8969570dac60735913489bb849d4a8bcb92f4cb32c4e1bde9b8ff32725083f49",
+      "blockNumber": 38586786,
+      "status": "success"
     }
-  ]
+  ],
+  "priorTransactions": []
 }

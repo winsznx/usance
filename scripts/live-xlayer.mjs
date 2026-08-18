@@ -91,7 +91,9 @@ if (addresses.length === 0) {
   process.exit(1);
 }
 
-const client = createPublicClient({ transport: http(chain.rpc) });
+// The public X Layer RPC drops DNS and connections often enough that a bare transport turns this
+// check into a coin flip, and a verifier that fails intermittently gets ignored.
+const client = createPublicClient({ transport: http(chain.rpc, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
 
 console.log("");
 console.log(`Checking ${addresses.length} contracts on ${chain.name} (${chainId})`);
@@ -115,6 +117,48 @@ for (const { name, addr } of addresses) {
     console.log(`  ✓ ${name.padEnd(20)} ${addr}  ${(code.length - 2) / 2} bytes`);
   }
 }
+
+// Does the deployed code match what this checkout builds?
+//
+// Contract-has-code is not the check people think it is. After a redeploy the manifest kept
+// pointing at the previous contracts, every one of which still had code and still answered every
+// wiring call, so this script reported "deployment is live and wired" about a protocol that was no
+// longer the one in the source tree. Comparing runtime bytecode is what tells those apart.
+//
+// A mismatch is reported, not fatal. Immutable constructor arguments are embedded in runtime code,
+// so an honest deployment of identical source can differ in a few words; metadata hashes differ
+// across compiler patch versions too. Length is compared exactly and content approximately, which
+// catches "this is a different contract" without crying wolf over "this is the same contract with
+// different constructor arguments".
+const artifactFor = {
+  authority: "Authority", assetRegistry: "AssetRegistry", evidenceRegistry: "EvidenceRegistry",
+  passportRegistry: "PassportRegistry", riskPolicyRegistry: "RiskPolicyRegistry",
+  collateralVault: "CollateralVault", liquidityVault: "LiquidityVault",
+  financingEngine: "FinancingEngine", clearingHouse: "ClearingHouse", oracleAdapter: "ChainlinkFeedAdapter",
+};
+
+let drifted = 0;
+for (const { name, addr } of addresses) {
+  const artifact = artifactFor[name];
+  if (!artifact) continue;
+  const path = resolve(repoRoot, `contracts/out/${artifact}.sol/${artifact}.json`);
+  if (!existsSync(path)) continue;
+
+  const local = JSON.parse(readFileSync(path, "utf8"))?.deployedBytecode?.object;
+  if (!local || local === "0x") continue;
+
+  const onChain = await client.getBytecode({ address: addr });
+  if (!onChain) continue;
+
+  if (onChain.length !== local.length) {
+    console.log("");
+    console.log(`  ✗ ${name} on chain is ${(onChain.length - 2) / 2} bytes, this checkout builds ${(local.length - 2) / 2}`);
+    console.log(`     The manifest points at a contract that is not what this source compiles to.`);
+    console.log(`     Redeploy, or regenerate the manifest with: node scripts/write-manifest.mjs`);
+    drifted++;
+  }
+}
+if (drifted > 0) failures += drifted;
 
 // Wiring checks: a deployed-but-unwired protocol reads fine at the bytecode level and is
 // completely non-functional, which is exactly the failure this script exists to catch.

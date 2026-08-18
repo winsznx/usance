@@ -18,7 +18,8 @@
  * recorded what it says". It does NOT say "this testnet token is FOBXX". Merging those two would
  * be the single most dishonest thing this repository could do.
  */
-import { readFileSync, existsSync } from "node:fs";
+import { xlayerTransport } from "./_rpc.mjs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -57,7 +58,7 @@ function evidenceAssetId(key) {
 const instrumentKey = fixtureId.replace(/-\d{4}(-\d{2})?$/, "").replace(/-overview$/, "");
 const assetId = evidenceAssetId(instrumentKey);
 
-const pub = createPublicClient({ transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
+const pub = createPublicClient({ transport: xlayerTransport() });
 
 const CONTRACTS = deployment.contracts;
 const ADDR = {
@@ -148,7 +149,7 @@ if (dryRun) {
 const pk = process.env.DEPLOYER_PRIVATE_KEY;
 if (!pk) { console.error("DEPLOYER_PRIVATE_KEY not set"); process.exit(1); }
 const account = privateKeyToAccount(pk);
-const wallet = createWalletClient({ account, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
+const wallet = createWalletClient({ account, transport: xlayerTransport() });
 const chain = { id: deployment.chainId, name: deployment.network, nativeCurrency: { name: "OKB", symbol: "OKB", decimals: 18 }, rpcUrls: { default: { http: [RPC] } } };
 
 // The deploy script revokes ADMISSION from the deployer at the end of the run, so it has to be
@@ -215,5 +216,48 @@ console.log(`  RiskEpoch now  ${epoch}`);
 
 console.log("");
 console.log(bad === 0 ? "Passport committed and verified onchain." : `${bad} mismatch(es) — NOT verified.`);
-console.log(JSON.stringify({ assetId, passportId, version: Number(hVersion), evidenceRoot: hEvidenceRoot, claimsRoot: hClaimsRoot, createdAt: Number(createdAt), singleSource, redemptionSupported, redemptionFloorBps: Number(redemptionFloorBps), riskEpoch: Number(epoch), transactions: sent }, null, 2));
+
+// Write the proof record, rather than printing it and trusting somebody to redirect the output.
+//
+// This script printed its record to stdout and nothing else. The file under proof/ was therefore
+// maintained by hand, and after the contracts were redeployed it still described the previous
+// deployment — citing a Passport on a registry that had been superseded, while every check passed
+// because every check read the same stale file. Same root cause as the deployment manifest, which
+// had exactly the same "a script will generate this" comment above an artifact nobody generated.
+//
+// The record is written only when the read-back verified. A proof artifact for an unverified
+// commit is worse than no artifact.
+const record = {
+  kind: "PASSPORT_COMMITTED",
+  chainId: deployment.chainId,
+  network: deployment.network,
+  fixture: fixtureId,
+  assetId,
+  passportId,
+  version: Number(hVersion),
+  evidenceRoot: hEvidenceRoot,
+  claimsRoot: hClaimsRoot,
+  createdAt: Number(createdAt),
+  singleSource,
+  redemptionSupported,
+  redemptionFloorBps: Number(redemptionFloorBps),
+  riskEpoch: Number(epoch),
+  corroboration: outcome.candidate.corroborationOutcome,
+  registries: {
+    evidenceRegistry: ADDR.EvidenceRegistry,
+    passportRegistry: ADDR.PassportRegistry,
+    riskPolicyRegistry: ADDR.RiskPolicyRegistry,
+  },
+  transactions: sent,
+};
+
+if (bad === 0) {
+  const out = `proof/passport-${fixtureId.replace(/[^a-z0-9-]/gi, "-")}-v${Number(hVersion)}.json`;
+  writeFileSync(out, JSON.stringify(record, null, 2) + "\n");
+  console.log(`Wrote ${out}`);
+} else {
+  console.log("Not writing a proof record: the onchain read-back did not verify.");
+}
+
+console.log(JSON.stringify(record, null, 2));
 process.exit(bad === 0 ? 0 : 1);

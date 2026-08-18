@@ -14,6 +14,7 @@
  * issuer's token. This proves the FINANCIAL mechanics; the Franklin Passport proves the EVIDENCE
  * mechanics. Both run on the same protocol and they are never the same asset identity.
  */
+import { xlayerTransport } from "./_rpc.mjs";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createPublicClient, createWalletClient, http, parseAbi, decodeErrorResult, formatUnits, keccak256, toBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -26,8 +27,8 @@ const chain = { id: 1952, name: "X Layer Testnet", nativeCurrency: { name: "OKB"
 const pk = process.env.DEPLOYER_PRIVATE_KEY;
 if (!pk) { console.error("DEPLOYER_PRIVATE_KEY not set"); process.exit(1); }
 const account = privateKeyToAccount(pk);
-const pub = createPublicClient({ chain, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
-const wallet = createWalletClient({ account, chain, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
+const pub = createPublicClient({ chain, transport: xlayerTransport() });
+const wallet = createWalletClient({ account, chain, transport: xlayerTransport() });
 
 const ERC20 = parseAbi(["function mint(address,uint256)","function approve(address,uint256) returns (bool)","function balanceOf(address) view returns (uint256)"]);
 const AGG = parseAbi(["function setAnswer(int256)","function answer() view returns (int256)"]);

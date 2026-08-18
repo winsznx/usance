@@ -1,57 +1,50 @@
 {
   "chainId": 1952,
   "network": "X Layer Testnet",
-  "deployedAt": "2026-08-18T00:29:25Z",
-  "deployer": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
-  "firstBlock": 38553910,
+  "deployedAt": "2026-08-18T08:51:44Z",
+  "deployer": "0xba8132637cbfce8d76991e1d681aa2e29f204b05",
+  "firstBlock": 38584043,
   "explorer": "https://www.oklink.com/x-layer-testnet",
-  "commit": "75042b9",
+  "commit": "c80523d",
   "contracts": {
-    "authority": "0x7cc008587d34081e45b4ac25d6737ea9d4eea39e",
-    "assetRegistry": "0x7e4e9806045288e306a6e855cdc4c7f69cbc147c",
-    "evidenceRegistry": "0xd358d5a9e922a055d91ef4e0de57f8c5385c7199",
-    "passportRegistry": "0x39a9186eb635ecd66b2c228e97b68f4d323df5da",
-    "riskPolicyRegistry": "0xf9a1c9d94b9c12bddfdcac686cd0d0212d5fb9e8",
-    "collateralVault": "0x5f7bc75858a85e9bc830e2bb128234e485e8d997",
-    "liquidityVault": "0x0b428b18b822179a684135f555d37e3cd9e7f048",
-    "financingEngine": "0xadf763ca7101f4612dbd253bf43949c831149e6f",
-    "clearingHouse": "0xa2c4fbcbb37855c8d32f9641ed986eb50cd052ec",
-    "oracleAdapter": "0x5570f9aea65fde40c70d78da2b9d3404729f4324"
+    "authority": "0xccb67640f19c51ea1bb11592e1d453a7619981a9",
+    "assetRegistry": "0x04c88b13d613c90823f8819421599b2f5e0d4b63",
+    "evidenceRegistry": "0xfc07686b469667736142b5866dcb7dc51438e8cf",
+    "passportRegistry": "0x9515918cc03e7cae64fa18d82b0785352fdbc68a",
+    "riskPolicyRegistry": "0xacb8991282946b3199ee1dbc5b3aa0a4af66e010",
+    "oracleAdapter": "0xe9a846636157c6b06fecdac0036334e37dcca57a",
+    "collateralVault": "0x7dda63a51e2f70dfdc892de400781bcf15761a03",
+    "liquidityVault": "0xf9c9b43306e3196d5b8e6bd788cb78b811e975d7",
+    "financingEngine": "0x58cec150b122493c0371ed83761c93dbcad1b581",
+    "clearingHouse": "0x7178ffe6acb6b7765d44ce7ad4640e3e13a646f1"
   },
   "deploymentTx": {
-    "authority": "0x74a9addd6ef2d1113b9ac45e9015c5cad1610d4eb79993922a2282f1be56e734",
-    "assetRegistry": "0x189675acd05e7ee2a68ac35843507006889743e599a64343000c825037334d63",
-    "evidenceRegistry": "0xb1b47e1896e6d7723beb75e540e5ce36fdbc166b29268c53c74eea6228c4a556",
-    "passportRegistry": "0x6ccd3a97c4facba1ec1afe523d54870c2c20a653f3095f095a0419eefc0e7836",
-    "riskPolicyRegistry": "0xd47455e33365c5571bd6d1c80adc1b3b1d5c5d11ae0d7341e808ca802a5dde72",
-    "collateralVault": "0x664d158f214fc1ca5b3749460a2b0e1aa8f956bf94ad2ff058f23b71f9e20e70",
-    "liquidityVault": "0x94a2c7f6a64cea0574f1b3172d0b6f54caadee60ff9e9cdc20a84e635a6d1d4f",
-    "financingEngine": "0x3cd4a8a365df2fd1dd500af1610ecbd3189782db9f865a3bc57b85bc909554bf",
-    "clearingHouse": "0xe3c7d09a11a29d4bd61275e0047920219b2b5052ad70704d7d869deb9e3c6b23",
-    "oracleAdapter": "0x18d94841d5c036432f43f408c5a53fbe612396a561f7e08701d18b46d3953f35"
+    "authority": "0xa5366bf0a76c9d65dad7d3d3136e093162d74cc3d81a35700ecf37cb896ba984",
+    "assetRegistry": "0x909bfd0a4f1d7bfcfc0279d80b17540abd8c0a2095a3121575532a5629873713",
+    "evidenceRegistry": "0x661d652952eb541d96cfa435e04584a3ff5d09cb409cffe9a7af4ffa468e1760",
+    "passportRegistry": "0xc28a35e66f2fffc9ebbba542a9b1a634e2c97074b5619ebff7cce2e6ce1f622c",
+    "riskPolicyRegistry": "0x4598b81db68865633369e7ed001c012079c96fee5aa50d66112121adb9bcd9b8",
+    "oracleAdapter": "0xf9187eba1fd363269a076b5d59c3f0c76f10e76bad3a53e3c04849db63e9524f",
+    "collateralVault": "0x7149db9c303b4b1c3b79405ec413f42abd8487fe5c83ede166c05d52414f996f",
+    "liquidityVault": "0x1c98467da34ea19d593a3aa81da4aa78cc7e7fb4b81fc4716cce6d72fc773c17",
+    "financingEngine": "0x7c4b562b5bee7e6a2f0b26434800f3319b6efcc23b241af7ce13c93dce0467d0",
+    "clearingHouse": "0x9e56d8cfec0697ceff5f0826358aefa37f0c68b058466468c188506bfc365f67"
   },
   "testnetFixtures": {
-    "note": "X Layer testnet publishes no Chainlink feeds and hosts no settlement stablecoin. These stand-ins exist so the real protocol can be exercised against real chain state. Each names itself a test asset in its own metadata, and Deploy.s.sol refuses to deploy them on mainnet.",
-    "settlementToken": "0x4c1d345400bfe1088050eed665f22f730d307b34",
-    "settlementFeed": "0x3e47084834dd830148941216f9a8d1dffc52778a",
-    "collateralToken": "0x9761cea4bb4ab425a32bd5f36cb14f12ba344279",
-    "collateralFeed": "0x170cf08dc6929f82299c5f3a1603e5d6936934ef",
-    "sequencerFeed": "0xa343e117d7952a327454b4b5cd1081e4e7125bb1",
-    "collateralAssetId": "0x5ac1b6412c624d04363b3e16f9f5640bf7a810b3d9b91fe4c740887f89aa8272"
+    "note": "TEST ASSETS — NO REAL VALUE. Not FOBXX, OUSG, ARCOIN or any issuer token.",
+    "settlementToken": "0xd4cdaa20b30be672d68679789afc428f568d5605",
+    "settlementFeed": "0x6a442b1e86835dffde6ed8695b8579c498427e23",
+    "collateralToken": "0x5afb92b98435d5e6c5287d0e18e1a8300f5e3ee1",
+    "collateralFeed": "0x5cc750a14e6f12afd4cb7286dea85c08bac1ffa5",
+    "sequencerFeed": "0x91caa8797259128797c0f5e3b160d6da29de353e",
+    "collateralAssetId": "0xa626617d2c3a856c63c9861f740cb6bf21e19902577475d16cc27f418e57e01f"
   },
   "settlementAsset": {
+    "assetId": "0x19b6638a953289fbe46f75b0e26d905824c3fc26b873eeadc096f7dd5e27004f",
     "symbol": "tUSD",
-    "decimals": 6,
-    "token": "0x4c1d345400bfe1088050eed665f22f730d307b34"
+    "token": "0xd4cdaa20b30be672d68679789afc428f568d5605",
+    "decimals": 6
   },
   "verified": false,
-  "verificationNote": "Explorer source verification not yet attempted.",
-  "firstPassport": {
-    "assetId": "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
-    "version": 1,
-    "commitTx": "0x5015d664a08cdbe8ffd5ced816e46b97cdebcf9e906e9dcafee370919763fcde",
-    "block": 38571222,
-    "riskEpochAfter": 2,
-    "proof": "proof/passport-franklin-fobxx-v1.json"
-  }
+  "verificationNote": "Bytecode is live on chain. Explorer source verification has not been performed."
 }

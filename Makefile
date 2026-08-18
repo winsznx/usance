@@ -138,6 +138,11 @@ deploy-testnet: ## Deploy the core to X Layer testnet (requires DEPLOYER_PRIVATE
 	cd $(CONTRACTS) && forge script script/Deploy.s.sol:Deploy \
 	  --rpc-url $${XLAYER_TESTNET_RPC_URL:-https://testrpc.xlayer.tech} \
 	  --broadcast --slow -vvv
+#  Regenerating the manifest is part of deploying, not a step someone remembers. It was a separate
+#  manual step exactly once, and the manifest then described the previous deployment while every
+#  check reported green.
+	@node scripts/write-manifest.mjs 1952
+	@node scripts/live-xlayer.mjs
 
 test-risk: test-rust ## Alias for the Rust reference-engine suite (named in the build spec)
 

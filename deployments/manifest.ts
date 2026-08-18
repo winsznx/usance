@@ -34,38 +34,39 @@ export interface DeploymentManifest {
 }
 
 /** Keyed by chain id. Empty until a deployment is broadcast and verified. */
+
 export const deployments: Record<number, DeploymentManifest> = {
   1952: {
-  "chainId": 1952,
-  "deployedAt": "2026-08-18T00:29:25Z",
-  "commit": "75042b9",
-  "contracts": {
-    "authority": "0x7cc008587d34081e45b4ac25d6737ea9d4eea39e",
-    "assetRegistry": "0x7e4e9806045288e306a6e855cdc4c7f69cbc147c",
-    "evidenceRegistry": "0xd358d5a9e922a055d91ef4e0de57f8c5385c7199",
-    "passportRegistry": "0x39a9186eb635ecd66b2c228e97b68f4d323df5da",
-    "riskPolicyRegistry": "0xf9a1c9d94b9c12bddfdcac686cd0d0212d5fb9e8",
-    "collateralVault": "0x5f7bc75858a85e9bc830e2bb128234e485e8d997",
-    "liquidityVault": "0x0b428b18b822179a684135f555d37e3cd9e7f048",
-    "financingEngine": "0xadf763ca7101f4612dbd253bf43949c831149e6f",
-    "clearingHouse": "0xa2c4fbcbb37855c8d32f9641ed986eb50cd052ec",
-    "oracleAdapter": "0x5570f9aea65fde40c70d78da2b9d3404729f4324"
-  },
-  "assets": [
-    {
-      "assetId": "0x5ac1b6412c624d04363b3e16f9f5640bf7a810b3d9b91fe4c740887f89aa8272",
-      "symbol": "tUSTB",
-      "name": "USANCE TESTNET TOKENIZED T-BILL - NO REAL VALUE",
-      "token": "0x9761cea4bb4ab425a32bd5f36cb14f12ba344279",
-      "decimals": 18,
-      "isTestFixture": true
+    "chainId": 1952,
+    "deployedAt": "2026-08-18T08:51:44Z",
+    "commit": "c80523d",
+    "contracts": {
+      "authority": "0xccb67640f19c51ea1bb11592e1d453a7619981a9",
+      "assetRegistry": "0x04c88b13d613c90823f8819421599b2f5e0d4b63",
+      "evidenceRegistry": "0xfc07686b469667736142b5866dcb7dc51438e8cf",
+      "passportRegistry": "0x9515918cc03e7cae64fa18d82b0785352fdbc68a",
+      "riskPolicyRegistry": "0xacb8991282946b3199ee1dbc5b3aa0a4af66e010",
+      "oracleAdapter": "0xe9a846636157c6b06fecdac0036334e37dcca57a",
+      "collateralVault": "0x7dda63a51e2f70dfdc892de400781bcf15761a03",
+      "liquidityVault": "0xf9c9b43306e3196d5b8e6bd788cb78b811e975d7",
+      "financingEngine": "0x58cec150b122493c0371ed83761c93dbcad1b581",
+      "clearingHouse": "0x7178ffe6acb6b7765d44ce7ad4640e3e13a646f1"
+    },
+    "assets": [
+      {
+        "assetId": "0xa626617d2c3a856c63c9861f740cb6bf21e19902577475d16cc27f418e57e01f",
+        "symbol": "tUSTB",
+        "name": "USANCE TESTNET TOKENIZED T-BILL - NO REAL VALUE",
+        "token": "0x5afb92b98435d5e6c5287d0e18e1a8300f5e3ee1",
+        "decimals": 18,
+        "isTestFixture": true
+      }
+    ],
+    "settlementAsset": {
+      "assetId": "0x19b6638a953289fbe46f75b0e26d905824c3fc26b873eeadc096f7dd5e27004f",
+      "symbol": "tUSD",
+      "token": "0xd4cdaa20b30be672d68679789afc428f568d5605",
+      "decimals": 6
     }
-  ],
-  "settlementAsset": {
-    "assetId": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "symbol": "tUSD",
-    "token": "0x4c1d345400bfe1088050eed665f22f730d307b34",
-    "decimals": 6
-  }
-} as DeploymentManifest,
+  },
 };

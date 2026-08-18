@@ -23,15 +23,16 @@
         "deployments/1952.json",
         "make test-live-xlayer"
       ],
-      "detail": "Ten contracts, each verified to have code, riskEpoch non-zero, settlement asset bound."
+      "detail": "Ten contracts at commit c80523d, first block 38584043. The verifier compares deployed runtime bytecode against what this checkout builds, so a manifest pointing at a superseded deployment fails instead of passing."
     },
     {
       "claim": "A Passport derived from a real issuer filing is committed onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x5015d664a08cdbe8ffd5ced816e46b97cdebcf9e906e9dcafee370919763fcde"
+        "0xcb7c4ecd8beff89911f57d5c436aab1cebc915088399d5a270ea29a9a4fc269a",
+        "proof/passport-franklin-fobxx-2026-v1.json"
       ],
-      "detail": "Franklin Templeton SEC Form 497K, CIK 1786958. Block 38571222."
+      "detail": "Franklin Templeton SEC Form 497K, CIK 1786958."
     },
     {
       "claim": "The committed Passport was verified by reading it back from the registry.",
@@ -46,7 +47,7 @@
       "claim": "ERC-8021 builder attribution is present on Usance X Layer writes.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "proof/passport-franklin-fobxx-v1.json"
+        "proof/live-risk-scenario.json"
       ],
       "detail": "Decoded back out of each submitted transaction's calldata, not assumed from the helper."
     },
@@ -54,42 +55,52 @@
       "claim": "A risk epoch transition occurred onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xb9f9a7e294c15623db9544c1322df4639ff2c93e214772a979d296fcf6ce2b95"
+        "proof/passport-franklin-fobxx-2026-v1.json"
       ],
-      "detail": "RiskEpoch 1 to 2, block 38571228, caused by a committed Passport."
+      "detail": "RiskEpoch is 4 on the current deployment, advanced by committed Passports rather than by a governance call made for the demo."
     },
     {
       "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
+        "0x4e99d75711bbb1e7a025e429dc7f51604a75de5ec4a25a80b5635e0b320b5f02",
         "proof/live-risk-scenario.json"
       ],
-      "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 the same figure canonical fixture S02 asserts and all four implementations agree on."
+      "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 the figure canonical fixture S02 asserts and all four implementations agree on."
     },
     {
       "claim": "A borrow within the limit succeeds onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "proof/live-risk-scenario.json"
+        "0xaa00d60b9d4372a2e6c25a8376ebe39c5a037be6071ca0ef4764a3021106f80a"
       ],
-      "detail": "$416.56 borrowed against $833.11 of capacity."
+      "detail": "$416.56 against $833.11 of capacity."
     },
     {
       "claim": "After a material risk deterioration, new borrowing is rejected by the contract.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xd5e6877fb5466eeab3313f31f8c7b059d7a1027148c1d8c09e87f2a440753b40",
+        "0x6db816f8df700761aa0409bed69d703a00b46af1722d50e0de713f5160afa5ee",
         "proof/live-risk-scenario.json"
       ],
-      "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow was then submitted with an explicit gas limit so it would bypass client-side estimation and reach a block: it mined at 38582020, burned 243878 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status code 1 is NO_NEW_RISK. Not a disabled button and not a simulation."
+      "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow was submitted with an explicit gas limit so it would bypass client-side estimation and reach a block: it mined at 38586756, burned 243900 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status 1 is NO_NEW_RISK. The reason is decoded by replaying the calldata pinned to that block, not by a fresh simulation. Not a disabled button."
     },
     {
       "claim": "Risk-reducing actions remain available while new risk is blocked.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "proof/live-risk-scenario.json"
+        "0x792edb7d6aa4696ca6215f75a28de95f8530dcfe65d4bded8f22728a61545520"
       ],
       "detail": "Repay-all succeeded under NO_NEW_RISK, clearing debt to zero and returning the account to NORMAL."
+    },
+    {
+      "claim": "A Passport cannot be committed onchain citing evidence that was never filed.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0x35ff401739f29af2f751ea0fe55c92dbc3b73f7e405c6f7a9344e3bed390296e",
+        "0xcb7c4ecd8beff89911f57d5c436aab1cebc915088399d5a270ea29a9a4fc269a"
+      ],
+      "detail": "The deployed PassportRegistry checks every cited evidence id against the EvidenceRegistry and recomputes the Merkle root from them. Evidence landed in block 38586587 and the Passport in 38586593; reversing that order is now a revert, not a convention. Both hashes were recovered from event receipts by scripts/reconcile-passport.mjs, not from console output."
     },
     {
       "claim": "Four independent implementations of the risk pipeline agree to the wei.",
@@ -103,9 +114,10 @@
       "claim": "A Passport built from one extraction path is capped and cannot claim corroboration.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "proof/passport-franklin-fobxx-v1.json"
+        "0xcb7c4ecd8beff89911f57d5c436aab1cebc915088399d5a270ea29a9a4fc269a",
+        "proof/passport-franklin-fobxx-2026-v1.json"
       ],
-      "detail": "The live Franklin Passport is singleSource because ChainGPT could not complete the extraction. The corroborator counts paths that produced a reading, not paths attempted."
+      "detail": "The live Franklin Passport is singleSource because ChainGPT could not complete the extraction over a dense filing. The corroborator counts paths that produced a reading, not paths attempted, so a failed provider caps the Passport's privileges instead of quietly lowering the evidence standard."
     },
     {
       "claim": "A claim conflict cannot commit a Passport.",

@@ -14,11 +14,12 @@
  * UI renders as plain text rather than a link.
  */
 import { createPublicClient, http } from "viem";
+import { xlayerTransport } from "./_rpc.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const RPC = process.env.XLAYER_TESTNET_RPC_URL ?? "https://testrpc.xlayer.tech";
 const chain = { id: 1952, name: "X Layer Testnet", nativeCurrency: { name: "OKB", symbol: "OKB", decimals: 18 }, rpcUrls: { default: { http: [RPC] } } };
-const pub = createPublicClient({ chain, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
+const pub = createPublicClient({ chain, transport: xlayerTransport() });
 
 const path = "proof/live-risk-scenario.json";
 const doc = JSON.parse(readFileSync(path, "utf8"));

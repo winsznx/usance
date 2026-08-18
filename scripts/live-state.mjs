@@ -6,13 +6,14 @@
  * a previous run left debt behind.
  */
 import { createPublicClient, http, parseAbi, formatUnits } from "viem";
+import { xlayerTransport } from "./_rpc.mjs";
 import { readFileSync } from "node:fs";
 
 const d = JSON.parse(readFileSync("deployments/1952.json", "utf8"));
 const C = d.contracts, F = d.testnetFixtures;
 const RPC = process.env.XLAYER_TESTNET_RPC_URL ?? "https://testrpc.xlayer.tech";
 const chain = { id: 1952, name: "X Layer Testnet", nativeCurrency: { name: "OKB", symbol: "OKB", decimals: 18 }, rpcUrls: { default: { http: [RPC] } } };
-const pub = createPublicClient({ chain, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
+const pub = createPublicClient({ chain, transport: xlayerTransport() });
 
 const CH = parseAbi([
   "function accountHealth(address) view returns ((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint8,uint32),(bytes32,uint256,uint256,uint256,uint256,uint256,uint256)[])",
