@@ -309,21 +309,23 @@
     },
     {
       "claim": "Delegated authority is the intersection of protocol policy and a user-signed mandate.",
-      "proofLevel": "UNIT_TESTED",
+      "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "contracts/src/core/ClearingHouse.sol",
+        "0x634d39dff4e8e34cdad6901e5e48a319595c873e0d6099aa2397ad4850c7b57e",
+        "proof/live-delegated.json",
         "contracts/test/DelegatedAuthority.t.sol"
       ],
-      "detail": "AllowedAction = ProtocolAllows AND MandateAllows, never OR. The two checks are sequential statements with no early return between them, and a delegated call runs the same internal mechanics an owner's own call runs, so a signature cannot reach a path the protocol would refuse. A mutation replacing the mandate check with a no-op fails the suite. Not yet exercised on a live deployment."
+      "detail": "Mined on X Layer testnet. Owner 0xBA813263 signed a mandate granting REPAY only to agent 0xCe805513, a distinct address. The agent repaid $50 from its own balance through DelegationGateway and the owner's debt fell from $150 to $100.01. Both the mandate check and the protocol path had to pass; neither can satisfy the call alone."
     },
     {
       "claim": "An agent cannot withdraw user collateral.",
-      "proofLevel": "UNIT_TESTED",
+      "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "contracts/src/core/ClearingHouse.sol",
+        "0x45da3f30e25d9404fb0f74098931648f19310ddd4758642fdb96f7761f6c211f",
+        "proof/live-delegated.json",
         "contracts/test/DelegatedAuthority.t.sol"
       ],
-      "detail": "Enforced twice. The mandate vocabulary has no outflow verb, and ClearingHouse's delegated switch reverts on every action it does not name \u2014 including any member added to the enum later. An owner who signs a mandate granting every bit in the vocabulary still cannot delegate an outflow. The ordinary withdrawal path takes no account argument, so an agent calling it reaches only its own position. Not yet exercised on a live deployment."
+      "detail": "Refused onchain at block 38638066. The same agent that had just performed a permitted repayment attempted a collateral outflow under the same mandate; the transaction was submitted with an explicit gas limit so the refusal was mined rather than caught at estimation, and it reverted in a block anybody can look up. Enforced twice: the mandate vocabulary has no outflow verb, and DelegationGateway reverts on every action it does not name."
     },
     {
       "claim": "Autonomous borrowing is refused rather than shipped half-wired.",

@@ -1,0 +1,76 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-08-18T23:48:23.427Z",
+    "generatedBy": "scripts/live-mandate.mjs",
+    "gitCommit": "cf08fa13a4b8f9ac312ddd2d01f00573e4911cfa-dirty",
+    "chainId": 1952,
+    "deploymentDigest": "0xf19a6fb6cd259d078bcbcf5d20dadf82dcb80ff7be4d797fbadb46bb125dd3c8",
+    "inputDigest": "0x1dbfec0996f091d74e4cbcbaaa37aea4e944cf2c911e63666906172f5ca637dc",
+    "schema": 1
+  },
+  "kind": "LIVE_DELEGATED_AUTHORITY",
+  "chainId": 1952,
+  "clearingHouse": "0xa38c072f7970d70f00c5ad9b911c222357255cc0",
+  "mandateRegistry": "0x71dd68dfc114be35d5fdb524aa21b9d699e9cf5b",
+  "delegationGateway": "0x1fe2f202d0ce10d20f3a8470c4cab51d45993659",
+  "owner": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
+  "agent": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8",
+  "identityWarning": "tUSTB and tUSD are labelled testnet stand-ins, not any issuer's token. This proves the authority mechanics; the Franklin Passport proves the evidence mechanics.",
+  "debtBefore": "150004763277194833646",
+  "debtAfter": "100005240239705876315",
+  "mandate": {
+    "actions": [
+      "REPAY"
+    ],
+    "expiresInSeconds": 86400
+  },
+  "withdrawalRefusal": {
+    "hash": "0x45da3f30e25d9404fb0f74098931648f19310ddd4758642fdb96f7761f6c211f",
+    "blockNumber": 38638066,
+    "status": "reverted"
+  },
+  "transactions": [
+    {
+      "label": "approve CollateralVault",
+      "hash": "0xd5a376021ba34c226094f990286434664ad477dc895fb44ddf0dd58d6f173068",
+      "blockNumber": 38637805,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "addCollateral 1000 tUSTB",
+      "hash": "0x726dbb3f48cd579adaaa331dd3cb09cc86280d210a4ab76a2da7346238335107",
+      "blockNumber": 38637853,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "registerMandate",
+      "hash": "0x9439fd3c6bd339ed9ef9614f6135f98f1faf2e0e0b067b912f91fad1c3759325",
+      "blockNumber": 38637908,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "agent approves ClearingHouse",
+      "hash": "0x450884225552ec7b2e718a3e8bdeb5d275ce6ed08d62f0ff4ea943e57e344919",
+      "blockNumber": 38637957,
+      "status": "success",
+      "from": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8"
+    },
+    {
+      "label": "gateway.execute(REPAY $50)",
+      "hash": "0x634d39dff4e8e34cdad6901e5e48a319595c873e0d6099aa2397ad4850c7b57e",
+      "blockNumber": 38638006,
+      "status": "success",
+      "from": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8"
+    },
+    {
+      "label": "agent attempts collateral outflow",
+      "hash": "0x45da3f30e25d9404fb0f74098931648f19310ddd4758642fdb96f7761f6c211f",
+      "blockNumber": 38638066,
+      "status": "reverted",
+      "from": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8"
+    }
+  ]
+}

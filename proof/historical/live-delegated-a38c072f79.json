@@ -1,0 +1,88 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-08-18T23:37:49.284Z",
+    "generatedBy": "scripts/live-mandate.mjs",
+    "gitCommit": "cf08fa13a4b8f9ac312ddd2d01f00573e4911cfa-dirty",
+    "chainId": 1952,
+    "deploymentDigest": "0xf19a6fb6cd259d078bcbcf5d20dadf82dcb80ff7be4d797fbadb46bb125dd3c8",
+    "inputDigest": "0x1dbfec0996f091d74e4cbcbaaa37aea4e944cf2c911e63666906172f5ca637dc",
+    "schema": 1
+  },
+  "kind": "LIVE_DELEGATED_AUTHORITY",
+  "chainId": 1952,
+  "clearingHouse": "0xa38c072f7970d70f00c5ad9b911c222357255cc0",
+  "mandateRegistry": "0x71dd68dfc114be35d5fdb524aa21b9d699e9cf5b",
+  "delegationGateway": "0x1fe2f202d0ce10d20f3a8470c4cab51d45993659",
+  "owner": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
+  "agent": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8",
+  "identityWarning": "tUSTB and tUSD are labelled testnet stand-ins, not any issuer's token. This proves the authority mechanics; the Franklin Passport proves the evidence mechanics.",
+  "debtBefore": "200002447517123287536",
+  "debtAfter": "200003284275114155199",
+  "mandate": {
+    "actions": [
+      "REPAY"
+    ],
+    "expiresInSeconds": 86400
+  },
+  "withdrawalRefusal": {
+    "hash": "0x0469323a43a17fc3bd93e595d509c7ec03583f4a1571dddaca0f66eba5ed1049",
+    "blockNumber": 38637432,
+    "status": "reverted"
+  },
+  "transactions": [
+    {
+      "label": "approve CollateralVault",
+      "hash": "0x1977b7a104274c6bea1b5371df9469aeea4959ec0bbee1a3043b2ed7825cd21e",
+      "blockNumber": 38637133,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "addCollateral 1000 tUSTB",
+      "hash": "0x2cfb3f3d35789dd900282ba711740dee0f50f6a8994e620effbb43fc3491ea67",
+      "blockNumber": 38637183,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "registerMandate",
+      "hash": "0x5e5d8dbba0db802cc39733c377688c9b2c07d5b2f7d3259da3b873cf84702a77",
+      "blockNumber": 38637235,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "mint tUSD to agent",
+      "hash": "0x3a60a65b02ecef050b4f244bec70899b3f3ed88f316a53e341e515c5eadb1f6c",
+      "blockNumber": 38637286,
+      "status": "success",
+      "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
+    },
+    {
+      "label": "agent approves ClearingHouse",
+      "hash": "0x6bddf6cf24ad4067273fdc7e01016816893880c6671081efefac94befdb48603",
+      "blockNumber": 38637335,
+      "status": "success",
+      "from": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8"
+    },
+    {
+      "label": "gateway.execute(REPAY $50)",
+      "hash": "0x02c87f32676ee68723dbbf9877376ae5283bccad70067d1fa02628fe58ec07e9",
+      "blockNumber": 38637384,
+      "status": "success",
+      "from": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8"
+    },
+    {
+      "label": "agent attempts collateral outflow",
+      "hash": "0x0469323a43a17fc3bd93e595d509c7ec03583f4a1571dddaca0f66eba5ed1049",
+      "blockNumber": 38637432,
+      "status": "reverted",
+      "from": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8"
+    }
+  ],
+  "$superseded": {
+    "archivedAt": "2026-08-18T23:48:23.426Z",
+    "reason": "superseded by 0xa38c072f7970d70f00c5ad9b911c222357255cc0",
+    "note": "Still true of the deployment it ran on. Kept rather than overwritten because a proof record that stops being current does not stop being accurate, and repointing the claims that cite it would rewrite history to match the present."
+  }
+}

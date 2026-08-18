@@ -56,6 +56,7 @@ const CORE = {
   FeeController: "feeController",
   MandateRegistry: "mandateRegistry",
   IntentBook: "intentBook",
+  DelegationGateway: "delegationGateway",
 };
 
 const creates = broadcast.transactions.filter((t) => t.transactionType === "CREATE");

@@ -88,6 +88,10 @@
       "impact": "Low",
       "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
     },
+    "reentrancy-events@function:execute": {
+      "impact": "Low",
+      "reason": "DelegationGateway.execute emits after calling into ClearingHouse. The state that matters is not this contract's \u2014 the gateway holds none. Mandate consumption is recorded by MandateRegistry.authorize before the protocol call, and ClearingHouse.actOnBehalf carries its own nonReentrant guard, so a re-entrant callback cannot spend the same allowance twice or re-enter the repayment. Only event ordering is affected."
+    },
     "reentrancy-events@function:freezeNewBorrowing": {
       "impact": "Low",
       "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
@@ -155,10 +159,6 @@
     "timestamp@function:accrue": {
       "impact": "Low",
       "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
-    },
-    "timestamp@function:authorizationRequestFor": {
-      "impact": "Low",
-      "reason": "block.timestamp fills passportCommittedAt, which MandateRegistry compares against the mandate's requiredPassportFreshness. A validator nudging the timestamp shifts that freshness window by the amount it nudged it \u2014 it cannot make a stale Passport fresh by any margin that matters, and the field is not used for any value calculation."
     },
     "timestamp@function:availableBorrow": {
       "impact": "Low",
@@ -239,6 +239,10 @@
     "unused-return@function:_withdrawalIsSafe": {
       "impact": "Medium",
       "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
+    "unused-return@function:authorizationRequestFor": {
+      "impact": "Medium",
+      "reason": "clearing.accountHealth returns the risk result and a per-asset valuation array; only the risk result is needed to build an authorization request. The valuations describe individual positions and have no bearing on which mandate bound an action would hit."
     },
     "unused-return@function:bestRoute": {
       "impact": "Medium",

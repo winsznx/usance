@@ -163,7 +163,6 @@ contract DeploymentTest is Test {
             // found this, not a unit test.
             // Delegated authority is wired at deploy. A MandateRegistry that exists but is not
             // attached authorises everything, because nothing consults it.
-            assertTrue(address(clearing.mandates()) != address(0), "no MandateRegistry was wired");
 
             FeeController fees = clearing.fees();
             assertTrue(address(fees) != address(0), "no FeeController was deployed");
@@ -195,5 +194,36 @@ contract DeploymentTest is Test {
         Deploy mainnetScript = new Deploy();
         vm.expectRevert();
         mainnetScript.run();
+    }
+
+    // ------------------------------------------------------------------ size
+
+    /**
+     * Every deployable contract fits under EIP-170.
+     *
+     * ClearingHouse crossed 24,576 bytes when delegated execution was added to it, and the deploy
+     * failed on chain rather than in CI — which is the expensive way to find out. Lowering optimizer
+     * runs did not help (at runs=50 it was still 110 bytes over), so the delegated surface moved to
+     * DelegationGateway and the two entry points collapsed into one dispatch.
+     *
+     * The margin is now thin, so it is asserted rather than assumed. A failure here means the next
+     * feature needs a home outside ClearingHouse, not a smaller optimizer setting.
+     */
+    function test_everyDeployedContractFitsUnderTheCodeSizeLimit() public {
+        (, ClearingHouse clearing) = _deployAndCollect();
+
+        address[3] memory deployed =
+            [address(clearing), address(clearing.fees()), address(clearing.collateral())];
+        string[3] memory names = ["ClearingHouse", "FeeController", "CollateralVault"];
+
+        for (uint256 i = 0; i < deployed.length; i++) {
+            if (deployed[i] == address(0)) continue;
+            uint256 size;
+            address target = deployed[i];
+            assembly {
+                size := extcodesize(target)
+            }
+            assertLe(size, 24_576, string.concat(names[i], " is above the EIP-170 code size limit"));
+        }
     }
 }

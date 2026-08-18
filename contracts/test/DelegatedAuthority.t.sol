@@ -5,6 +5,7 @@ import {Fixture} from "./Fixture.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {MandateRegistry} from "../src/core/MandateRegistry.sol";
 import {IntentBook} from "../src/core/IntentBook.sol";
+import {DelegationGateway} from "../src/core/DelegationGateway.sol";
 import {Types} from "../src/libraries/Types.sol";
 
 /**
@@ -28,6 +29,7 @@ import {Types} from "../src/libraries/Types.sol";
  */
 contract DelegatedAuthorityTest is Fixture {
     MandateRegistry internal registry;
+    DelegationGateway internal gateway;
 
     /// REPAY, ADD_COLLATERAL and BORROW move no order to a venue, and the registry refuses a
     /// non-venue action that carries a venue id rather than letting the commitment quietly stop
@@ -56,9 +58,9 @@ contract DelegatedAuthorityTest is Fixture {
             | registry.actionBit(MandateRegistry.MandateAction.ADD_COLLATERAL)
             | registry.actionBit(MandateRegistry.MandateAction.BORROW);
 
+        gateway = new DelegationGateway(authority, clearing, registry);
         vm.startPrank(governance);
-        clearing.setMandateRegistry(registry);
-        authority.grantRole(authority.CLEARING(), address(clearing));
+        authority.grantRole(authority.CLEARING(), address(gateway));
         vm.stopPrank();
 
         giveCollateral(ownerAcct, 10_000e18);
@@ -116,7 +118,7 @@ contract DelegatedAuthorityTest is Fixture {
 
     function _repayAs(address who, bytes32 id, uint256 amount) internal {
         vm.prank(who);
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, amount, NO_VENUE, _empty(), _empty()
         );
     }
@@ -171,7 +173,7 @@ contract DelegatedAuthorityTest is Fixture {
         for (uint8 a = 3; a <= 5; a++) {
             vm.prank(agent);
             vm.expectRevert();
-            clearing.executeDelegated(
+            gateway.execute(
                 ownerAcct, id, MandateRegistry.MandateAction(a), USTB_ID, 1e18, NO_VENUE, _empty(), _empty()
             );
         }
@@ -206,8 +208,8 @@ contract DelegatedAuthorityTest is Fixture {
         uint256 before = collateralVault.balanceOf(USTB_ID, ownerAcct);
         for (uint8 a = 3; a <= 5; a++) {
             vm.prank(agent);
-            vm.expectRevert(abi.encodeWithSelector(ClearingHouse.ActionNotDelegable.selector, a));
-            clearing.executeDelegated(
+            vm.expectRevert(abi.encodeWithSelector(DelegationGateway.ActionNotDelegable.selector, a));
+            gateway.execute(
                 ownerAcct,
                 id,
                 MandateRegistry.MandateAction(a),
@@ -229,10 +231,10 @@ contract DelegatedAuthorityTest is Fixture {
         vm.prank(agent);
         vm.expectRevert(
             abi.encodeWithSelector(
-                ClearingHouse.ActionNotDelegable.selector, uint8(MandateRegistry.MandateAction.BORROW)
+                DelegationGateway.ActionNotDelegable.selector, uint8(MandateRegistry.MandateAction.BORROW)
             )
         );
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.BORROW, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
     }
@@ -246,7 +248,7 @@ contract DelegatedAuthorityTest is Fixture {
         // No debt, so the protocol refuses a repayment regardless of what the mandate permits.
         vm.prank(agent);
         vm.expectRevert(ClearingHouse.NoDebt.selector);
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 50e18, NO_VENUE, _empty(), _empty()
         );
     }
@@ -258,7 +260,7 @@ contract DelegatedAuthorityTest is Fixture {
 
         vm.prank(stranger);
         vm.expectRevert();
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 50e18, NO_VENUE, _empty(), _empty()
         );
     }
@@ -277,7 +279,7 @@ contract DelegatedAuthorityTest is Fixture {
         vm.expectRevert(
             abi.encodeWithSelector(MandateRegistry.Denied.selector, id, MandateRegistry.Reason.REVOKED)
         );
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
     }
@@ -293,7 +295,7 @@ contract DelegatedAuthorityTest is Fixture {
         vm.expectRevert(
             abi.encodeWithSelector(MandateRegistry.Denied.selector, id, MandateRegistry.Reason.PAUSED)
         );
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
 
@@ -314,7 +316,7 @@ contract DelegatedAuthorityTest is Fixture {
         vm.expectRevert(
             abi.encodeWithSelector(MandateRegistry.Denied.selector, id, MandateRegistry.Reason.EXPIRED)
         );
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
     }
@@ -331,7 +333,7 @@ contract DelegatedAuthorityTest is Fixture {
         vm.expectRevert(
             abi.encodeWithSelector(MandateRegistry.Denied.selector, id, MandateRegistry.Reason.WRONG_AGENT)
         );
-        clearing.executeDelegated(
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
     }
@@ -341,20 +343,17 @@ contract DelegatedAuthorityTest is Fixture {
     function test_anAccountCannotDelegateToItself() public {
         bytes32 id = _register();
         vm.prank(ownerAcct);
-        vm.expectRevert(ClearingHouse.AgentIsNotTheAccount.selector);
-        clearing.executeDelegated(
+        vm.expectRevert(DelegationGateway.AgentIsNotTheAccount.selector);
+        gateway.execute(
             ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
     }
 
     // ------------------------------------------------------------------ owner independence
 
-    /// Owners must never need to issue themselves a mandate to use their own account.
+    /// Owners must never need to issue themselves a mandate to use their own account. Nothing in
+    /// this test touches the registry or the gateway.
     function test_ownerActionsDoNotRequireAMandate() public {
-        vm.startPrank(governance);
-        clearing.setMandateRegistry(MandateRegistry(address(0)));
-        vm.stopPrank();
-
         vm.startPrank(ownerAcct);
         ustb.approve(address(collateralVault), type(uint256).max);
         clearing.addCollateral(USTB_ID, 1_000e18);
@@ -368,21 +367,18 @@ contract DelegatedAuthorityTest is Fixture {
         assertEq(clearing.debtOf(ownerAcct), 0);
     }
 
-    function test_delegationIsRefusedUntilARegistryIsWired() public {
-        vm.prank(governance);
-        clearing.setMandateRegistry(MandateRegistry(address(0)));
+    /// A gateway that has not been granted CLEARING cannot reach the protocol at all. The mandate
+    /// check may pass and the act still cannot happen, which is the conjunction seen from the other
+    /// side: protocol authority is not something a signature can confer.
+    function test_anUngrantedGatewayCannotReachTheProtocol() public {
+        _positionWithDebt();
+        bytes32 id = _register();
 
+        DelegationGateway rogue = new DelegationGateway(authority, clearing, registry);
         vm.prank(agent);
-        vm.expectRevert(ClearingHouse.MandatesNotConfigured.selector);
-        clearing.executeDelegated(
-            ownerAcct,
-            bytes32(uint256(1)),
-            MandateRegistry.MandateAction.REPAY,
-            USTB_ID,
-            10e18,
-            NO_VENUE,
-            _empty(),
-            _empty()
+        vm.expectRevert();
+        rogue.execute(
+            ownerAcct, id, MandateRegistry.MandateAction.REPAY, USTB_ID, 10e18, NO_VENUE, _empty(), _empty()
         );
     }
 
@@ -400,7 +396,7 @@ contract DelegatedAuthorityTest is Fixture {
         _positionWithDebt();
         bytes32 id = _register();
 
-        MandateRegistry.AuthorizationRequest memory req = clearing.authorizationRequestFor(
+        MandateRegistry.AuthorizationRequest memory req = gateway.authorizationRequestFor(
             ownerAcct, id, MandateRegistry.MandateAction.BORROW, USTB_ID, 10e18, NO_VENUE
         );
 
@@ -422,7 +418,7 @@ contract DelegatedAuthorityTest is Fixture {
         bytes32 id = registry.registerMandate(m, _sign(m));
 
         vm.prank(agent);
-        MandateRegistry.AuthorizationRequest memory req = clearing.authorizationRequestFor(
+        MandateRegistry.AuthorizationRequest memory req = gateway.authorizationRequestFor(
             ownerAcct, id, MandateRegistry.MandateAction.BORROW, USTB_ID, 1e17, NO_VENUE
         );
         assertEq(
@@ -461,7 +457,6 @@ contract ReservationTest is Fixture {
         book = new IntentBook(authority, registry, clearing);
 
         vm.startPrank(governance);
-        clearing.setMandateRegistry(registry);
         authority.grantRole(authority.CLEARING(), address(book));
         authority.grantRole(book.EXECUTOR(), executor);
         vm.stopPrank();

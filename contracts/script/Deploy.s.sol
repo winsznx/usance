@@ -15,6 +15,7 @@ import {FinancingEngine} from "../src/core/FinancingEngine.sol";
 import {FeeController} from "../src/core/FeeController.sol";
 import {MandateRegistry} from "../src/core/MandateRegistry.sol";
 import {IntentBook} from "../src/core/IntentBook.sol";
+import {DelegationGateway} from "../src/core/DelegationGateway.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {ChainlinkFeedAdapter} from "../src/adapters/ChainlinkFeedAdapter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -67,6 +68,7 @@ contract Deploy is Script {
         FeeController fees;
         MandateRegistry mandates;
         IntentBook intents;
+        DelegationGateway delegation;
     }
 
     function run() external {
@@ -183,7 +185,11 @@ contract Deploy is Script {
         // Delegated authority. Wired at deploy so the registry is never a sidecar: a registry that
         // answers correctly and is never consulted authorises everything.
         c.mandates = new MandateRegistry(c.authority);
-        c.clearing.setMandateRegistry(c.mandates);
+        // The only route by which an agent acts on somebody else's account. It holds CLEARING so
+        // it can reach repayFor and addCollateralFor — the entire delegated-capable surface, both
+        // of which move value into the account rather than out of it.
+        c.delegation = new DelegationGateway(c.authority, c.clearing, c.mandates);
+        c.authority.grantRole(c.authority.CLEARING(), address(c.delegation));
 
         // IntentBook reserves capital against the account before anything is submitted to a venue,
         // which is what stops two concurrent intents each believing the same capacity is free. It
@@ -285,6 +291,7 @@ contract Deploy is Script {
         console2.log("feeController", address(c.fees));
         console2.log("mandateRegistry", address(c.mandates));
         console2.log("intentBook", address(c.intents));
+        console2.log("delegationGateway", address(c.delegation));
         console2.log("USANCE_DEPLOYMENT_END");
     }
 }

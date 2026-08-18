@@ -11,14 +11,14 @@
   "identityWarning": "These are labelled testnet stand-ins. They are NOT Franklin FOBXX or any real issuer token. This proves financial mechanics; the Franklin Passport proves evidence mechanics.",
   "before": {
     "recognised": "980130906562500000000",
-    "available": "416555626575156088275",
+    "available": "416555626575156088467",
     "debt": "416555635289062500001",
     "status": "NORMAL"
   },
   "after": {
     "recognised": "490065453281250000000",
     "available": "0",
-    "debt": "416556550249235731038",
+    "debt": "416556497965797260498",
     "status": "NO_NEW_RISK"
   },
   "newRiskBlocked": {
@@ -26,135 +26,138 @@
     "revertReason": "AccountNotHealthy(1)",
     "result": "reverted onchain",
     "submitted": true,
-    "hash": "0xcb16984f9e2a8c9de179dd79ba7b80772b1a54134db142678802b3bc1e881447",
-    "blockNumber": 38629253,
-    "gasUsed": "246057"
+    "hash": "0x4aa84966684a48c07b432687cc66e0a4efa95a7175cea70d8ad87382d25b60eb",
+    "blockNumber": 38635542,
+    "gasUsed": "246102"
   },
   "repaid": {
-    "debtBefore": "416557029514088375867",
+    "debtBefore": "416556951088930670620",
     "debtAfter": "0"
   },
   "transactions": [
     {
       "label": "grantRole(ADMISSION)",
-      "hash": "0xf32fc1eb8dca82d52710668ad74d693631dffd5b78f1500fb1df8f3bf2247b36",
-      "blockNumber": 38628422,
+      "hash": "0x301bc5d2eb0022dc80e335d815be2195b25d10cf499da7bf3bea92960a171691",
+      "blockNumber": 38634850,
       "status": "success"
     },
     {
       "label": "createPolicy(tUSTB)",
-      "hash": "0x5870a6796eb0f44cb42d5233d5b91fe7be1fa861f9d5532046cad65e7edd3681",
-      "blockNumber": 38628473,
+      "hash": "0xa624c7635a257ca6f4d4189bb57d92f1780f06bdf7e8f53d44f09988934f1847",
+      "blockNumber": 38634900,
       "status": "success"
     },
     {
       "label": "bindRiskPolicy(tUSTB)",
-      "hash": "0x01adc083749b4e3f32a912ba59f812092e34f7b45c1cb97d849d51ce602e3b94",
-      "blockNumber": 38628527,
+      "hash": "0xb15128554ab966aac9a9139e48e7d5198c68aa3906fbe73de6e50f6d123be83c",
+      "blockNumber": 38634950,
       "status": "success"
     },
     {
       "label": "EvidenceRegistry.commit(tUSTB fixture)",
-      "hash": "0x6f3d900c1e1bdfa7a890d0539e74516df64e2f0747e44a0c1acbfa22f797d4d5",
-      "blockNumber": 38628580,
+      "hash": "0x5ccd8eff68d3657f076ac4c9067af23ee919203da087e8ca9050fb4058058729",
+      "blockNumber": 38635001,
       "status": "success"
     },
     {
       "label": "commitPassport(tUSTB v1)",
-      "hash": "0xd0475436e8b3656b4bfd7e6273ee6afc1743dcc91e17aef5943a8ae7a25629df",
-      "blockNumber": 38628631,
+      "hash": "0xb5c12a078d9a4443982f1ca9c73380b157b890f8dd9c142a802c0eacde108918",
+      "blockNumber": 38635050,
       "status": "success"
     },
     {
       "label": "setCapabilities(HOLD|COLLATERAL)",
-      "hash": "0xa6d27fa3171d11beb453242f7926c4951a6940ace2a2e3007f27d2ec4df2b5d3",
-      "blockNumber": 38628682,
+      "hash": "0xdb71df9f61aa32ea9700df74f9bd22a91b8f47fe1af820aeaa496d864107120f",
+      "blockNumber": 38635098,
       "status": "success"
     },
     {
       "label": "setStatus(ACTIVE)",
-      "hash": "0x405b93f016d41360e10da2e0a4e783554c21b4d2054fc361218ce8896c431632",
-      "blockNumber": 38628732,
+      "hash": "0xdb0665436b3270c4420f70eb8f1074b2156d2d94fe5b822bdc0c3604ccb13c19",
+      "blockNumber": 38635147,
       "status": "success"
     },
     {
       "label": "mint tUSD",
-      "hash": "0x8ff6ca1674b5a07049a0ff3e2fe884daca3589842b3e40ad853fef38e2adfd6d",
-      "blockNumber": 38628784,
+      "hash": "0x7a9b81b07869df45b882999ae93b726b59b58b5341b46043c444ddede3ae0c6a",
+      "blockNumber": 38635195,
       "status": "success"
     },
     {
       "label": "approve LiquidityVault",
-      "hash": "0xe2ae5011b2704128752bf2838957ab68fdfa335e2cb0d4ff44f0ca483165fa25",
-      "blockNumber": 38628835,
+      "hash": "0x800ded1e68a973b506ff9891a3cf05d6b76cd9cd25d15832b373f3a26b9f79ca",
+      "blockNumber": 38635243,
       "status": "success"
     },
     {
       "label": "supply liquidity",
-      "hash": "0x80b4f4b283166f9d8c050d93d5063be5c2c352599a1c8f4448b907005f0af00e",
-      "blockNumber": 38628886,
+      "hash": "0xc24aef67220759f478af06269e223fa0fa57c68c0a97ba5e7a7e3a55a8711386",
+      "blockNumber": 38635292,
       "status": "success"
     },
+    {
+      "label": "addCollateral 1000 tUSTB",
+      "hash": "0x86b5de936b2dc7bbd926430cc677e4fd832c114ef319381771daa1b9c57f907e",
+      "blockNumber": 38635342,
+      "status": "success"
+    },
+    {
+      "label": "borrow $416.56",
+      "hash": "0x0e4c7b1314dc491ff3b53ec7dc8c9350ae0ffc3b595c4747b7846a0855a45100",
+      "blockNumber": 38635392,
+      "status": "success"
+    },
+    {
+      "label": "setAnswer 0.5 (was 1)",
+      "hash": "0x26e6b9c3bca3c9d5aeb377768fb1741731a7d2a011819b2aea54c54a724c6d18",
+      "blockNumber": 38635442,
+      "status": "success"
+    },
+    {
+      "label": "bumpEpoch(COLLATERAL_REPRICED)",
+      "hash": "0xb6ea312e7b1f30850be4c59e6e52cf8ab60c6fed87b699c7ee22447362a9fe8e",
+      "blockNumber": 38635491,
+      "status": "success"
+    },
+    {
+      "label": "mint tUSD (interest shortfall)",
+      "hash": "0x9e938eb83fa2d710639ff4a5179b6b4d3df5ce5464e99b01a3a5c7c2dc636a24",
+      "blockNumber": 38635593,
+      "status": "success"
+    },
+    {
+      "label": "approve ClearingHouse (repay)",
+      "hash": "0xff2b53cdd82220a490ff341fd8b3e9cd14096493578e3c9f3d2e7c103301e1eb",
+      "blockNumber": 38635644,
+      "status": "success"
+    },
+    {
+      "label": "repay all",
+      "hash": "0xbcb25a74fa33ce6c2c11f9df4b6b90b8e14d32b4a00e40fc9666fa620af4fadc",
+      "blockNumber": 38635693,
+      "status": "success"
+    },
+    {
+      "label": "restore feed",
+      "hash": "0x1691f8f7edbb79bc78f0918248c004447758290cf3dc1568f3acdcf0c898305f",
+      "blockNumber": 38635744,
+      "status": "success"
+    }
+  ],
+  "priorTransactions": [
     {
       "label": "mint tUSTB",
       "hash": "0x615109640e8df0dccb3fe8d38518618001ac97726a03c47cddc92ed1d7e19ff4",
       "blockNumber": 38628937,
-      "status": "success"
+      "status": "success",
+      "fromEarlierRun": true
     },
     {
       "label": "approve CollateralVault",
       "hash": "0xbbc9fe133d78ea3d18b9e1ac16641a09558e14228382632228533f7ddb26c513",
       "blockNumber": 38628987,
-      "status": "success"
-    },
-    {
-      "label": "addCollateral 1000 tUSTB",
-      "hash": "0xa9551f7b376eeaefe01c632ae5adc0f05878118654a32a4928be5be1647bf2b7",
-      "blockNumber": 38629041,
-      "status": "success"
-    },
-    {
-      "label": "borrow $416.56",
-      "hash": "0x5d7af4a93cf517b8ad216c872c736922a94ce76afa20a0f7d650ce9881a5ee70",
-      "blockNumber": 38629094,
-      "status": "success"
-    },
-    {
-      "label": "setAnswer 0.5 (was 1)",
-      "hash": "0xfbeeab80140e349c447b5384aa7691159ae943b9279d44ef3bea803f914407fc",
-      "blockNumber": 38629145,
-      "status": "success"
-    },
-    {
-      "label": "bumpEpoch(COLLATERAL_REPRICED)",
-      "hash": "0x297ad93bad716c88893baf8ff5a80f25502bdf94ced3ecf5b3419e648f23dcea",
-      "blockNumber": 38629197,
-      "status": "success"
-    },
-    {
-      "label": "mint tUSD (interest shortfall)",
-      "hash": "0x224342dc21f9923bc340b27b9cb002252d9bfe34325aa85e85481020c303acca",
-      "blockNumber": 38629309,
-      "status": "success"
-    },
-    {
-      "label": "approve ClearingHouse (repay)",
-      "hash": "0x1336c3230dab52f4f759fed1de227cff17128b25b06fd8ac4f146b8a4bfd8af3",
-      "blockNumber": 38629359,
-      "status": "success"
-    },
-    {
-      "label": "repay all",
-      "hash": "0x7f0001bd93a4c96b2a0a7d74af46e179b7d858c9a13347fe9ac8118b28f016d7",
-      "blockNumber": 38629410,
-      "status": "success"
-    },
-    {
-      "label": "restore feed",
-      "hash": "0x9e6941cc41f5dd1ba1547429c226735a3f04d0d93e8fe48d663905bff0ec22a9",
-      "blockNumber": 38629462,
-      "status": "success"
+      "status": "success",
+      "fromEarlierRun": true
     }
-  ],
-  "priorTransactions": []
+  ]
 }
