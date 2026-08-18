@@ -1,0 +1,200 @@
+{
+  "accepted": {
+    "arbitrary-send-erc20@function:deposit": {
+      "impact": "High",
+      "reason": "Correct as reported, and now constrained. `deposit` pulls from `from` and credits `account`; nothing required them to match, so a later sponsored-deposit feature would have drained anyone holding a standing allowance. The vault rejects from != account. See StaticAnalysisTest.test_vaultRefusesToPullFromSomebodyWhoIsNotTheDepositor."
+    },
+    "incorrect-exp@function:mulDiv": {
+      "impact": "High",
+      "reason": "False positive that is dangerous to act on. `(3 * d) ^ 2` is the modular-inverse seed in mulDiv and must be XOR: it is exact mod 2**4, so six Newton doublings reach 2**256. Slither's suggested `**` is exact only mod 2**2 for d = 3 (mod 4), stopping at 2**64. Pinned by StaticAnalysisTest.test_mulDivIsExactOnThe512BitPathWhereTheSeedMatters, which fails under the suggested fix. Note the 28 differential scenarios never reach that path."
+    },
+    "divide-before-multiply@function:mulDiv": {
+      "impact": "Medium",
+      "reason": "Intentional and specified. spec/accounting.md fixes the order haircuts are applied in and the rounding direction of each quantity; reassociating to preserve precision would change results the four implementations agree on to the wei. Every instance is covered by the canonical fixtures."
+    },
+    "incorrect-equality@function:getIntent": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "incorrect-equality@function:deposit": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "incorrect-equality@function:currentIndex": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "incorrect-equality@function:accrue": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "incorrect-equality@function:convertToAssets": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "incorrect-equality@function:recordFill": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "incorrect-equality@function:convertToShares": {
+      "impact": "Medium",
+      "reason": "Strict equality against sentinel values, not against balances or timestamps. Zero means unset for an address or a root, and the whole point is to distinguish unset from any real value."
+    },
+    "reentrancy-no-eth@function:validateIntent": {
+      "impact": "Medium",
+      "reason": "IntentBook writes intent state after calling MandateRegistry, which is a contract in this system with no untrusted callback surface. The entry point is nonReentrant."
+    },
+    "uninitialized-local@variable:found": {
+      "impact": "Medium",
+      "reason": "Solidity zero-initialises memory, and every one of these is an accumulator or a found-flag whose zero value is the intended starting point."
+    },
+    "uninitialized-local@variable:lo": {
+      "impact": "Medium",
+      "reason": "Solidity zero-initialises memory, and every one of these is an accumulator or a found-flag whose zero value is the intended starting point."
+    },
+    "uninitialized-local@variable:rawTotal": {
+      "impact": "Medium",
+      "reason": "Solidity zero-initialises memory, and every one of these is an accumulator or a found-flag whose zero value is the intended starting point."
+    },
+    "unused-return@function:_settlementPrice": {
+      "impact": "Medium",
+      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
+    "unused-return@function:_withdrawalIsSafe": {
+      "impact": "Medium",
+      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
+    "unused-return@function:sequencerStatus": {
+      "impact": "Medium",
+      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
+    "unused-return@function:getPrice": {
+      "impact": "Medium",
+      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
+    "unused-return@function:repay": {
+      "impact": "Medium",
+      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
+    "oracle-no-staleness@function:_settlementPrice": {
+      "impact": "Medium",
+      "reason": "Was real; fixed asymmetrically. Borrowing goes through _settlementPriceForNewRisk and refuses a price older than settlementMaxPriceAge. Repayment deliberately does not, because a contract that refuses repayment when a feed goes quiet has locked the exit. Both directions are pinned by tests."
+    },
+    "missing-zero-check@variable:ch": {
+      "impact": "Low",
+      "reason": "Governance setters. A governance key that can set the oracle to a hostile contract is not meaningfully restrained by a zero check, and rejecting zero would remove the only way to unset."
+    },
+    "missing-zero-check@variable:feed": {
+      "impact": "Low",
+      "reason": "Governance setters. A governance key that can set the oracle to a hostile contract is not meaningfully restrained by a zero check, and rejecting zero would remove the only way to unset."
+    },
+    "calls-loop@function:_assetInput": {
+      "impact": "Low",
+      "reason": "External calls inside a loop over an account's held assets. The loop is bounded by the number of distinct assets an account holds, all reads are staticcalls to registries and the oracle adapter, and a reverting aggregator degrades to no-price rather than propagating."
+    },
+    "calls-loop@function:_requireEvidenceSupports": {
+      "impact": "Low",
+      "reason": "External calls inside a loop over an account's held assets. The loop is bounded by the number of distinct assets an account holds, all reads are staticcalls to registries and the oracle adapter, and a reverting aggregator degrades to no-price rather than propagating."
+    },
+    "reentrancy-events@function:disableAsset": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:setAssetReduceOnly": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:validateIntent": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:setAccountReduceOnly": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:freezeNewBorrowing": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:liftBorrowingFreeze": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:reconcile": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "reentrancy-events@function:reserveIntent": {
+      "impact": "Low",
+      "reason": "Events emitted after an external call. No state that any other function reads is written after the call, and every entry point is nonReentrant."
+    },
+    "timestamp@function:accrue": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:executeQueuedChange": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:onRepay": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:availableBorrow": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:_commitmentReason": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:getIntent": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:_settlementPriceForNewRisk": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:_lifecycleReason": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:_withdrawalIsSafe": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:recordFill": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:effectiveStatus": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:_validate": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:reserve": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:isLive": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:currentIndex": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:reconcile": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    },
+    "timestamp@function:borrow": {
+      "impact": "Low",
+      "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
+    }
+  }
+}

@@ -15,7 +15,7 @@ FIXTURES  := fixtures/canonical/risk-scenarios.json
 .PHONY: help doctor bootstrap fixtures test test-contracts test-ts test-differential \
         build build-contracts build-web lint fmt fmt-check verify-integrations \
         deploy-testnet demo-local clean test-rust deployer deployer-create test-live-xlayer \
-        test-risk test-e2e demo-testnet audit-contracts
+        test-risk test-e2e demo-testnet audit-contracts slither
 
 # Flags forwarded to the ChainGPT audit gate. CI passes --allow-unavailable on every branch except
 # a protected one, so a missing credential blocks a release without blocking a pull request.
@@ -143,6 +143,18 @@ deploy-testnet: ## Deploy the core to X Layer testnet (requires DEPLOYER_PRIVATE
 #  check reported green.
 	@node scripts/write-manifest.mjs 1952
 	@node scripts/live-xlayer.mjs
+
+slither: ## Static analysis; fails on findings that have not been triaged
+	@command -v slither >/dev/null || { \
+	  echo "slither is not installed:  pipx install slither-analyzer"; exit 1; }
+#  Slither exits non-zero whenever it finds anything, so wiring it in directly makes the gate
+#  permanently red, and a permanently red gate is one nobody reads. The wrapper compares against
+#  contracts/slither-baseline.json and fails only on findings nobody has looked at yet — plus on
+#  baseline entries that have stopped firing, which are triage notes pointing at code that moved.
+	@node scripts/slither-triage.mjs
+
+slither-baseline: ## Re-seed the triage baseline (every new entry needs a written reason)
+	@node scripts/slither-triage.mjs --write-baseline
 
 test-risk: test-rust ## Alias for the Rust reference-engine suite (named in the build spec)
 

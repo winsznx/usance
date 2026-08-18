@@ -43,6 +43,7 @@ contract CollateralVault is Authorized, ReentrancyGuard {
     error OnlyClearingHouse();
     error ClearingHouseAlreadySet();
     error NothingReceived();
+    error PayerIsNotTheDepositor(address from, address account);
 
     modifier onlyClearingHouse() {
         if (msg.sender != clearingHouse) revert OnlyClearingHouse();
@@ -63,6 +64,16 @@ contract CollateralVault is Authorized, ReentrancyGuard {
     /// @dev Called by ClearingHouse, which has already checked that the asset may be used as
     ///      collateral. The vault re-checks depositability anyway: a custody contract that trusts
     ///      its caller completely is one compromise away from holding worthless tokens.
+    ///
+    ///      `from` must equal `account`. Slither flags the `transferFrom` here as an arbitrary-send
+    ///      because nothing in this function constrained who is paying, and it was right to: the
+    ///      only caller happens to pass `msg.sender` for both, but nothing enforced it. A later
+    ///      "deposit on behalf of" that passed a different payer would let anyone with a standing
+    ///      allowance to this vault be drained by a stranger, and it would look like a feature.
+    ///
+    ///      Sponsored deposits are a reasonable thing to want. They are not reasonable to acquire
+    ///      by accident, so acquiring them means deleting this line and answering "who consented to
+    ///      this transfer, and how would this contract know?" on purpose.
     function deposit(bytes32 assetId, address from, address account, uint256 amount)
         external
         onlyClearingHouse
@@ -70,6 +81,7 @@ contract CollateralVault is Authorized, ReentrancyGuard {
         returns (uint256 credited)
     {
         if (amount == 0) revert ZeroAmount();
+        if (from != account) revert PayerIsNotTheDepositor(from, account);
         if (!assets.hasCapability(assetId, Types.Capability.COLLATERAL)) {
             revert AssetNotDepositable(assetId);
         }

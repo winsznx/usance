@@ -64,6 +64,13 @@ library RiskMath {
             }
             prod0 |= prod1 * twos;
 
+            // XOR, not exponentiation. This is the standard Newton-Raphson seed for a modular
+            // inverse: `(3 * d) ^ 2` is exact for `d` modulo 2**4, and each of the six doublings
+            // below takes it to 8, 16, 32, 64, 128 and finally 256 bits. Slither flags it as a
+            // likely `**` typo on every run, and "fixing" it to `**` silently returns wrong
+            // products for any division that is not exact. The differential fixtures would catch
+            // that — S23 through S28 exist because the 18-decimal ones all divided evenly — but
+            // the note belongs here, where the tempting edit is.
             uint256 inv = (3 * d) ^ 2;
             inv *= 2 - d * inv;
             inv *= 2 - d * inv;

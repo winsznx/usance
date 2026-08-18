@@ -67,6 +67,7 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     event CapitalReserved(address indexed account, uint256 amountUsd18, bytes32 intentId);
     event ReservationReleased(address indexed account, uint256 amountUsd18, bytes32 intentId);
     event OracleSet(address oracle);
+    event SettlementMaxPriceAgeSet(uint64 previous, uint64 current);
 
     error RiskLimitExceeded(uint256 requested, uint256 maximum);
     error AccountNotHealthy(Types.AccountStatus status);
@@ -78,7 +79,11 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     error ZeroAmount();
     error NotHolding(bytes32 assetId);
     error ReservationOutstanding();
+    /// @notice Zero means no staleness bound is enforced on the settlement price.
+    uint64 public settlementMaxPriceAge;
+
     error SettlementAssetUnpriced();
+    error SettlementPriceStale(uint64 age, uint64 maxAge);
     error BorrowTooSmall(uint256 amountUsd18);
 
     constructor(
@@ -108,6 +113,21 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
 
     function setSettlementAsset(bytes32 assetId) external onlyRole(authority.GOVERNANCE()) {
         settlementAssetId = assetId;
+    }
+
+    /// @notice How old the settlement price may be before new borrowing is refused. Zero disables.
+    /// @dev Deliberately not applied to repayment or collateral top-ups.
+    ///
+    ///      Zero means "no bound", which is the most permissive setting rather than the tightest,
+    ///      so it cannot be compared as though it were a small number. Relaxing bumps the epoch;
+    ///      tightening does not, because a tighter bound cannot make an outstanding quote unsafe.
+    function setSettlementMaxPriceAge(uint64 maxAge) external onlyRole(authority.GOVERNANCE()) {
+        uint64 previous = settlementMaxPriceAge;
+        settlementMaxPriceAge = maxAge;
+        emit SettlementMaxPriceAgeSet(previous, maxAge);
+
+        bool relaxed = maxAge == 0 ? previous != 0 : (previous != 0 && maxAge > previous);
+        if (relaxed) policies.bumpEpoch(keccak256("SETTLEMENT_PRICE_AGE_RELAXED"));
     }
 
     // ---------------------------------------------------------------------------------
@@ -301,7 +321,8 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
             revert RiskLimitExceeded(amountUsd18, r.availableBorrowUsd18);
         }
 
-        uint256 tokensOut = _usd18ToTokens(amountUsd18);
+        (uint256 sPrice, uint8 sDec) = _settlementPriceForNewRisk();
+        uint256 tokensOut = RiskMath.mulDiv(amountUsd18, 10 ** sDec, sPrice);
         // A draw smaller than one unit of the settlement token rounds to zero tokens out while
         // still recording scaled principal: debt nobody was paid. Invariant I-03 says every debt
         // increment has a corresponding outflow, so there is no such thing as a free-but-negative
@@ -461,9 +482,45 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
         if (interestTokens > 0) liquidity.accrue(interestTokens);
     }
 
+    /// @dev The settlement price with no staleness check, used on every path.
+    ///
+    ///      Slither flags this as an oracle read without a freshness test, and the omission was
+    ///      real. Adding the obvious check here would have been worse than the finding: this
+    ///      function is on the repay path, and a contract that refuses repayment because a feed
+    ///      went quiet has locked the exit — the failure R-02 exists to prevent, arrived at from
+    ///      the opposite direction.
+    ///
+    ///      So freshness is enforced where taking on risk depends on it and nowhere else. See
+    ///      `_settlementPriceForNewRisk`.
     function _settlementPrice() internal view returns (uint256 price, uint8 dec) {
         (price,) = oracle.getPrice(settlementAssetId);
         if (price == 0) revert SettlementAssetUnpriced();
+        dec = IERC20Metadata(address(liquidity.asset())).decimals();
+    }
+
+    /// @dev The settlement price, refused when it is too old to price new risk against.
+    ///
+    ///      A stale settlement feed matters most exactly when it is most likely: during a depeg,
+    ///      an unmoved feed pays a borrower fewer real dollars than the debt it records. That is a
+    ///      reason to refuse the borrow, not a reason to refuse the repayment that follows it.
+    ///
+    ///      `settlementMaxPriceAge` of zero disables the check, which is the honest default for a
+    ///      chain whose feed cadence has not been characterised — a guessed threshold produces
+    ///      outages that look like protocol failures.
+    function _settlementPriceForNewRisk() internal view returns (uint256 price, uint8 dec) {
+        uint64 updatedAt;
+        (price, updatedAt) = oracle.getPrice(settlementAssetId);
+        if (price == 0) revert SettlementAssetUnpriced();
+
+        uint64 maxAge = settlementMaxPriceAge;
+        if (maxAge != 0) {
+            // Saturating, because ordinary L2 clock skew puts a feed a second into the future
+            // routinely and unsigned subtraction panics on it. Same reason as RiskMath._age.
+            uint64 nowTs = uint64(block.timestamp);
+            uint64 age = nowTs > updatedAt ? nowTs - updatedAt : 0;
+            if (age > maxAge) revert SettlementPriceStale(age, maxAge);
+        }
+
         dec = IERC20Metadata(address(liquidity.asset())).decimals();
     }
 
