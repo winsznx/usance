@@ -125,6 +125,23 @@ export class ChainGptEvidenceExtractor implements EvidenceExtractor {
   }
 
   async extract(input: CanonicalDocument, signal?: AbortSignal): Promise<Extraction> {
+    // A missing credential is a configuration fault, not a data outcome, and the two must not
+    // produce the same value. Chunking made every per-chunk failure degrade into a warning, which
+    // meant an unconfigured deployment returned `claims: []` under this extractor's own name —
+    // indistinguishable from ChainGPT having read the document and found nothing in it. Anything
+    // downstream that counts extractions rather than claims would then record a second opinion
+    // that was never sought.
+    //
+    // Transport failures against a configured key still degrade per chunk. Not being configured at
+    // all fails loudly, once, before any work is attempted.
+    if (this.client.status() === "access_required") {
+      throw new Error(
+        "CHAINGPT_API_KEY is not configured. Extraction falls back to the deterministic parser " +
+          "path and any Passport built that way is marked singleSource. No model output is " +
+          "fabricated to fill the gap.",
+      );
+    }
+
     const startedAt = Math.floor(Date.now() / 1000);
     const text = new TextDecoder().decode(input.bytes);
     const warnings: string[] = [];

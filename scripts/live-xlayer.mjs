@@ -42,9 +42,13 @@ if (!existsSync(manifestPath)) {
 // The manifest is a TypeScript module so the web app can import it type-safely. Reading it here
 // with a regex avoids adding a TS loader to a script whose whole job is to be dependency-light.
 const manifestSrc = readFileSync(manifestPath, "utf8");
-const hasEntries = /deployments\s*:\s*Record<number,\s*DeploymentManifest>\s*=\s*\{\s*\}/.test(manifestSrc);
 
-if (hasEntries) {
+// True when the manifest declares no chains at all. The predicate used to be called `hasEntries`
+// while matching `= {}`, so it meant the exact opposite of its name — the kind of inversion that
+// reads correctly right up until someone edits the branch.
+const manifestIsEmpty = /deployments\s*:\s*Record<number,\s*DeploymentManifest>\s*=\s*\{\s*\}/.test(manifestSrc);
+
+if (manifestIsEmpty) {
   console.log("");
   console.log(`No deployment recorded for any chain yet.`);
   console.log("");
@@ -55,14 +59,36 @@ if (hasEntries) {
   process.exit(0);
 }
 
+// Scope to the requested chain before scraping addresses. A regex over the whole file happily
+// collects a second chain's contracts and then checks them against this chain's RPC, where they
+// have no code — reporting a broken deployment that is not broken, or worse, passing because the
+// addresses happen to collide.
+const chainBlockStart = manifestSrc.search(new RegExp(`(^|\\W)"?${chainId}"?\\s*:\\s*\\{`, "m"));
+if (chainBlockStart === -1) {
+  console.log("");
+  console.log(`Manifest has no entry for chain ${chainId}. Nothing is deployed there.`);
+  console.log("");
+  console.log("  make deploy-testnet    broadcast once the deployer is funded");
+  process.exit(0);
+}
+const nextChain = manifestSrc.slice(chainBlockStart + 1).search(/^\s{2}"?\d+"?\s*:\s*\{/m);
+const chainBlock = nextChain === -1 ? manifestSrc.slice(chainBlockStart) : manifestSrc.slice(chainBlockStart, chainBlockStart + 1 + nextChain);
+
 // Keys may be bare or quoted depending on how the manifest was generated, so both are matched.
-const addresses = [...manifestSrc.matchAll(/"?([A-Za-z_]\w*)"?\s*:\s*"(0x[0-9a-fA-F]{40})"/g)].map(
+const addresses = [...chainBlock.matchAll(/"?([A-Za-z_]\w*)"?\s*:\s*"(0x[0-9a-fA-F]{40})"/g)].map(
   ([, name, addr]) => ({ name, addr }),
 );
 
+// A verifier that discovers nothing to verify has failed, not passed. The manifest declares this
+// chain is deployed; finding zero addresses inside that declaration means the manifest is
+// malformed or the scraper is broken, and both are worse than no manifest at all. Reporting "no
+// addresses found" and exiting 0 is how a green check ends up sitting on top of a dead deployment.
 if (addresses.length === 0) {
-  console.log(`Manifest present but no addresses found for chain ${chainId}.`);
-  process.exit(0);
+  console.error("");
+  console.error(`FAIL: chain ${chainId} is declared in the manifest but no contract addresses could be read from it.`);
+  console.error("      Either the manifest is malformed or this script's parser no longer matches its shape.");
+  console.error("      Refusing to report success on a deployment that could not be checked.");
+  process.exit(1);
 }
 
 const client = createPublicClient({ transport: http(chain.rpc) });
