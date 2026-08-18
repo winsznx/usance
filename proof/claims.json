@@ -63,7 +63,7 @@
       "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xca0b395935d24722a6032752799a86323a56a960fd3d6837f4259b1eeec4ee0a",
+        "0xa9551f7b376eeaefe01c632ae5adc0f05878118654a32a4928be5be1647bf2b7",
         "proof/live-risk-scenario.json"
       ],
       "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 fixture S02, reproduced by a fourth independent deployment."
@@ -72,7 +72,7 @@
       "claim": "A borrow within the limit succeeds onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x3fc7d62934203ac8facf92f15d7554b707e947540ae3261d98364c6b5ff7ecdf"
+        "0xf1b01a34ac7b0d269e77cbe671cedcce788625ff3175f397d034b39bc88fb93f"
       ],
       "detail": "$416.56 against $833.11 of capacity."
     },
@@ -80,7 +80,7 @@
       "claim": "After a material risk deterioration, new borrowing is rejected by the contract.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x76e91aa035d918315f320e4ee5f3bd64c5762c500041a23c37050616e2863a6c",
+        "0xcb16984f9e2a8c9de179dd79ba7b80772b1a54134db142678802b3bc1e881447",
         "proof/live-risk-scenario.json"
       ],
       "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow submitted with an explicit gas limit mined at block 38596307, burned 243878 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status 1 is NO_NEW_RISK."
@@ -89,7 +89,7 @@
       "claim": "Risk-reducing actions remain available while new risk is blocked.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x633d364fb750dd8462c5648a03a52c4a17fe12002e82380d1c3f4613689d1fc0"
+        "0xca8d8daaf63554c0f56116f585323784fcd7920a75da9812be9877f937a0f3d4"
       ],
       "detail": "Repay-all succeeded under NO_NEW_RISK, clearing debt to zero and returning the account to NORMAL."
     },
@@ -190,7 +190,7 @@
       "claim": "Liquidation is progressive and routed on expected recovery.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
+        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
         "proof/live-liquidation.json"
       ],
       "detail": "Mined on X Layer testnet. An account walked NORMAL to NO_NEW_RISK to MARGIN_CALL as the collateral price fell, then 521.869 of 1000 tUSTB was seized \u2014 bounded by the close factor \u2014 retiring $390.59 of $791.46 debt and shrinking the breach from $85.77 to $63.46. The position was not closed and the account correctly remained MARGIN_CALL, because seizing collateral removes borrowing capacity as well as debt. Account state was never set directly."
@@ -207,7 +207,7 @@
       "claim": "A single liquidation does not always cure a breach, and the protocol says so before acting.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
+        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
         "proof/live-liquidation.json"
       ],
       "detail": "Mined on X Layer testnet. The planner reported curesTheBreach=false and a $1,977.80 debt-to-cure against $791.46 of actual debt before acting, then the liquidation seized 521.869 tUSTB, retired $390.59, shrank the breach from $85.77 to $63.46, and correctly left the account MARGIN_CALL. Seizing collateral removes borrowing capacity as well as debt, so repair per dollar is 1-(1+t)m \u2014 about 0.05 at these parameters."
@@ -216,7 +216,7 @@
       "claim": "A cured account cannot be liquidated.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
+        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
         "proof/live-liquidation.json"
       ],
       "detail": "After repaying to NORMAL, a liquidation with identical arguments to the one that had just succeeded was refused. Eligibility is recomputed from live inputs on every call, so the same code path that authorised the first refuses the replay."
@@ -232,42 +232,49 @@
     {
       "claim": "Real issuer tokens (FOBXX, OUSG, ARCOIN, xStocks) are usable as collateral.",
       "proofLevel": "NOT_YET_PROVEN",
-      "detail": "tUSTB and tUSD are labelled testnet stand-ins with no relationship to any issuer."
+      "detail": "tUSTB and tUSD are labelled testnet stand-ins with no relationship to any issuer.",
+      "evidence": []
     },
     {
       "claim": "Exchange OS / TradeZone execution.",
       "proofLevel": "NOT_YET_PROVEN",
-      "detail": "No builder access."
+      "detail": "No builder access.",
+      "evidence": []
     },
     {
       "claim": "LayerZero remote collateral.",
       "proofLevel": "NOT_YET_PROVEN",
-      "detail": "Endpoint ids verified; contracts not built."
+      "detail": "Endpoint ids verified; contracts not built.",
+      "evidence": []
     },
     {
       "claim": "OKX DEX routing or qualifying interface volume.",
       "proofLevel": "NOT_YET_PROVEN",
-      "detail": "No credentials, and attribution unconfirmed with the organiser."
+      "detail": "No credentials, and attribution unconfirmed with the organiser.",
+      "evidence": []
     },
     {
       "claim": "Mainnet deployment.",
-      "proofLevel": "NOT_YET_PROVEN"
+      "proofLevel": "NOT_YET_PROVEN",
+      "evidence": []
     },
     {
       "claim": "Explorer-verified contract source.",
       "proofLevel": "NOT_YET_PROVEN",
-      "detail": "Bytecode is live; source verification not yet attempted."
+      "detail": "Bytecode is live; source verification not yet attempted.",
+      "evidence": []
     },
     {
       "claim": "A corroborated (two-path) Franklin Passport.",
       "proofLevel": "NOT_YET_PROVEN",
-      "detail": "Blocked by the ChainGPT gateway limit on dense filings."
+      "detail": "Blocked by the ChainGPT gateway limit on dense filings.",
+      "evidence": []
     },
     {
       "claim": "Third-party liquidators are paid an explicit incentive out of liquidation proceeds.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
+        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
         "proof/live-liquidation.json",
         "contracts/test/LiquidatorEconomics.t.sol"
       ],

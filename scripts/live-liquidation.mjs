@@ -22,7 +22,7 @@ import { resolve } from "node:path";
 import { createPublicClient, createWalletClient, parseAbi, formatUnits, decodeErrorResult, keccak256, stringToBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { xlayerTransport } from "./_rpc.mjs";
-import { repoRoot, writeArtifact, digestOf } from "./_artifact.mjs";
+import { repoRoot, writeArtifact, archiveArtifact, digestOf } from "./_artifact.mjs";
 
 const d = JSON.parse(readFileSync(resolve(repoRoot, "deployments/1952.json"), "utf8"));
 const liq = JSON.parse(readFileSync(resolve(repoRoot, "deployments/1952-liquidation.json"), "utf8"));
@@ -367,6 +367,12 @@ console.log("    Eligibility is recomputed from live inputs on every call, so a 
 console.log("    repaired account is refused by the same code path that authorised the first one.");
 
 const epoch = await pub.readContract({ address: C.riskPolicyRegistry, abi: RP, functionName: "riskEpoch" });
+
+// A record produced against contracts that have since been replaced is still true of the
+// deployment it ran on. Archive it rather than overwriting, so the claims that cite it keep
+// resolving instead of being quietly repointed at a newer transaction.
+const archived = archiveArtifact("proof/live-liquidation.json", { reason: `superseded by the deployment at ${C.clearingHouse}` });
+if (archived) console.log(`\nPrevious record kept as ${archived}`);
 
 writeArtifact("proof/live-liquidation.json", {
   kind: "LIVE_LIQUIDATION",

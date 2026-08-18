@@ -50,6 +50,46 @@ export function deploymentDigest(chainId) {
  * digests: `inputDigest` and `deploymentDigest` change when the thing being described changes, and
  * a checker compares those rather than trusting a date.
  */
+/**
+ * Move an existing artifact aside before it is replaced.
+ *
+ * A proof record describes what happened on one deployment. When contracts are replaced the record
+ * does not stop being true — it stops being *current*, and those are different things. Overwriting
+ * it destroys evidence that was correct when it was written, and repointing the claims that cite it
+ * at a newer transaction quietly rewrites history to match the present.
+ *
+ * So the superseded record is kept, named by the ClearingHouse it ran against, and marked. Claims
+ * about the current deployment cite the new record; claims about what was proven before can still
+ * resolve to the old one.
+ */
+export function archiveArtifact(relPath, { reason } = {}) {
+  const full = resolve(repoRoot, relPath);
+  if (!existsSync(full)) return null;
+
+  const doc = JSON.parse(readFileSync(full, "utf8"));
+  const contracts = doc.contracts ?? {};
+  const stamp = (doc.clearingHouse ?? contracts.clearingHouse ?? doc.chainId ?? "unknown")
+    .toString()
+    .slice(2, 12) || "unknown";
+
+  const dir = resolve(repoRoot, "proof/historical");
+  mkdirSync(dir, { recursive: true });
+  const base = relPath.split("/").pop().replace(/\.json$/, "");
+  const target = resolve(dir, `${base}-${stamp}.json`);
+  if (existsSync(target)) return target;
+
+  doc.$superseded = {
+    archivedAt: new Date().toISOString(),
+    reason: reason ?? "the contracts this record was produced against were replaced",
+    note:
+      "Still true of the deployment it ran on. Kept rather than overwritten because a proof record " +
+      "that stops being current does not stop being accurate, and repointing the claims that cite " +
+      "it would rewrite history to match the present.",
+  };
+  writeFileSync(target, JSON.stringify(doc, null, 2) + "\n");
+  return `proof/historical/${base}-${stamp}.json`;
+}
+
 export function writeArtifact(relPath, body, { chainId, inputDigest, tool, run } = {}) {
   const full = resolve(repoRoot, relPath);
   mkdirSync(dirname(full), { recursive: true });

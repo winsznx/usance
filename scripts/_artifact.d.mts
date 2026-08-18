@@ -46,4 +46,6 @@ export declare function writeArtifact(
   body: Record<string, unknown>,
   options?: WriteOptions,
 ): Record<string, unknown> & { $provenance: Provenance };
+/** Move a superseded proof record into proof/historical/ before it is replaced. */
+export declare function archiveArtifact(relPath: string, options?: { reason?: string }): string | null;
 export declare function readArtifact(relPath: string, options?: ReadOptions): ReadResult;

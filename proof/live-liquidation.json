@@ -1,11 +1,11 @@
 {
   "$provenance": {
-    "generatedAt": "2026-08-18T19:33:08.589Z",
+    "generatedAt": "2026-08-18T21:33:50.449Z",
     "generatedBy": "scripts/live-liquidation.mjs",
-    "gitCommit": "0598adabf9bc0d63bc7eb667279ae21189d8a4b3-dirty",
+    "gitCommit": "1263f50930aea46d1290e0651289918f25a28367-dirty",
     "chainId": 1952,
-    "deploymentDigest": "0xe96c55a316b1f5f8a55655ce1b634511623467180d06f5c184cbf9102e15c9a4",
-    "inputDigest": "0xb40ec86c571a473f0d6ee45361cbc4bf5935c8989c651764c6aed53a22929daa",
+    "deploymentDigest": "0xb5398f453a1348782ba389c01c4d3a1876a2b086196227547e51a6eb7e9e4eb3",
+    "inputDigest": "0x757869168383e1d00ce855eb06e387ab4296e871f3265b5e5db7a298bf87ae74",
     "schema": 1
   },
   "kind": "LIVE_LIQUIDATION",
@@ -14,9 +14,9 @@
   "account": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
   "identityWarning": "tUSTB and tUSD are labelled testnet stand-ins. They are NOT Franklin FOBXX or any issuer token. This proves the financial mechanics; the Franklin Passport proves the evidence mechanics.",
   "contracts": {
-    "clearingHouse": "0xb150fd3c5742586501bb2f3211d99f7c0d50f2bc",
-    "liquidationManager": "0x76ac115d4eab3bab6b90e4bd97e2a7c256d4633c",
-    "route": "0xb5deb952dd5230150514f98c001cf77e9e971bef"
+    "clearingHouse": "0x2684f427b4c485736039709519a6b87cd271fcf0",
+    "liquidationManager": "0x2769504a10ae7c73ed0e1b71df8b4426d05792ae",
+    "route": "0xeaa5f3e0a642f9408deb4935052a3bbe0d08d244"
   },
   "riskEpochAfter": 7,
   "ladder": [
@@ -24,149 +24,136 @@
       "pricePct": 90,
       "status": "NO_NEW_RISK",
       "recognised": "882117815906250000000",
-      "debt": "791457909053368992719"
+      "debt": "791457428917125706493"
     },
     {
       "pricePct": 80,
       "status": "MARGIN_CALL",
       "recognised": "784104725250000000000",
-      "debt": "791460028275408324519"
+      "debt": "791459332905676668829"
     }
   ],
   "eligibility": {
     "status": "MARGIN_CALL",
-    "debtUsd18": "791460094501097053886",
+    "debtUsd18": "791459399131365397650",
     "maintenanceLimitUsd18": "705694252725000000000",
-    "breachUsd18": "85765841776097053886"
+    "breachUsd18": "85765146406365397650"
   },
   "plan": {
-    "repayTargetUsd18": "395730047250548526943",
-    "seizeValueUsd18": "417495199849328695925",
-    "seizeAmount": "521868999811660869906",
+    "repayTargetUsd18": "395729699565682698825",
+    "seizeValueUsd18": "417494833041795247261",
+    "seizeAmount": "521868541302244059076",
     "liquidationBonusBps": 500,
     "wouldExhaustCollateral": false,
     "routeId": "0x1e8932d352d3b6cbda228b10b030829ae9f69b211a46e8bb6aba05a52e5df2f3",
     "routeDescription": "direct settlement buffer (TESTNET ROUTE - NOT A MARKET VENUE)",
     "quote": {
-      "proceeds": "417495199",
-      "fees": "1252485",
-      "latencyHaircut": "2087475",
-      "failureHaircut": "834990",
-      "expectedRecovery": "413320249"
+      "proceeds": "417494833",
+      "fees": "1252484",
+      "latencyHaircut": "2087474",
+      "failureHaircut": "834989",
+      "expectedRecovery": "413319886"
     }
   },
   "before": {
     "deposited": "1000000000000000000000",
     "recognised": "784104725250000000000",
     "maintenanceLimit": "705694252725000000000",
-    "debt": "791460061388252689203",
+    "debt": "791459366018521033239",
     "status": "MARGIN_CALL"
   },
   "after": {
-    "deposited": "478131000188339130094",
-    "recognised": "374904776536185351855",
-    "maintenanceLimit": "337414298882566816669",
-    "debt": "400874412589554198335",
+    "deposited": "478131458697755940924",
+    "recognised": "374905136055585644848",
+    "maintenanceLimit": "337414622450027080363",
+    "debt": "400874209227605166251",
     "status": "MARGIN_CALL"
   },
   "partialDeleveraging": {
-    "collateralSeized": "521868999811660869906",
-    "collateralRemaining": "478131000188339130094",
+    "collateralSeized": "521868541302244059076",
+    "collateralRemaining": "478131458697755940924",
     "fractionSeizedBps": 5218,
-    "debtRepaidUsd18": "390585648798698490868"
+    "debtRepaidUsd18": "390585156790915866988"
   },
   "curedAfterwards": {
     "status": "NORMAL",
     "debtUsd18": "0",
-    "depositedRemaining": "478131000188339130094"
+    "depositedRemaining": "478131458697755940924"
   },
   "cureRefusedLiquidation": "The contract function \"executeLiquidation\" reverted.",
   "bonusAccrual": "Every unit of route proceeds is applied to the debt, so the liquidation bonus currently accrues to the borrower as extra debt retirement rather than to a liquidator. A production deployment paying third-party liquidators would split it; nothing here pretends it already does.",
   "plannedCure": {
     "curesTheBreach": false,
-    "curingRepayUsd18": "1977816372883109977941"
+    "curingRepayUsd18": "1977802603185453418812"
   },
   "liquidationTx": {
-    "hash": "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
-    "blockNumber": 38622623,
-    "gasUsed": "418001"
+    "hash": "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
+    "blockNumber": 38629869,
+    "gasUsed": "420103"
   },
   "transactions": [
     {
       "label": "borrow $791.46 (95% of capacity)",
-      "hash": "0xa541619f52645799d5b4900319e2c8a6fabafc17c6646a6f0c1d71c5f9b8e32e",
-      "blockNumber": 38622242,
+      "hash": "0xf1b01a34ac7b0d269e77cbe671cedcce788625ff3175f397d034b39bc88fb93f",
+      "blockNumber": 38629521,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
       "label": "setAnswer 0.9",
-      "hash": "0xc25897849d7837084e41e9281db9b129e5a5c97f1f693dbcd8db9daf1f523796",
-      "blockNumber": 38622314,
+      "hash": "0x4ce36b7dc66556baa099027ff567c3dd8fc9966adf70212c678d255b3bd6f92a",
+      "blockNumber": 38629574,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
       "label": "bumpEpoch(COLLATERAL_REPRICED)",
-      "hash": "0xf040ec73c9e49ab5ee90aa52bfb3aad51c62c6b28612d66cb4ef097823f81e80",
-      "blockNumber": 38622372,
+      "hash": "0x78c52156746d2d3d561b481ab7d1390f0640bb396a6015553a8ee35a128b3041",
+      "blockNumber": 38629624,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
       "label": "setAnswer 0.8",
-      "hash": "0xc86363358f2fa3f3dcbf9a5da400dd2c6d534f8560738598a4129ddcec1577ca",
-      "blockNumber": 38622440,
+      "hash": "0x29e4439cf35637f1143876cc184fa5e4b226a6ef02f4ed338a8d8ddf435be8a2",
+      "blockNumber": 38629683,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
       "label": "bumpEpoch(COLLATERAL_REPRICED)",
-      "hash": "0x78ff89afb932ce5ca6d6a81d272674c2b78955755b88c6461beb90e4091deda3",
-      "blockNumber": 38622503,
+      "hash": "0x1d46ba0877b98dfaace0096a46302c3553ba37085eb3400855b5c9147bb124d9",
+      "blockNumber": 38629741,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
       "label": "grantRole(LIQUIDATOR, keeper)",
-      "hash": "0x8997d473bfc04a9ee36c83f951860f2018138222c3fb229be548fa53abce1734",
-      "blockNumber": 38622566,
+      "hash": "0x38d578be0a847e9297737c654ccbc547cbe4fd157fc8b66a4eb1993efe66af25",
+      "blockNumber": 38629806,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
-      "label": "executeLiquidation 521.869 tUSTB",
-      "hash": "0x77b552c173fdbf273b779536e5679875ee02be94c9a50d3f11fea4255881e716",
-      "blockNumber": 38622623,
+      "label": "executeLiquidation 521.8685 tUSTB",
+      "hash": "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
+      "blockNumber": 38629869,
       "status": "success",
       "from": "0xac57540360bE14CA481b8D08855940Efc63510aD"
     },
     {
       "label": "approve ClearingHouse",
-      "hash": "0x3d4d9db347f2bd742ee0932f0b53021b10a5583a74a5a541463777cf805dfba8",
-      "blockNumber": 38622684,
+      "hash": "0x328a35a724f6c26585c953889d8086717589c65c01cfcf42fc35948026953bcb",
+      "blockNumber": 38629930,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     },
     {
       "label": "repay all (cure)",
-      "hash": "0x8d327c96730f29c6b09761f08c0fd5cb883b8ea58e4fb2e94c867ef16cf03fda",
-      "blockNumber": 38622746,
+      "hash": "0xca8d8daaf63554c0f56116f585323784fcd7920a75da9812be9877f937a0f3d4",
+      "blockNumber": 38629989,
       "status": "success",
       "from": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05"
     }
-  ],
-  "settlement": {
-    "note": "Proceeds split three ways. The keeper and the treasury are addresses distinct from the borrower, checked at runtime \u2014 an earlier run had the treasury aliased onto the deploy key, which is also the borrower, so one balance was read as two roles and the reported proceeds came out overstated by exactly the fee.",
-    "keeper": "0xac57540360bE14CA481b8D08855940Efc63510aD",
-    "treasury": "0xDd280E77039d504B9cE648b300964acA36651b48",
-    "proceedsTUSD": "413.320249",
-    "keeperIncentiveTUSD": "20.666012",
-    "keeperIncentiveBps": 500,
-    "protocolFeeTUSD": "2.066601",
-    "protocolFeeBps": 50,
-    "debtRetirementTUSD": "390.587636",
-    "returnedToBorrowerTUSD": "0",
-    "conservation": "keeper + protocol + debt == proceeds, measured by onchain balance delta"
-  }
+  ]
 }

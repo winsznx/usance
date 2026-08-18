@@ -1,53 +1,53 @@
 {
   "$provenance": {
-    "generatedAt": "2026-08-18T18:58:02.719Z",
+    "generatedAt": "2026-08-18T21:06:45.331Z",
     "generatedBy": "scripts/deploy-liquidation.mjs",
-    "gitCommit": "0598adabf9bc0d63bc7eb667279ae21189d8a4b3-dirty",
+    "gitCommit": "1263f50930aea46d1290e0651289918f25a28367-dirty",
     "chainId": 1952,
-    "deploymentDigest": "0xe96c55a316b1f5f8a55655ce1b634511623467180d06f5c184cbf9102e15c9a4",
-    "inputDigest": "0x06d227c35196e1919a7c6559079801cb2215c7a50bf4e0ccf9908bf12f009cc9",
+    "deploymentDigest": "0xb5398f453a1348782ba389c01c4d3a1876a2b086196227547e51a6eb7e9e4eb3",
+    "inputDigest": "0x7aab411b000b6585df8e46fea653328e7f3addbc65378068d8f893f4e30464c8",
     "schema": 1
   },
-  "attachedToCommit": "0598ada",
-  "clearingHouse": "0xb150fd3c5742586501bb2f3211d99f7c0d50f2bc",
+  "attachedToCommit": "1263f50",
+  "clearingHouse": "0x2684f427b4c485736039709519a6b87cd271fcf0",
   "contracts": {
-    "liquidationManager": "0x76ac115d4eab3bab6b90e4bd97e2a7c256d4633c",
-    "directSettlementRoute": "0xb5deb952dd5230150514f98c001cf77e9e971bef"
+    "liquidationManager": "0x2769504a10ae7c73ed0e1b71df8b4426d05792ae",
+    "directSettlementRoute": "0xeaa5f3e0a642f9408deb4935052a3bbe0d08d244"
   },
   "route": {
     "routeId": "0x1e8932d352d3b6cbda228b10b030829ae9f69b211a46e8bb6aba05a52e5df2f3",
     "description": "direct settlement buffer (TESTNET ROUTE - NOT A MARKET VENUE)",
-    "bufferToken": "0xc75f87e2205728a4897336efea0d783b4c07a794",
+    "bufferToken": "0x18837a706f350f7d8f7895594936fa58f74b1b9e",
     "bufferFunded": "200000000000"
   },
   "liquidator": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
   "transactions": [
     {
       "label": "deploy LiquidationManager",
-      "hash": "0x22e448224a110bea22993c4cef3bd0440be5b9afe1ada6cc9ca2007e343c97fa",
-      "blockNumber": 38620350,
-      "address": "0x76ac115d4eab3bab6b90e4bd97e2a7c256d4633c"
+      "hash": "0xebae5813d76f9b28f3fdda64c0a63a346b7dce9325bc3d9f7b78a826ceb4f182",
+      "blockNumber": 38628165,
+      "address": "0x2769504a10ae7c73ed0e1b71df8b4426d05792ae"
     },
     {
       "label": "deploy DirectSettlementRoute",
-      "hash": "0xb6f4c8fcc47896dda7bba9b1d3d859c8e5aef27a20be741958d367ec66c2de2e",
-      "blockNumber": 38620430,
-      "address": "0xb5deb952dd5230150514f98c001cf77e9e971bef"
+      "hash": "0x048715cd3cf1dd8a92b4748e2c066e5bed67e40f53779b5c5be9e7fc61cec695",
+      "blockNumber": 38628213,
+      "address": "0xeaa5f3e0a642f9408deb4935052a3bbe0d08d244"
     },
     {
       "label": "registerRoute",
-      "hash": "0xfe9574744dc99b4863420f039b224048679ae8ac03e3e9a74fa5dc3ed200e9ca",
-      "blockNumber": 38620500
+      "hash": "0x97ebfcd928383e81beba469a3f3f07d6d435b8cd72a69c08acfc3c1761256e7b",
+      "blockNumber": 38628262
     },
     {
       "label": "grantRole(LIQUIDATOR)",
-      "hash": "0x325a3d9afb1a8abd6bca45f9c6e77ba1f11fa5ddbf541fd08265af79db3a9638",
-      "blockNumber": 38620572
+      "hash": "0xe86f3e95e652ba80c4bbbf822c5f14146516591d60d265bd8f96c14ca98bca57",
+      "blockNumber": 38628312
     },
     {
       "label": "fund route buffer (tUSD)",
-      "hash": "0xf7901871b16301317e56eb5cee22c593fc40c3c9d76a06590e324703e8ac8e39",
-      "blockNumber": 38620637
+      "hash": "0x47f79db1c91eb46d13235d5349731b0b24365992c83ccc17b55b0dd88614dfaa",
+      "blockNumber": 38628364
     }
   ]
 }
