@@ -100,3 +100,26 @@ implementation. It is not written yet; `scripts/gen_fixtures.py` currently fills
 direct transcription of the spec. The differential property holds — three independent
 transcriptions agree — but the language does not match the plan, and the Rust engine is still
 owed.
+
+---
+
+## Delegated authority
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-40 | `AllowedAction = ProtocolAllows ∧ MandateAllows`. Neither check can satisfy a delegated call alone. | ENFORCED | `DelegatedAuthorityTest.test_aValidMandateCannotOverrideTheProtocol`, `.test_aProtocolLegalActionStillNeedsAMandate`; mutation "mandate check skipped entirely" |
+| I-41 | A mandate can narrow protocol authority and can never widen it. | ENFORCED | Delegated calls run the same internal mechanics as owner calls (`_repay`, `_addCollateral`); `.test_aValidMandateCannotOverrideTheProtocol` |
+| I-42 | An agent cannot withdraw user collateral, by any route. | ENFORCED | `.test_noDelegatedPathReachesAWithdrawal`, `.test_anOverlyBroadMandateStillCannotWithdraw`; mutation "any action becomes delegable" |
+| I-43 | A revoked mandate cannot execute. | ENFORCED | `.test_aRevokedMandateCannotExecute` |
+| I-44 | A paused mandate cannot execute; resuming restores it. | ENFORCED | `.test_aPausedMandateCannotExecuteAndResumingRestoresIt` |
+| I-45 | An expired mandate cannot execute. | ENFORCED | `.test_anExpiredMandateCannotExecute` |
+| I-46 | Authorization inputs are read from live protocol state, never supplied by the agent. | ENFORCED | `.test_theAuthorizationRequestReflectsLiveState`, `.test_theDebtCeilingIsEnforcedAgainstLiveDebt`; mutations on `projectedDebtUsd18` and `grossExposureUsd18` |
+| I-47 | Owner actions never require a mandate. | ENFORCED | `.test_ownerActionsDoNotRequireAMandate` |
+| I-48 | An agent funds its own delegated act; the account is never charged for it. | ENFORCED | `.test_theAgentFundsTheRepaymentItself`; mutation "account pays instead of the agent" |
+| I-49 | Autonomous borrowing is refused until every bound is wired end to end. | ENFORCED | `.test_autonomousBorrowIsRefusedRatherThanHalfWired`; mutation "autonomous borrow silently enabled" |
+| I-50 | Delegated intent reservation and partial-fill accounting. | SPECIFIED_NOT_ACTIVE | IntentBook holds the state machine; it is not yet wired to `ClearingHouse.reserve`. No delegable action reaches a venue today. |
+
+**Not yet enforced, and named rather than implied.** Autonomous BORROW, TRADE, HEDGE and CLOSE are
+all refused at the ClearingHouse boundary. The mandate vocabulary contains them and the registry
+checks their caps correctly, but no venue execution path is wired, so granting them would authorise
+an act with nowhere to go. `ActionNotDelegable` is the honest answer until that changes.

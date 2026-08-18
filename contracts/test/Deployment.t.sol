@@ -161,6 +161,10 @@ contract DeploymentTest is Test {
             // unreadable: one balance is counted as both "protocol fee" and "returned to borrower",
             // and the reported proceeds come out overstated by exactly the fee. A live liquidation
             // found this, not a unit test.
+            // Delegated authority is wired at deploy. A MandateRegistry that exists but is not
+            // attached authorises everything, because nothing consults it.
+            assertTrue(address(clearing.mandates()) != address(0), "no MandateRegistry was wired");
+
             FeeController fees = clearing.fees();
             assertTrue(address(fees) != address(0), "no FeeController was deployed");
             assertTrue(fees.treasury() != deployKey, "protocol fees accrue to the deploy key");

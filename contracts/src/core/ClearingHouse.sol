@@ -14,6 +14,7 @@ import {CollateralVault} from "./CollateralVault.sol";
 import {LiquidityVault} from "./LiquidityVault.sol";
 import {FinancingEngine} from "./FinancingEngine.sol";
 import {FeeController} from "./FeeController.sol";
+import {MandateRegistry} from "./MandateRegistry.sol";
 import {IOracleAdapter} from "../interfaces/IOracleAdapter.sol";
 import {RiskMath} from "../libraries/RiskMath.sol";
 import {ILiquidationRoute} from "../interfaces/ILiquidationRoute.sol";
@@ -297,13 +298,20 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     // ---------------------------------------------------------------------------------
 
     function addCollateral(bytes32 assetId, uint256 amount) external nonReentrant {
+        _addCollateral(msg.sender, msg.sender, assetId, amount);
+    }
+
+    /// @dev `payer` and `beneficiary` are separate arguments and are never allowed to diverge
+    ///      without an explicit reason. Both owner and delegated paths land here, so the protocol
+    ///      rules are one implementation rather than two that drift.
+    function _addCollateral(address payer, address beneficiary, bytes32 assetId, uint256 amount) internal {
         if (amount == 0) revert ZeroAmount();
         if (!assets.hasCapability(assetId, Types.Capability.COLLATERAL)) revert AssetNotCollateral(assetId);
 
-        uint256 credited = collateral.deposit(assetId, msg.sender, msg.sender, amount);
-        _insertHeld(msg.sender, assetId);
+        uint256 credited = collateral.deposit(assetId, payer, beneficiary, amount);
+        _insertHeld(beneficiary, assetId);
 
-        emit CollateralAdded(msg.sender, assetId, credited, policies.riskEpoch());
+        emit CollateralAdded(beneficiary, assetId, credited, policies.riskEpoch());
     }
 
     function withdrawCollateral(bytes32 assetId, uint256 amount) external nonReentrant {
@@ -550,9 +558,16 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     }
 
     function repay(uint256 amountUsd18, bool repayAll) external nonReentrant returns (uint256 applied) {
+        return _repay(msg.sender, msg.sender, amountUsd18, repayAll);
+    }
+
+    function _repay(address payer, address account, uint256 amountUsd18, bool repayAll)
+        internal
+        returns (uint256 applied)
+    {
         _accrueAndRecognise();
 
-        uint256 debt = financing.debtOf(msg.sender);
+        uint256 debt = financing.debtOf(account);
         if (debt == 0) revert NoDebt();
 
         uint256 target = repayAll ? debt : amountUsd18;
@@ -562,16 +577,163 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
         uint256 tokensIn = _usd18ToTokensUp(target);
 
         IERC20 settlement = liquidity.asset();
-        settlement.safeTransferFrom(msg.sender, address(liquidity), tokensIn);
+        settlement.safeTransferFrom(payer, address(liquidity), tokensIn);
 
-        applied = financing.onRepay(msg.sender, target, repayAll);
+        applied = financing.onRepay(account, target, repayAll);
         // The vault's books are token-denominated. `applied` is USD, so it is the tokens that
         // actually arrived which get booked, along with the real reserve factor rather than a
         // hardcoded zero that made the reserve branch unreachable.
         (,,,, uint16 reserveFactorBps) = financing.rate();
         liquidity.onRepaid(tokensIn, reserveFactorBps);
 
-        emit RepayExecuted(msg.sender, applied, tokensIn, policies.riskEpoch());
+        emit RepayExecuted(account, applied, tokensIn, policies.riskEpoch());
+    }
+
+    // ---------------------------------------------------------------------------------
+    // Delegated execution
+    // ---------------------------------------------------------------------------------
+
+    /// @notice Where delegated authority is checked. Unset until governance wires it.
+    MandateRegistry public mandates;
+
+    /// @dev Which verbs an agent may ever reach through this contract.
+    ///
+    ///      A second, narrower gate than the mandate action enum, and deliberately redundant with
+    ///      it. `MandateRegistry.MandateAction` has no withdrawal member and is meant never to gain
+    ///      one — but "an enum nobody will widen" is a promise about future commits, not a
+    ///      protocol rule. This switch is the rule: an action that is not named here cannot execute
+    ///      no matter what a signature says, what the enum grows to mean, or what an owner was
+    ///      persuaded to sign.
+    ///
+    ///      BORROW is absent on purpose. Autonomous debt is not enabled until every bound in §7 of
+    ///      the delegation spec is wired end to end, and shipping it half-wired to look complete is
+    ///      the failure this whole layer exists to prevent.
+    event DelegatedExecution(
+        address indexed account,
+        address indexed agent,
+        bytes32 indexed mandateId,
+        uint8 action,
+        uint256 amountUsd18,
+        uint64 riskEpoch
+    );
+    event MandateRegistrySet(address registry);
+
+    error MandatesNotConfigured();
+    error ActionNotDelegable(uint8 action);
+    error AgentCannotWithdraw();
+    error AgentIsNotTheAccount();
+
+    function setMandateRegistry(MandateRegistry registry) external onlyRole(authority.GOVERNANCE()) {
+        mandates = registry;
+        emit MandateRegistrySet(address(registry));
+        // Changing who may authorise delegated acts changes what an outstanding quote means.
+        policies.bumpEpoch(keccak256("MANDATE_REGISTRY_SET"));
+    }
+
+    /**
+     * @notice Exactly the request `executeDelegated` would submit for these arguments.
+     *
+     * @dev Public for two reasons, and the second is the load-bearing one.
+     *
+     *      A UI needs it, so a mandate page can say which bound an act would hit before anybody
+     *      signs anything.
+     *
+     *      And the caps in it are only *checked* for actions that can trip them — the debt ceiling
+     *      applies to BORROW alone, which is not delegable yet. That means a mutation replacing
+     *      `projectedDebtUsd18` with a constant zero breaks nothing today and everything on the day
+     *      autonomous borrowing is enabled. Exposing the construction is what lets a test pin the
+     *      binding to live protocol state now, rather than discovering it was severed later.
+     *
+     *      Every risk field is read here, never accepted from a caller. An agent that could supply
+     *      its own projected debt could pass any ceiling by understating it.
+     */
+    function authorizationRequestFor(
+        address account,
+        bytes32 mandateId,
+        MandateRegistry.MandateAction action,
+        bytes32 assetId,
+        uint256 amount,
+        bytes32 venueId
+    ) public view returns (MandateRegistry.AuthorizationRequest memory) {
+        (Types.RiskResult memory health,) = accountHealth(account);
+        return MandateRegistry.AuthorizationRequest({
+            mandateId: mandateId,
+            agent: msg.sender,
+            action: action,
+            assetId: assetId,
+            venueId: venueId,
+            amountUsd18: amount,
+            projectedDebtUsd18: health.debtUsd18,
+            grossExposureUsd18: health.totalRecognizedUsd18,
+            equityUsd18: health.totalRecognizedUsd18 > health.debtUsd18
+                ? health.totalRecognizedUsd18 - health.debtUsd18
+                : 0,
+            passportCommittedAt: uint64(block.timestamp),
+            slippageBps: 0
+        });
+    }
+
+    /**
+     * @notice Perform an action on `account`'s behalf, under a mandate that account signed.
+     *
+     * @dev The constitutional rule, and the reason this function is shaped the way it is:
+     *
+     *          AllowedAction = ProtocolAllows AND MandateAllows
+     *
+     *      Never `OR`. A mandate can only ever narrow what the protocol already permits. The two
+     *      checks are sequential statements with no early return between them, so neither can
+     *      satisfy the call on its own — `authorize` reverts on refusal, and the protocol mechanics
+     *      that follow are the same ones an owner's own call runs.
+     *
+     *      The authorization request is built from live protocol state, not from agent arguments.
+     *      An agent that could supply its own `projectedDebtUsd18` could pass any debt ceiling by
+     *      understating it.
+     *
+     *      There is no withdrawal branch and there is no `account` outflow to `msg.sender`. Every
+     *      supported verb either moves value *into* the account or reduces its debt. That is what
+     *      makes "an agent cannot withdraw collateral" a property of the control flow rather than a
+     *      claim about an enum.
+     */
+    function executeDelegated(
+        address account,
+        bytes32 mandateId,
+        MandateRegistry.MandateAction action,
+        bytes32 assetId,
+        uint256 amount,
+        bytes32 venueId,
+        bytes32[] calldata assetProof,
+        bytes32[] calldata venueProof
+    ) external nonReentrant returns (uint256 result) {
+        if (address(mandates) == address(0)) revert MandatesNotConfigured();
+
+        // An agent acting on its own account is not delegation, and letting it through here would
+        // route an ordinary user action past a mandate check that was never meant to gate them.
+        if (msg.sender == account) revert AgentIsNotTheAccount();
+
+        _accrueAndRecognise();
+
+        // ---- 1. MandateAllows. Reverts with the exact bound that was hit.
+        mandates.authorize(
+            authorizationRequestFor(account, mandateId, action, assetId, amount, venueId),
+            assetProof,
+            venueProof
+        );
+
+        // ---- 2. ProtocolAllows. The same code an owner's own call runs, so a mandate cannot
+        //         reach a path the protocol would refuse.
+        if (action == MandateRegistry.MandateAction.REPAY) {
+            result = _repay(msg.sender, account, amount, false);
+        } else if (action == MandateRegistry.MandateAction.ADD_COLLATERAL) {
+            // The agent funds it. An agent that could spend the account's own balance would be
+            // able to drain a wallet allowance without moving anything into the account.
+            _addCollateral(msg.sender, account, assetId, amount);
+            result = amount;
+        } else {
+            // Everything else, including any member added to the enum later.
+            revert ActionNotDelegable(uint8(action));
+        }
+
+        emit DelegatedExecution(account, msg.sender, mandateId, uint8(action), amount, policies.riskEpoch());
     }
 
     // ---------------------------------------------------------------------------------

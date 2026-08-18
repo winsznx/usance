@@ -155,3 +155,50 @@ spec/               The frozen constitution.
 proof/              Records written by the scripts that submitted the transactions.
 scripts/            Deploy, commit, reconcile, verify.
 ```
+
+---
+
+## Authority
+
+```
+Owner
+  │  delegates a bounded subset, signed EIP-712
+  ▼
+Mandate ──────────► Agent
+  │                   │  proposes and executes, within limits
+  │                   ▼
+  └──────────► ClearingHouse
+                      │  protocol policy still has final veto
+                      ▼
+                 money moves
+```
+
+The constitution:
+
+```
+AllowedAction = ProtocolAllows ∧ MandateAllows
+```
+
+Never `∨`. A mandate can only narrow what the protocol already permits. `executeDelegated` calls
+`MandateRegistry.authorize`, which reverts with the exact bound that was hit, and then runs the same
+internal mechanics an owner's own call runs. There is no branch where one check satisfies the call
+alone.
+
+Authorization inputs are read from live protocol state. An agent that could supply its own projected
+debt could pass any ceiling by understating it.
+
+**An agent cannot withdraw user collateral.** Enforced twice, deliberately redundantly. The mandate
+action vocabulary contains no outflow verb, and `ClearingHouse` reverts on every action its
+delegated switch does not name — including any member added to the enum later. An enum nobody will
+widen is a promise about future commits; a switch that refuses everything it does not name is a
+rule. An owner who signs a mandate granting every bit in the vocabulary still cannot delegate an
+outflow.
+
+Owners never need a mandate to use their own account. Mandates exist for delegated authority only.
+
+**Currently delegable:** `REPAY`, `ADD_COLLATERAL`. Both reduce risk or add value, and the agent
+funds them from its own balance.
+
+**Currently refused:** `BORROW`, `TRADE`, `HEDGE`, `CLOSE`. The registry checks their caps
+correctly, but no venue execution path is wired, so granting them would authorise an act with
+nowhere to go.

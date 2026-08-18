@@ -306,6 +306,33 @@
         "contracts/test/VaultEconomics.t.sol"
       ],
       "detail": "recordBadDebt spends the reserve before writing anything down against lender NAV. A protocol that accumulates a reserve out of borrower interest and then socialises the first loss anyway has charged a fee for insurance it did not provide. Losses beyond the reserve are borne by lenders in that vault only \u2014 there is no cross-vault socialisation, because a lender who chose one asset's risk did not choose another's."
+    },
+    {
+      "claim": "Delegated authority is the intersection of protocol policy and a user-signed mandate.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/src/core/ClearingHouse.sol",
+        "contracts/test/DelegatedAuthority.t.sol"
+      ],
+      "detail": "AllowedAction = ProtocolAllows AND MandateAllows, never OR. The two checks are sequential statements with no early return between them, and a delegated call runs the same internal mechanics an owner's own call runs, so a signature cannot reach a path the protocol would refuse. A mutation replacing the mandate check with a no-op fails the suite. Not yet exercised on a live deployment."
+    },
+    {
+      "claim": "An agent cannot withdraw user collateral.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/src/core/ClearingHouse.sol",
+        "contracts/test/DelegatedAuthority.t.sol"
+      ],
+      "detail": "Enforced twice. The mandate vocabulary has no outflow verb, and ClearingHouse's delegated switch reverts on every action it does not name \u2014 including any member added to the enum later. An owner who signs a mandate granting every bit in the vocabulary still cannot delegate an outflow. The ordinary withdrawal path takes no account argument, so an agent calling it reaches only its own position. Not yet exercised on a live deployment."
+    },
+    {
+      "claim": "Autonomous borrowing is refused rather than shipped half-wired.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/test/DelegatedAuthority.t.sol",
+        "spec/invariants.md"
+      ],
+      "detail": "BORROW is in the mandate vocabulary and the registry checks its debt ceiling correctly, but ClearingHouse refuses to delegate it with ActionNotDelegable. Enabling it requires every bound wired end to end; shipping it half-checked to look complete is the failure this layer exists to prevent."
     }
   ]
 }

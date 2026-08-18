@@ -13,6 +13,7 @@ import {CollateralVault} from "../src/core/CollateralVault.sol";
 import {LiquidityVault} from "../src/core/LiquidityVault.sol";
 import {FinancingEngine} from "../src/core/FinancingEngine.sol";
 import {FeeController} from "../src/core/FeeController.sol";
+import {MandateRegistry} from "../src/core/MandateRegistry.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {ChainlinkFeedAdapter} from "../src/adapters/ChainlinkFeedAdapter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -63,6 +64,7 @@ contract Deploy is Script {
         FinancingEngine financing;
         ClearingHouse clearing;
         FeeController fees;
+        MandateRegistry mandates;
     }
 
     function run() external {
@@ -175,6 +177,11 @@ contract Deploy is Script {
         // Raising a fee changes what an outstanding quote means, so it must be able to advance the
         // epoch those quotes are stamped with.
         c.policyRegistry.setEpochBumper(address(c.fees), true);
+
+        // Delegated authority. Wired at deploy so the registry is never a sidecar: a registry that
+        // answers correctly and is never consulted authorises everything.
+        c.mandates = new MandateRegistry(c.authority);
+        c.clearing.setMandateRegistry(c.mandates);
     }
 
     /// @dev The ADMISSION role goes to the broadcasting EOA, not to `address(this)`. Under
@@ -267,6 +274,7 @@ contract Deploy is Script {
         console2.log("clearingHouse", address(c.clearing));
         console2.log("oracleAdapter", address(c.oracle));
         console2.log("feeController", address(c.fees));
+        console2.log("mandateRegistry", address(c.mandates));
         console2.log("USANCE_DEPLOYMENT_END");
     }
 }

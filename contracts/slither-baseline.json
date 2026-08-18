@@ -156,6 +156,10 @@
       "impact": "Low",
       "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
     },
+    "timestamp@function:authorizationRequestFor": {
+      "impact": "Low",
+      "reason": "block.timestamp fills passportCommittedAt, which MandateRegistry compares against the mandate's requiredPassportFreshness. A validator nudging the timestamp shifts that freshness window by the amount it nudged it \u2014 it cannot make a stale Passport fresh by any margin that matters, and the field is not used for any value calculation."
+    },
     "timestamp@function:availableBorrow": {
       "impact": "Low",
       "reason": "block.timestamp is used for oracle ages, Passport expiry and the governance timelock. All three tolerate the seconds of drift a validator could induce; none is a deadline an attacker profits from crossing early. Ages are computed with saturating subtraction, which is what actually mattered here \u2014 see regression R-05."
@@ -220,6 +224,10 @@
       "impact": "Medium",
       "reason": "Solidity zero-initialises memory, and every one of these is an accumulator or a found-flag whose zero value is the intended starting point."
     },
+    "unused-return@function:_repay": {
+      "impact": "Medium",
+      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
+    },
     "unused-return@function:_settleLiquidation": {
       "impact": "Medium",
       "reason": "financing.rate() returns five components and only the reserve factor is needed here, to book the repayment the same way an ordinary one is booked. The other four describe the borrow curve and have no bearing on how proceeds are split or recorded."
@@ -247,10 +255,6 @@
     "unused-return@function:quote": {
       "impact": "Medium",
       "reason": "The discarded component is genuinely unused at that call site. Where a discarded price timestamp did matter \u2014 settlement freshness, and the liquidation route's own quote \u2014 it is now read."
-    },
-    "unused-return@function:repay": {
-      "impact": "Medium",
-      "reason": "The discarded component is genuinely unused at that call site. Where the discarded value is a price timestamp on a risk-increasing path, it is now read: see oracle-no-staleness."
     },
     "unused-return@function:sequencerStatus": {
       "impact": "Medium",
