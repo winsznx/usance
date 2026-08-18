@@ -3,6 +3,16 @@
   "chainId": 1952,
   "network": "X Layer Testnet",
   "fixture": "franklin-fobxx-2026",
+  "reconciledFromChainLogs": true,
+  "evidence": {
+    "issuer": "Franklin Templeton Trust",
+    "product": "Franklin OnChain U.S. Government Money Fund (FOBXX) — Summary Prospectus, August 1, 2026",
+    "sourceClass": "REGULATORY_FILING",
+    "sourceUri": "https://www.sec.gov/Archives/edgar/data/1786958/000165558926001138/c497k.htm",
+    "retrievedAt": "1786987442",
+    "effectiveAt": "1785542400",
+    "effectiveAtBasis": "the document states 'August 1, 2026' on its face"
+  },
   "assetId": "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
   "passportId": "0x5a74da8e73cc67b04db5b17a0738da858cc31fb4bf45fa2b6363a064cb702124",
   "version": 1,
@@ -12,8 +22,7 @@
   "singleSource": true,
   "redemptionSupported": false,
   "redemptionFloorBps": 0,
-  "riskEpoch": 5,
-  "corroboration": "SINGLE_SOURCE",
+  "riskEpoch": 13,
   "registries": {
     "evidenceRegistry": "0xf88bdcabc98954c0c535bc2bedb3b7019267e292",
     "passportRegistry": "0x28221789a6c9352f0e1c73e619b796cfc23c15f7",
@@ -24,22 +33,22 @@
       "label": "EvidenceRegistry.commit",
       "hash": "0x826f39c546f0238d49f7229bf298f7607d19cc329de025895a4ea5e0e7a294b9",
       "blockNumber": 38597280,
-      "builderCode": "usance",
-      "to": "0xf88bdcabc98954c0c535bc2bedb3b7019267e292"
+      "to": "0xf88bdcabc98954c0c535bc2bedb3b7019267e292",
+      "evidenceId": "0x4745f3bce7130e0dab8df6c57605155de294ff8f8f72a5925820065de404471a"
     },
     {
-      "label": "PassportRegistry.commitPassport",
+      "label": "PassportRegistry.commitPassport (v1)",
       "hash": "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
       "blockNumber": 38597284,
-      "builderCode": "usance",
       "to": "0x28221789a6c9352f0e1c73e619b796cfc23c15f7"
     },
     {
-      "label": "RiskPolicyRegistry.bumpEpoch",
+      "label": "RiskPolicyRegistry.bumpEpoch (epoch 5)",
       "hash": "0x32ecee8c05fbddaa64d33063bea0b0f5cd410f40295e9fb107b81d1de741dafe",
       "blockNumber": 38597289,
-      "builderCode": "usance",
-      "to": "0x2056ab844f6e3bd6adbc6b300081c8c762de57fc"
+      "to": "0x2056ab844f6e3bd6adbc6b300081c8c762de57fc",
+      "cause": "0x562d2a51d9749591a7935fea1e28f4e4a73aed107b2540293b47acb37de3c85a",
+      "causedBy": "passport v1"
     }
   ]
 }

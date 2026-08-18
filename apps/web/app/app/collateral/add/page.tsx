@@ -91,6 +91,21 @@ export default function AddCollateralPage() {
       >
         <div className="stack" style={{ gap: 22 }}>
           <div className="card stack" style={{ gap: 20 }}>
+            {/*
+              Always visible. This is the single most surprising thing about depositing into Usance
+              and the most likely to read as a hidden charge, so it is explained before anybody
+              types an amount rather than after.
+            */}
+            <Notice title="Recognised value is lower than market value, and the difference is not a fee">
+              Nobody takes it. It stays in your deposit and you can withdraw it. Usance will not lend
+              against the part of the value it could not realise quickly under stress, so the smaller
+              number is the one every limit is built on.{" "}
+              <Link href="/simulate" style={{ textDecoration: "underline" }}>
+                See how it is calculated
+              </Link>
+              .
+            </Notice>
+
             <AmountField
               label="Amount to deposit"
               value={amount.raw}
@@ -124,16 +139,6 @@ export default function AddCollateralPage() {
                   The gap is not a fee and does not go anywhere. Saying so plainly here is cheaper
                   than a support conversation and more honest than hiding the market figure.
                 */}
-                <Notice title="The difference is not a fee">
-                  Nobody takes the ${formatUsd(preview.haircut)}. It stays in your deposit and you
-                  can withdraw it. Usance simply will not lend against the part of the value it
-                  could not realise quickly under stress, so that number is the one every limit is
-                  built on.{" "}
-                  <Link href="/simulate" style={{ textDecoration: "underline" }}>
-                    See how it is calculated
-                  </Link>
-                  .
-                </Notice>
 
                 <div>
                   <div className="micro" style={{ marginBottom: 4 }}>

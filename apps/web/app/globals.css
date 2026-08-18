@@ -404,6 +404,41 @@ h4 {
   }
 }
 
+/*
+ * Phone layout.
+ *
+ * Both rules below fix overflow a browser test found at 412px. Horizontal page scroll on a phone is
+ * the difference between a usable form and a submit button nobody can reach, and neither problem is
+ * visible at any desktop width.
+ */
+@media (max-width: 520px) {
+  /*
+   * Tables scroll inside themselves rather than dragging the page sideways. `display: block` turns
+   * the table into its own scroll container; the cells keep their widths, so the data stays legible
+   * instead of being crushed into two-character columns.
+   */
+  .table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /*
+   * The header wraps instead of pushing its call to action off the right edge. It overflowed by six
+   * pixels — enough to make every page on the site scroll sideways, and small enough that nobody
+   * would ever notice it by eye.
+   */
+  .nav,
+  .row-between {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .shell {
+    overflow-x: hidden;
+  }
+}
+
 /* ------------------------------------------------------------------ stat */
 
 .stat-value {

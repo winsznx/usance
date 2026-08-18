@@ -232,6 +232,20 @@ const record = {
   chainId: deployment.chainId,
   network: deployment.network,
   fixture: fixtureId,
+  // Source metadata for the public receipt. Without it the chain-of-custody step renders
+  // "undefined — undefined", which a browser test caught and no unit test could: the loader
+  // returned a well-formed object whose fields were all missing.
+  evidence: entry
+    ? {
+        issuer: entry.issuer.legalName,
+        product: entry.title,
+        sourceClass: entry.sourceClassName,
+        sourceUri: entry.uri,
+        retrievedAt: String(entry.retrievedAt),
+        effectiveAt: String(entry.effectiveAt),
+        effectiveAtBasis: entry.effectiveAtBasis ?? "",
+      }
+    : undefined,
   assetId,
   passportId,
   version: Number(hVersion),

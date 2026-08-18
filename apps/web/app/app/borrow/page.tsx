@@ -98,22 +98,32 @@ export default function BorrowPage() {
               Both limits, always, even when one is not binding. The user needs to know which
               constraint they are actually up against before they can do anything about it.
             */}
-            {quote ? (
-              <div className="grid-2" style={{ gap: 14 }}>
-                <div className="panel">
-                  <div className="stat-label">Your collateral supports</div>
-                  <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
-                    ${formatUsd(quote.byRisk)}
-                  </div>
+            {/*
+              Rendered whether or not there is an account to read. These two limits have opposite
+              remedies — add collateral, or wait for lenders — and understanding that is what a
+              visitor needs in order to decide whether to connect at all. Gating the explanation
+              behind a connection shows it only to people who no longer need it.
+            */}
+            <div className="grid-2" style={{ gap: 14 }}>
+              <div className="panel">
+                <div className="stat-label">Your collateral supports</div>
+                <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
+                  {quote ? `$${formatUsd(quote.byRisk)}` : "—"}
                 </div>
-                <div className="panel">
-                  <div className="stat-label">Lenders can fund</div>
-                  <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
-                    ${formatUsd(quote.byLiquidity)}
-                  </div>
-                </div>
+                <p className="caption" style={{ marginTop: 6 }}>
+                  Raised by depositing more collateral.
+                </p>
               </div>
-            ) : null}
+              <div className="panel">
+                <div className="stat-label">Lenders can fund</div>
+                <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
+                  {quote ? `$${formatUsd(quote.byLiquidity)}` : "—"}
+                </div>
+                <p className="caption" style={{ marginTop: 6 }}>
+                  Adding collateral will not raise this. It moves when lenders supply more.
+                </p>
+              </div>
+            </div>
 
             {quote?.limitedByLiquidity ? (
               <Notice tone="warn" title="Limited by available lender cash, not by your collateral">

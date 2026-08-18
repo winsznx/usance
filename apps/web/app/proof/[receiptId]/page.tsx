@@ -89,8 +89,9 @@ export default async function ProofPage({ params }: { params: Promise<{ receiptI
             <h2 className="heading" style={{ margin: "14px 0 24px" }}>Source to consequence</h2>
 
             <div className="card card-flush">
-              {ev ? (
-                <Step n="01" title="Issuer filing" detail={`${ev["issuer"]} — ${ev["product"]}`}
+              {ev && (ev["issuer"] || ev["product"]) ? (
+                <Step n="01" title="Issuer filing"
+                  detail={[ev["issuer"], ev["product"]].filter(Boolean).join(" — ")}
                   value={ev["sourceClass"]?.replace(/_/g, " ") ?? ""} href={ev["sourceUri"]} />
               ) : null}
               <Step n="02" title="Evidence root" detail="Merkle root over the committed evidence" value={short(r.evidenceRoot)} />

@@ -99,27 +99,30 @@ export default function WithdrawPage() {
           ) : null}
 
           <div className="card stack" style={{ gap: 20 }}>
-            {quote ? (
-              <div className="grid-2" style={{ gap: 14 }}>
-                <div className="panel">
-                  <div className="stat-label">You have deposited</div>
-                  <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
-                    ${formatUsd(quote.depositedUsd)}
-                  </div>
-                </div>
-                <div className="panel">
-                  <div className="stat-label">Free to withdraw</div>
-                  <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
-                    ${formatUsd(quote.withdrawableUsd)}
-                  </div>
-                  {quote.debtUsd > 0n ? (
-                    <div className="caption" style={{ marginTop: 6 }}>
-                      ${formatUsd(quote.debtUsd)} of debt is holding the rest
-                    </div>
-                  ) : null}
+            {/*
+              Two different things stop a withdrawal and they have different remedies: debt holding
+              the collateral, and a restricted account status. Naming both before an account is
+              connected is what stops a blocked user guessing at which one they are hitting.
+            */}
+            <div className="grid-2" style={{ gap: 14 }}>
+              <div className="panel">
+                <div className="stat-label">You have deposited</div>
+                <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
+                  {quote ? `$${formatUsd(quote.depositedUsd)}` : "—"}
                 </div>
               </div>
-            ) : null}
+              <div className="panel">
+                <div className="stat-label">Free to withdraw</div>
+                <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
+                  {quote ? `$${formatUsd(quote.withdrawableUsd)}` : "—"}
+                </div>
+                <p className="caption" style={{ marginTop: 6 }}>
+                  {quote && quote.debtUsd > 0n
+                    ? `$${formatUsd(quote.debtUsd)} of debt is holding the rest`
+                    : "Debt holding your collateral limits this. A restricted account status pauses it entirely."}
+                </p>
+              </div>
+            </div>
 
             <AmountField
               label="Amount to withdraw"

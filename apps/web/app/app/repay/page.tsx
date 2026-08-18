@@ -105,6 +105,17 @@ export default function RepayPage() {
               </div>
             ) : null}
 
+            {/*
+              Stated up front. A live run reverted on exactly this: the account held precisely what
+              it had borrowed and could not clear the loan, because debt is principal plus interest
+              and only the principal was ever paid out.
+            */}
+            <Notice title="Closing a loan costs more than you borrowed">
+              Your debt is the amount you drew plus the interest it has accrued, and only the amount
+              you drew was ever paid out to you. Repaying in full therefore needs more settlement
+              token than borrowing produced.
+            </Notice>
+
             <label className="row" style={{ gap: 10, cursor: "pointer" }}>
               <input
                 type="checkbox"

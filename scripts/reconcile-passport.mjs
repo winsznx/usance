@@ -146,12 +146,30 @@ transactions.sort((a, b) => a.blockNumber - b.blockNumber);
 
 const epoch = await pub.readContract({ address: C.riskPolicyRegistry, abi: parseAbi(["function riskEpoch() view returns (uint64)"]), functionName: "riskEpoch" });
 
+const manifest = await loadManifest();
+const entry = manifest.documents.find((x) => x.id === fixtureId);
+
 const record = {
   kind: "PASSPORT_COMMITTED",
   chainId: deployment.chainId,
   network: deployment.network,
   fixture: fixtureId,
   reconciledFromChainLogs: true,
+  // Source metadata for the public receipt. Without it the chain-of-custody step renders
+  // "undefined — undefined", which a browser test caught and no unit test could: the loader
+  // returned a well-formed object whose fields were all missing.
+  evidence: entry
+    ? {
+        issuer: entry.issuer.legalName,
+        product: entry.title,
+        sourceClass: entry.sourceClassName,
+        sourceUri: entry.uri,
+        retrievedAt: String(entry.retrievedAt),
+        effectiveAt: String(entry.effectiveAt),
+        effectiveAtBasis: entry.effectiveAtBasis ?? "",
+      }
+    : undefined,
+
   assetId,
   passportId,
   version: Number(hVersion),

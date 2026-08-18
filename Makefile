@@ -169,11 +169,12 @@ slither-baseline: ## Re-seed the triage baseline (every new entry needs a writte
 
 test-risk: test-rust ## Alias for the Rust reference-engine suite (named in the build spec)
 
-test-e2e: ## Playwright browser end-to-end suite
-	@echo "NOT IMPLEMENTED: there is no Playwright suite yet, and no deployment to run it against."
-	@echo "  Blocked by: unfunded deployer (see 'make deployer')."
-	@echo "  This target exits non-zero rather than reporting a pass it cannot justify."
-	@exit 1
+test-e2e: build-web ## Playwright browser acceptance, desktop and mobile
+#  Runs against the production build, not `next dev`. The proof pages are statically generated from
+#  artifacts on disk, and a dev server would render a page the build would have rejected — which is
+#  the class of failure this suite exists to catch.
+	@command -v npx >/dev/null || { echo "npx not found"; exit 1; }
+	@npx playwright test
 
 demo-testnet: ## Run the judge path against a live X Layer testnet deployment
 	@echo "NOT IMPLEMENTED: requires a broadcast deployment."
