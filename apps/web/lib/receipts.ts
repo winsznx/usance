@@ -23,6 +23,10 @@ export function loadReceipts(): UsanceReceipt[] {
 
   for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
     const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+    if (raw["kind"] === "LIVE_RISK_SCENARIO") {
+      out.push(riskScenarioReceipt(raw));
+      continue;
+    }
     if (raw["kind"] !== "PASSPORT_COMMITTED") continue;
 
     const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
@@ -93,6 +97,68 @@ export function loadReceipts(): UsanceReceipt[] {
   }
 
   return (cache = out);
+}
+
+/**
+ * The live risk-lifecycle receipt.
+ *
+ * Status is CONFIRMED because the deterioration, the rejection and the repayment all happened as
+ * real transactions. The rejected borrow is recorded as a transaction with status "reverted" and a
+ * revertReason, because a refusal that reached the chain is evidence and hiding it would leave the
+ * strongest claim in the scenario undocumented.
+ */
+function riskScenarioReceipt(raw: Record<string, unknown>): UsanceReceipt {
+  const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
+  const primary = txs.find((t) => String(t["label"]).includes("borrow")) ?? txs[0];
+  const blocked = raw["newRiskBlocked"] as Record<string, unknown> | undefined;
+
+  return {
+    receiptId: receiptIdFor("BORROW_REJECTED", Number(raw["chainId"]), String(primary?.["hash"] ?? "0x0")),
+    kind: "BORROW_REJECTED",
+    status: "CONFIRMED",
+    chainId: Number(raw["chainId"]),
+    accountId: String(raw["account"]),
+    // No evidence asset: this scenario used labelled test tokens and asserts nothing about any
+    // issuer's filing. Leaving it null is the point, not an omission.
+    evidenceAssetId: null,
+    financialAssetId: null,
+    workflowId: null,
+    intentId: null,
+    passportVersion: null,
+    evidenceRoot: null,
+    claimsRoot: null,
+    singleSource: null,
+    riskPolicyVersion: null,
+    riskEpoch: null,
+    transactions: [
+      ...txs.map((t) => ({
+        chainId: Number(raw["chainId"]),
+        contract: "ClearingHouse",
+        txHash: String(t["hash"]).length === 66 ? String(t["hash"]) : `${String(t["hash"])}${"0".repeat(66 - String(t["hash"]).length)}`,
+        blockNumber: Number(t["block"] ?? t["blockNumber"] ?? 0),
+        action: String(t["label"]),
+        status: "success" as const,
+        revertReason: null,
+        builderAttribution: null,
+      })),
+      {
+        chainId: Number(raw["chainId"]),
+        contract: "ClearingHouse",
+        txHash: `0x${"0".repeat(64)}`,
+        blockNumber: null,
+        action: "borrow (rejected)",
+        status: "reverted" as const,
+        revertReason: String(blocked?.["result"] ?? "reverted"),
+        builderAttribution: null,
+      },
+    ],
+    stateTransitions: [
+      { at: 0, from: "NORMAL", to: "NO_NEW_RISK", note: String(raw["trigger"] ?? "") },
+      { at: 0, from: "NO_NEW_RISK", to: "NORMAL", note: "repay all succeeded" },
+    ],
+    createdAt: 0,
+    completedAt: 0,
+  };
 }
 
 export function loadReceipt(id: string): UsanceReceipt | null {

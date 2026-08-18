@@ -1,0 +1,106 @@
+{
+  "$comment": "Machine-readable claim ledger. A claim may only carry a proof level its evidence supports. LIVE_TESTNET requires a transaction hash a reader can check independently.",
+  "updatedAt": "2026-08-18",
+  "proofLevels": ["SPECIFIED", "UNIT_TESTED", "INTEGRATION_TESTED", "LIVE_TESTNET", "LIVE_MAINNET", "EXTERNAL_INTEGRATION", "NOT_YET_PROVEN"],
+  "chain": { "id": 1952, "name": "X Layer Testnet", "explorer": "https://www.oklink.com/x-layer-testnet" },
+  "claims": [
+    {
+      "claim": "Usance core clearing contracts are deployed on X Layer testnet.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["deployments/1952.json", "make test-live-xlayer"],
+      "detail": "Ten contracts, each verified to have code, riskEpoch non-zero, settlement asset bound."
+    },
+    {
+      "claim": "A Passport derived from a real issuer filing is committed onchain.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["0x5015d664a08cdbe8ffd5ced816e46b97cdebcf9e906e9dcafee370919763fcde"],
+      "detail": "Franklin Templeton SEC Form 497K, CIK 1786958. Block 38571222."
+    },
+    {
+      "claim": "The committed Passport was verified by reading it back from the registry.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["scripts/commit-passport.mjs", "proof/passport-franklin-fobxx-v1.json"],
+      "detail": "Version, assetId, evidenceRoot, claimsRoot, ACTIVE status and singleSource all compared against the candidate. A transaction hash is not a commit."
+    },
+    {
+      "claim": "ERC-8021 builder attribution is present on Usance X Layer writes.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["proof/passport-franklin-fobxx-v1.json"],
+      "detail": "Decoded back out of each submitted transaction's calldata, not assumed from the helper."
+    },
+    {
+      "claim": "A risk epoch transition occurred onchain.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["0xb9f9a7e294c15623db9544c1322df4639ff2c93e214772a979d296fcf6ce2b95"],
+      "detail": "RiskEpoch 1 to 2, block 38571228, caused by a committed Passport."
+    },
+    {
+      "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["proof/live-risk-scenario.json"],
+      "detail": "1000 tUSTB at $1 recognised as $980.13 — the same figure canonical fixture S02 asserts and all four implementations agree on."
+    },
+    {
+      "claim": "A borrow within the limit succeeds onchain.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["proof/live-risk-scenario.json"],
+      "detail": "$416.56 borrowed against $833.11 of capacity."
+    },
+    {
+      "claim": "After a material risk deterioration, new borrowing is rejected by the contract.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["proof/live-risk-scenario.json"],
+      "detail": "Recognised value fell $980.13 to $490.07, account entered NO_NEW_RISK, and a submitted $10 borrow reverted onchain. Not a disabled button."
+    },
+    {
+      "claim": "Risk-reducing actions remain available while new risk is blocked.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["proof/live-risk-scenario.json"],
+      "detail": "Repay-all succeeded under NO_NEW_RISK, clearing debt to zero and returning the account to NORMAL."
+    },
+    {
+      "claim": "Four independent implementations of the risk pipeline agree to the wei.",
+      "proofLevel": "INTEGRATION_TESTED",
+      "evidence": ["make test-differential"],
+      "detail": "Solidity, Rust, TypeScript and a Python spec transcription over 28 scenarios spanning 6, 8 and 18 decimals. Mutation-verified."
+    },
+    {
+      "claim": "A Passport built from one extraction path is capped and cannot claim corroboration.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": ["proof/passport-franklin-fobxx-v1.json"],
+      "detail": "The live Franklin Passport is singleSource because ChainGPT could not complete the extraction. The corroborator counts paths that produced a reading, not paths attempted."
+    },
+    {
+      "claim": "A claim conflict cannot commit a Passport.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": ["services/evidence/test/pipeline.test.ts"],
+      "detail": "CLAIM_CONFLICT is a union variant with no candidate key, so committing one is a type error. Mutation-verified."
+    },
+    {
+      "claim": "Real issuer documents are content-hashed and every digest recomputes from the stored bytes.",
+      "proofLevel": "INTEGRATION_TESTED",
+      "evidence": ["services/evidence/test/fixtures.test.ts"],
+      "detail": "Franklin 2024/2025/2026, Arca, Ondo. rawDigest, contentHash, issuerId, sourceHash and evidenceId all recomputed."
+    },
+    {
+      "claim": "An embedded prompt injection cannot reach a risk parameter.",
+      "proofLevel": "INTEGRATION_TESTED",
+      "evidence": ["packages/chaingpt/test/live.test.ts", "services/evidence/test/injection.test.ts"],
+      "detail": "Tested against the live model, which ignored the injection. The structural boundary holds regardless: no function reachable from an extractor sets a risk parameter."
+    },
+    {
+      "claim": "Usance uses Chainlink Data Feeds on X Layer. Data Streams is not available there.",
+      "proofLevel": "EXTERNAL_INTEGRATION",
+      "evidence": ["make verify-integrations", "docs/INTEGRATIONS.md"],
+      "detail": "Corrects the planning material. Chainlink's registry lists X Layer with supportedFeatures feeds only."
+    },
+
+    { "claim": "Real issuer tokens (FOBXX, OUSG, ARCOIN, xStocks) are usable as collateral.", "proofLevel": "NOT_YET_PROVEN", "detail": "tUSTB and tUSD are labelled testnet stand-ins with no relationship to any issuer." },
+    { "claim": "Exchange OS / TradeZone execution.", "proofLevel": "NOT_YET_PROVEN", "detail": "No builder access." },
+    { "claim": "LayerZero remote collateral.", "proofLevel": "NOT_YET_PROVEN", "detail": "Endpoint ids verified; contracts not built." },
+    { "claim": "OKX DEX routing or qualifying interface volume.", "proofLevel": "NOT_YET_PROVEN", "detail": "No credentials, and attribution unconfirmed with the organiser." },
+    { "claim": "Mainnet deployment.", "proofLevel": "NOT_YET_PROVEN" },
+    { "claim": "Explorer-verified contract source.", "proofLevel": "NOT_YET_PROVEN", "detail": "Bytecode is live; source verification not yet attempted." },
+    { "claim": "A corroborated (two-path) Franklin Passport.", "proofLevel": "NOT_YET_PROVEN", "detail": "Blocked by the ChainGPT gateway limit on dense filings." }
+  ]
+}
