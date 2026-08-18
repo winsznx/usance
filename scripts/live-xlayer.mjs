@@ -55,10 +55,10 @@ if (hasEntries) {
   process.exit(0);
 }
 
-const addresses = [...manifestSrc.matchAll(/(\w+)\s*:\s*"(0x[0-9a-fA-F]{40})"/g)].map(([, name, addr]) => ({
-  name,
-  addr,
-}));
+// Keys may be bare or quoted depending on how the manifest was generated, so both are matched.
+const addresses = [...manifestSrc.matchAll(/"?([A-Za-z_]\w*)"?\s*:\s*"(0x[0-9a-fA-F]{40})"/g)].map(
+  ([, name, addr]) => ({ name, addr }),
+);
 
 if (addresses.length === 0) {
   console.log(`Manifest present but no addresses found for chain ${chainId}.`);

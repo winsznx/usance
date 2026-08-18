@@ -1,0 +1,49 @@
+{
+  "chainId": 1952,
+  "network": "X Layer Testnet",
+  "deployedAt": "2026-08-18T00:29:25Z",
+  "deployer": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
+  "firstBlock": 38553910,
+  "explorer": "https://www.oklink.com/x-layer-testnet",
+  "commit": "75042b9",
+  "contracts": {
+    "authority": "0x7cc008587d34081e45b4ac25d6737ea9d4eea39e",
+    "assetRegistry": "0x7e4e9806045288e306a6e855cdc4c7f69cbc147c",
+    "evidenceRegistry": "0xd358d5a9e922a055d91ef4e0de57f8c5385c7199",
+    "passportRegistry": "0x39a9186eb635ecd66b2c228e97b68f4d323df5da",
+    "riskPolicyRegistry": "0xf9a1c9d94b9c12bddfdcac686cd0d0212d5fb9e8",
+    "collateralVault": "0x5f7bc75858a85e9bc830e2bb128234e485e8d997",
+    "liquidityVault": "0x0b428b18b822179a684135f555d37e3cd9e7f048",
+    "financingEngine": "0xadf763ca7101f4612dbd253bf43949c831149e6f",
+    "clearingHouse": "0xa2c4fbcbb37855c8d32f9641ed986eb50cd052ec",
+    "oracleAdapter": "0x5570f9aea65fde40c70d78da2b9d3404729f4324"
+  },
+  "deploymentTx": {
+    "authority": "0x74a9addd6ef2d1113b9ac45e9015c5cad1610d4eb79993922a2282f1be56e734",
+    "assetRegistry": "0x189675acd05e7ee2a68ac35843507006889743e599a64343000c825037334d63",
+    "evidenceRegistry": "0xb1b47e1896e6d7723beb75e540e5ce36fdbc166b29268c53c74eea6228c4a556",
+    "passportRegistry": "0x6ccd3a97c4facba1ec1afe523d54870c2c20a653f3095f095a0419eefc0e7836",
+    "riskPolicyRegistry": "0xd47455e33365c5571bd6d1c80adc1b3b1d5c5d11ae0d7341e808ca802a5dde72",
+    "collateralVault": "0x664d158f214fc1ca5b3749460a2b0e1aa8f956bf94ad2ff058f23b71f9e20e70",
+    "liquidityVault": "0x94a2c7f6a64cea0574f1b3172d0b6f54caadee60ff9e9cdc20a84e635a6d1d4f",
+    "financingEngine": "0x3cd4a8a365df2fd1dd500af1610ecbd3189782db9f865a3bc57b85bc909554bf",
+    "clearingHouse": "0xe3c7d09a11a29d4bd61275e0047920219b2b5052ad70704d7d869deb9e3c6b23",
+    "oracleAdapter": "0x18d94841d5c036432f43f408c5a53fbe612396a561f7e08701d18b46d3953f35"
+  },
+  "testnetFixtures": {
+    "note": "X Layer testnet publishes no Chainlink feeds and hosts no settlement stablecoin. These stand-ins exist so the real protocol can be exercised against real chain state. Each names itself a test asset in its own metadata, and Deploy.s.sol refuses to deploy them on mainnet.",
+    "settlementToken": "0x4c1d345400bfe1088050eed665f22f730d307b34",
+    "settlementFeed": "0x3e47084834dd830148941216f9a8d1dffc52778a",
+    "collateralToken": "0x9761cea4bb4ab425a32bd5f36cb14f12ba344279",
+    "collateralFeed": "0x170cf08dc6929f82299c5f3a1603e5d6936934ef",
+    "sequencerFeed": "0xa343e117d7952a327454b4b5cd1081e4e7125bb1",
+    "collateralAssetId": "0x5ac1b6412c624d04363b3e16f9f5640bf7a810b3d9b91fe4c740887f89aa8272"
+  },
+  "settlementAsset": {
+    "symbol": "tUSD",
+    "decimals": 6,
+    "token": "0x4c1d345400bfe1088050eed665f22f730d307b34"
+  },
+  "verified": false,
+  "verificationNote": "Explorer source verification not yet attempted."
+}

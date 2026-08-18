@@ -15,6 +15,12 @@ import {FinancingEngine} from "../src/core/FinancingEngine.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {ChainlinkFeedAdapter} from "../src/adapters/ChainlinkFeedAdapter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {
+    TestnetUSD,
+    TestnetTreasuryToken,
+    TestnetAggregator,
+    TestnetSequencerUptimeFeed
+} from "../src/testnet/TestnetFixtures.sol";
 import {Types} from "../src/libraries/Types.sol";
 
 /// @notice Deploy the Usance core to X Layer.
@@ -58,19 +64,38 @@ contract Deploy is Script {
         }
 
         uint256 pk = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        address settlementToken = vm.envAddress("USANCE_SETTLEMENT_TOKEN");
-        address settlementFeed = vm.envAddress("USANCE_SETTLEMENT_FEED");
-        if (settlementToken == address(0)) revert MissingConfig("USANCE_SETTLEMENT_TOKEN");
-        if (settlementFeed == address(0)) revert MissingConfig("USANCE_SETTLEMENT_FEED");
+        address settlementToken = vm.envOr("USANCE_SETTLEMENT_TOKEN", address(0));
+        address settlementFeed = vm.envOr("USANCE_SETTLEMENT_FEED", address(0));
 
         vm.startBroadcast(pk);
+
+        // X Layer testnet publishes no Chainlink feeds and hosts no settlement stablecoin, so a
+        // deployment there cannot price anything without stand-ins. They are deployed here, named
+        // as test assets in their own metadata, and refused outright on mainnet.
+        if (settlementToken == address(0) || settlementFeed == address(0)) {
+            if (block.chainid != X_LAYER_TESTNET) {
+                revert MissingConfig("USANCE_SETTLEMENT_TOKEN/FEED required on mainnet");
+            }
+            (settlementToken, settlementFeed) = _deployTestnetSettlement();
+        }
+
         Core memory c = _deployCore(vm.addr(pk), settlementToken);
         _wire(c);
-        _configureSettlement(c, settlementToken, settlementFeed);
+        _configureSettlement(c, vm.addr(pk), settlementToken, settlementFeed);
         _handOverAuthority(c, vm.addr(pk));
         vm.stopBroadcast();
 
         _report(c);
+    }
+
+    /// @dev Testnet only. `TestnetUSD` reports its own name as a test asset so the label follows
+    ///      the token into any wallet or explorer that reads it.
+    function _deployTestnetSettlement() internal returns (address token, address feed) {
+        TestnetUSD usd = new TestnetUSD(6);
+        TestnetAggregator agg = new TestnetAggregator(8, "tUSD / USD - USANCE TESTNET", 1e8);
+        console2.log("testnetSettlementToken", address(usd));
+        console2.log("testnetSettlementFeed", address(agg));
+        return (address(usd), address(agg));
     }
 
     function _deployCore(address deployer, address settlementToken) internal returns (Core memory c) {
@@ -117,8 +142,12 @@ contract Deploy is Script {
         c.authority.grantRole(c.authority.CLEARING(), address(c.clearing));
     }
 
-    function _configureSettlement(Core memory c, address token, address feed) internal {
-        c.authority.grantRole(c.authority.ADMISSION(), address(this));
+    /// @dev The ADMISSION role goes to the broadcasting EOA, not to `address(this)`. Under
+    ///      `vm.startBroadcast` every call originates from the deployer key, and a script contract
+    ///      is ephemeral — granting a role to its address would authorise nothing and Foundry
+    ///      rejects the pattern outright.
+    function _configureSettlement(Core memory c, address deployer, address token, address feed) internal {
+        c.authority.grantRole(c.authority.ADMISSION(), deployer);
         bytes32 settlementId = c.assetRegistry.registerAsset(block.chainid, token, keccak256("USD"), 6);
         c.oracle.setFeed(settlementId, feed);
 
@@ -128,7 +157,28 @@ contract Deploy is Script {
         // The settlement feed is load-bearing for the exit, not just for entry.
         c.oracle.setFeedProtected(settlementId, true);
         c.clearing.setSettlementAsset(settlementId);
-        c.authority.revokeRole(c.authority.ADMISSION(), address(this));
+
+        // A deployment with no collateral asset can price nothing and demonstrate nothing, so on
+        // testnet a labelled tokenized-T-bill stand-in is registered alongside the settlement
+        // asset. Its Passport and risk policy are committed by the evidence workflow, not here —
+        // this only creates the asset and its price route.
+        if (block.chainid == X_LAYER_TESTNET) {
+            TestnetTreasuryToken collateral = new TestnetTreasuryToken();
+            TestnetAggregator collateralFeed = new TestnetAggregator(8, "tUSTB / USD - USANCE TESTNET", 1e8);
+            bytes32 collateralId = c.assetRegistry
+                .registerAsset(block.chainid, address(collateral), keccak256("USANCE-TESTNET-TBILL"), 18);
+            c.oracle.setFeed(collateralId, address(collateralFeed));
+
+            TestnetSequencerUptimeFeed seq = new TestnetSequencerUptimeFeed();
+            c.oracle.setSequencerFeed(address(seq), 3600);
+
+            console2.log("testnetCollateralToken", address(collateral));
+            console2.log("testnetCollateralFeed", address(collateralFeed));
+            console2.log("testnetSequencerFeed", address(seq));
+            console2.log("testnetCollateralAssetId", vm.toString(collateralId));
+        }
+
+        c.authority.revokeRole(c.authority.ADMISSION(), deployer);
     }
 
     /// @dev A deploy key that stays governance forever is a deploy key that eventually leaks.
