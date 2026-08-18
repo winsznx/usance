@@ -26,8 +26,8 @@ const chain = { id: 1952, name: "X Layer Testnet", nativeCurrency: { name: "OKB"
 const pk = process.env.DEPLOYER_PRIVATE_KEY;
 if (!pk) { console.error("DEPLOYER_PRIVATE_KEY not set"); process.exit(1); }
 const account = privateKeyToAccount(pk);
-const pub = createPublicClient({ chain, transport: http(RPC) });
-const wallet = createWalletClient({ account, chain, transport: http(RPC) });
+const pub = createPublicClient({ chain, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
+const wallet = createWalletClient({ account, chain, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
 
 const ERC20 = parseAbi(["function mint(address,uint256)","function approve(address,uint256) returns (bool)","function balanceOf(address) view returns (uint256)"]);
 const AGG = parseAbi(["function setAnswer(int256)","function answer() view returns (int256)"]);
@@ -61,9 +61,37 @@ async function send(label, to, abi, functionName, args) {
 }
 
 async function health() {
-  const [r] = await pub.readContract({ address: C.clearingHouse, abi: CH, functionName: "accountHealth", args: [account.address] });
+  const [r, positions] = await pub.readContract({ address: C.clearingHouse, abi: CH, functionName: "accountHealth", args: [account.address] });
   const [avail, byLiq] = await pub.readContract({ address: C.clearingHouse, abi: CH, functionName: "availableBorrow", args: [account.address] });
-  return { recognised: r[0], borrowLimit: r[1], debt: r[4], available: r[5], status: STATUS[Number(r[7])], gates: Number(r[8]), byLiquidity: byLiq, availableEffective: avail };
+  return { recognised: r[0], borrowLimit: r[1], debt: r[4], available: r[5], status: STATUS[Number(r[7])], gates: Number(r[8]), byLiquidity: byLiq, availableEffective: avail, positions };
+}
+
+/** How much of `assetId` this account already has deposited. */
+async function depositedOf(assetId) {
+  const { positions } = await health();
+  const p = (positions ?? []).find((x) => String(x[0]).toLowerCase() === String(assetId).toLowerCase());
+  return p ? p[1] : 0n;
+}
+
+/**
+ * Transactions from earlier runs that this run skipped.
+ *
+ * The setup steps are guarded so the script can be re-run, which means a later run's record would
+ * otherwise show a borrow against collateral it never deposited and liquidity it never supplied.
+ * Those transactions are real and still the provenance of the state being exercised, so they are
+ * carried forward under their own key rather than dropped or silently merged into this run's list.
+ * Only full 66-character hashes survive; anything shorter cannot be checked and is not published.
+ */
+function carriedForward() {
+  if (!existsSync("proof/live-risk-scenario.json")) return [];
+  const prior = JSON.parse(readFileSync("proof/live-risk-scenario.json", "utf8"));
+  const thisRun = new Set(txs.map((t) => t.label));
+  const seen = new Set();
+  return [...(prior.transactions ?? []), ...(prior.priorTransactions ?? [])]
+    .filter((t) => /^0x[0-9a-fA-F]{64}$/.test(String(t.hash)))
+    .filter((t) => !thisRun.has(t.label))
+    .filter((t) => (seen.has(t.label) ? false : seen.add(t.label)))
+    .map((t) => ({ ...t, fromEarlierRun: true }));
 }
 
 function show(label, h) {
@@ -115,8 +143,18 @@ if ((await pub.readContract({ address: F.collateralToken, abi: ERC20, functionNa
 }
 
 // ---------------------------------------------------------------- 2. deposit
+//
+// Top up to the target instead of adding to it. This script is meant to be re-runnable, and an
+// unconditional deposit silently doubles the position on a second run — at which point every
+// figure below stops matching canonical fixture S02 and the whole scenario proves nothing.
 console.log("\n2. Deposit collateral");
-await send("addCollateral 1000 tUSTB", C.clearingHouse, CH, "addCollateral", [ASSET, 1000n*10n**18n]);
+const TARGET_COLLATERAL = 1000n*10n**18n;
+const alreadyDeposited = await depositedOf(ASSET);
+if (alreadyDeposited < TARGET_COLLATERAL) {
+  await send(`addCollateral ${formatUnits(TARGET_COLLATERAL - alreadyDeposited, 18)} tUSTB`, C.clearingHouse, CH, "addCollateral", [ASSET, TARGET_COLLATERAL - alreadyDeposited]);
+} else {
+  console.log(`    already holding ${formatUnits(alreadyDeposited, 18)} tUSTB deposited; no top-up needed`);
+}
 const afterDeposit = await health();
 show("after deposit", afterDeposit);
 
@@ -138,22 +176,83 @@ const afterDrop = await health();
 show(`after deterioration (RiskEpoch now ${epoch})`, afterDrop);
 
 // ---------------------------------------------------------------- 5. new risk blocked
+//
+// The refusal has to reach a block. `writeContract` runs `eth_estimateGas` first and throws when
+// the call reverts, so the transaction never broadcasts — the client refused, and the earlier
+// version of this script recorded that as `onchain: true`, which was false.
+//
+// So: simulate first to decode WHY the protocol refuses, then submit anyway with an explicit gas
+// limit. Passing `gas` skips estimation, the transaction mines, and the reverted receipt is a hash
+// anybody can open in an explorer. A refusal nobody can independently check is not proof.
 console.log("\n5. New borrowing must now be refused ONCHAIN");
-let rejected = null;
+let rejected = null, rejectedTx = null;
+
 try {
-  await wallet.writeContract({ address: C.clearingHouse, abi: CH, functionName: "borrow", args: [10n*10n**18n, 0n], account, chain });
-  console.log("    UNEXPECTED: the borrow succeeded");
-} catch (e) {
-  const data = e?.cause?.data ?? e?.data;
-  let decoded = "reverted";
-  try { const r = decodeErrorResult({ abi: CH, data }); decoded = `${r.errorName}(${(r.args ?? []).join(", ")})`; } catch {}
-  rejected = decoded;
-  console.log(`    OK   new borrow REJECTED by the protocol: ${decoded}`);
+  await pub.simulateContract({ address: C.clearingHouse, abi: CH, functionName: "borrow", args: [10n*10n**18n, 0n], account });
+  console.log("    UNEXPECTED: simulation says the borrow would succeed");
+} catch {
+  rejected = "reverted";
+  console.log("    simulation refuses the borrow");
+}
+
+if (rejected) {
+  const hash = await wallet.writeContract({
+    address: C.clearingHouse, abi: CH, functionName: "borrow", args: [10n*10n**18n, 0n],
+    account, chain, gas: 900_000n,
+  });
+  const r = await pub.waitForTransactionReceipt({ hash, timeout: 180000 });
+  if (r.status !== "reverted") throw new Error(`the blocked borrow was expected to revert onchain, got ${r.status} in ${hash}`);
+
+  // Decode the reason from the mined transaction rather than from the pre-flight simulation.
+  //
+  // A receipt records that a call failed but not why, so replay the exact calldata with `eth_call`
+  // pinned to the block it reverted in. That returns this transaction's own revert data, which is
+  // the only reason worth publishing — a simulation run at a different block is a different claim.
+  //
+  // The replay goes over raw JSON-RPC. viem buries revert data at an inconsistent depth in its
+  // error cause chain, and guessing at that shape is how the reason silently degrades to
+  // "unknown". The wire format puts it at `error.data`, unambiguously.
+  const submitted = await pub.getTransaction({ hash });
+  const replay = await fetch(RPC, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [
+      { from: account.address, to: submitted.to, data: submitted.input },
+      `0x${r.blockNumber.toString(16)}`,
+    ]}),
+  }).then((x) => x.json());
+
+  const revertData = replay?.error?.data;
+  if (!revertData) {
+    rejected = "reverted (replay at the mined block returned no revert data)";
+  } else {
+    try {
+      const decoded = decodeErrorResult({ abi: CH, data: revertData });
+      rejected = `${decoded.errorName}(${(decoded.args ?? []).join(", ")})`;
+    } catch {
+      rejected = `unrecognised revert data ${revertData.slice(0, 10)}`;
+    }
+  }
+
+  rejectedTx = { hash, blockNumber: Number(r.blockNumber), gasUsed: r.gasUsed.toString() };
+  console.log(`    OK   REVERTED ONCHAIN  ${hash}  block ${r.blockNumber}`);
+  console.log(`         reason ${rejected}`);
+} else {
+  throw new Error("the protocol did not refuse the borrow; the scenario asserts nothing");
 }
 
 // ---------------------------------------------------------------- 6. exit still works
 console.log("\n6. Risk-reducing actions must remain available");
 const debt = (await health()).debt;
+
+// Debt is principal plus accrued interest, but the account was only ever handed the principal.
+// Repaying in full therefore needs more settlement token than borrowing produced. This is a real
+// product requirement, not a testnet quirk: any repay-all UI has to source the interest too.
+const owedTokens = (debt / 10n**12n) + 10n**6n;
+const heldTokens = await pub.readContract({ address: F.settlementToken, abi: ERC20, functionName: "balanceOf", args: [account.address] });
+if (heldTokens < owedTokens) {
+  await send("mint tUSD (interest shortfall)", F.settlementToken, ERC20, "mint", [account.address, owedTokens - heldTokens]);
+}
 await send("approve ClearingHouse (repay)", F.settlementToken, ERC20, "approve", [C.clearingHouse, 2n**255n]);
 await send("repay all", C.clearingHouse, CH, "repay", [0n, true]);
 const afterRepay = await health();
@@ -169,9 +268,18 @@ const out = {
   identityWarning: "These are labelled testnet stand-ins. They are NOT Franklin FOBXX or any real issuer token. This proves financial mechanics; the Franklin Passport proves evidence mechanics.",
   before: { recognised: afterBorrow.recognised.toString(), available: afterBorrow.availableEffective.toString(), debt: afterBorrow.debt.toString(), status: afterBorrow.status },
   after: { recognised: afterDrop.recognised.toString(), available: afterDrop.availableEffective.toString(), debt: afterDrop.debt.toString(), status: afterDrop.status },
-  rejectedBorrow: { attempted: "10 USD", result: rejected, onchain: true },
+  newRiskBlocked: {
+    attempted: "$10 borrow",
+    revertReason: rejected,
+    result: "reverted onchain",
+    submitted: true,
+    hash: rejectedTx.hash,
+    blockNumber: rejectedTx.blockNumber,
+    gasUsed: rejectedTx.gasUsed,
+  },
   repaid: { debtBefore: debt.toString(), debtAfter: afterRepay.debt.toString() },
   transactions: txs,
+  priorTransactions: carriedForward(),
 };
 writeFileSync("proof/live-risk-scenario.json", JSON.stringify(out, null, 2) + "\n");
 console.log(`\nWrote proof/live-risk-scenario.json  (${txs.length} transactions)`);

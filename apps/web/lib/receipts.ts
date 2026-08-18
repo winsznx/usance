@@ -99,18 +99,35 @@ export function loadReceipts(): UsanceReceipt[] {
   return (cache = out);
 }
 
+const FULL_TX_HASH = /^0x[0-9a-fA-F]{64}$/;
+
 /**
  * The live risk-lifecycle receipt.
  *
- * Status is CONFIRMED because the deterioration, the rejection and the repayment all happened as
- * real transactions. The rejected borrow is recorded as a transaction with status "reverted" and a
- * revertReason, because a refusal that reached the chain is evidence and hiding it would leave the
- * strongest claim in the scenario undocumented.
+ * Two rules govern what is allowed onto this receipt, and both exist because the earlier draft
+ * broke them.
+ *
+ * A hash is either complete or it is not shown. An earlier version padded short hashes to 66
+ * characters so they would satisfy the schema, which produced explorer links that resolve to
+ * nothing — a fabricated hash wearing the shape of a real one. Short entries are now dropped and
+ * counted, and the count is surfaced rather than swallowed.
+ *
+ * The rejected borrow appears only once it has a hash of its own. `writeContract` simulates before
+ * it broadcasts, so a reverting call throws in the client and never reaches a block. That is still
+ * the protocol refusing, but it is not a mined transaction, and rendering it as one would be
+ * exactly the kind of proof this explorer exists to make unnecessary.
  */
 function riskScenarioReceipt(raw: Record<string, unknown>): UsanceReceipt {
-  const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
+  // Prior-run setup transactions come first: they are the provenance of the state the scenario
+  // exercises, and a reader who sees a borrow without the deposit that backs it has been shown
+  // half the story. Both lists are real, both are chain-verified, and block order sorts them.
+  const txs = [
+    ...((raw["priorTransactions"] as Array<Record<string, unknown>>) ?? []),
+    ...((raw["transactions"] as Array<Record<string, unknown>>) ?? []),
+  ].sort((a, b) => Number(a["blockNumber"] ?? 0) - Number(b["blockNumber"] ?? 0));
   const primary = txs.find((t) => String(t["label"]).includes("borrow")) ?? txs[0];
   const blocked = raw["newRiskBlocked"] as Record<string, unknown> | undefined;
+  const blockedHash = blocked?.["hash"] === undefined ? null : String(blocked["hash"]);
 
   return {
     receiptId: receiptIdFor("BORROW_REJECTED", Number(raw["chainId"]), String(primary?.["hash"] ?? "0x0")),
@@ -131,26 +148,34 @@ function riskScenarioReceipt(raw: Record<string, unknown>): UsanceReceipt {
     riskPolicyVersion: null,
     riskEpoch: null,
     transactions: [
-      ...txs.map((t) => ({
-        chainId: Number(raw["chainId"]),
-        contract: "ClearingHouse",
-        txHash: String(t["hash"]).length === 66 ? String(t["hash"]) : `${String(t["hash"])}${"0".repeat(66 - String(t["hash"]).length)}`,
-        blockNumber: Number(t["block"] ?? t["blockNumber"] ?? 0),
-        action: String(t["label"]),
-        status: "success" as const,
-        revertReason: null,
-        builderAttribution: null,
-      })),
-      {
-        chainId: Number(raw["chainId"]),
-        contract: "ClearingHouse",
-        txHash: `0x${"0".repeat(64)}`,
-        blockNumber: null,
-        action: "borrow (rejected)",
-        status: "reverted" as const,
-        revertReason: String(blocked?.["result"] ?? "reverted"),
-        builderAttribution: null,
-      },
+      ...txs
+        .filter((t) => FULL_TX_HASH.test(String(t["hash"])))
+        .map((t) => ({
+          chainId: Number(raw["chainId"]),
+          contract: "ClearingHouse",
+          txHash: String(t["hash"]) as `0x${string}`,
+          blockNumber: Number(t["blockNumber"] ?? t["block"] ?? 0),
+          action: String(t["label"]),
+          status: (String(t["status"] ?? "success") === "reverted" ? "reverted" : "success") as
+            | "reverted"
+            | "success",
+          revertReason: null,
+          builderAttribution: null,
+        })),
+      ...(blockedHash && FULL_TX_HASH.test(blockedHash)
+        ? [
+            {
+              chainId: Number(raw["chainId"]),
+              contract: "ClearingHouse",
+              txHash: blockedHash as `0x${string}`,
+              blockNumber: Number(blocked?.["blockNumber"] ?? 0),
+              action: `borrow ${String(blocked?.["attempted"] ?? "")} — rejected by the protocol`.trim(),
+              status: "reverted" as const,
+              revertReason: String(blocked?.["revertReason"] ?? blocked?.["result"] ?? "reverted"),
+              builderAttribution: null,
+            },
+          ]
+        : []),
     ],
     stateTransitions: [
       { at: 0, from: "NORMAL", to: "NO_NEW_RISK", note: String(raw["trigger"] ?? "") },

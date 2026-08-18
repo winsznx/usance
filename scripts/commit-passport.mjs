@@ -81,7 +81,7 @@ function evidenceAssetId(key) {
 const instrumentKey = fixtureId.replace(/-\d{4}(-\d{2})?$/, "").replace(/-overview$/, "");
 const assetId = evidenceAssetId(instrumentKey);
 
-const pub = createPublicClient({ transport: http(RPC) });
+const pub = createPublicClient({ transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
 
 const CONTRACTS = deployment.contracts;
 const ADDR = {
@@ -172,7 +172,7 @@ if (dryRun) {
 const pk = process.env.DEPLOYER_PRIVATE_KEY;
 if (!pk) { console.error("DEPLOYER_PRIVATE_KEY not set"); process.exit(1); }
 const account = privateKeyToAccount(pk);
-const wallet = createWalletClient({ account, transport: http(RPC) });
+const wallet = createWalletClient({ account, transport: http(RPC, { retryCount: 6, retryDelay: 2000, timeout: 60_000 }) });
 const chain = { id: deployment.chainId, name: deployment.network, nativeCurrency: { name: "OKB", symbol: "OKB", decimals: 18 }, rpcUrls: { default: { http: [RPC] } } };
 
 // The deploy script revokes ADMISSION from the deployer at the end of the run, so it has to be

@@ -3,130 +3,159 @@
   "chainId": 1952,
   "network": "X Layer Testnet",
   "account": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
-  "explorer": "https://www.oklink.com/x-layer-testnet",
-  "identityWarning": "tUSTB and tUSD are labelled TESTNET stand-ins with no relationship to any issuer. They are NOT Franklin FOBXX. This scenario proves FINANCIAL mechanics; the Franklin Passport proves EVIDENCE mechanics. Same protocol, deliberately different asset identities.",
-  "trigger": "TESTNET RISK SCENARIO \u2014 the tUSTB price feed was halved and the risk epoch bumped. This is a deterministic operator-controlled input, not a claim about any real issuer.",
+  "riskEpochAfter": 7,
+  "assetsUsed": {
+    "collateral": "tUSTB (TESTNET TEST ASSET — NOT AN ISSUER TOKEN)",
+    "settlement": "tUSD (TESTNET TEST ASSET)"
+  },
+  "identityWarning": "These are labelled testnet stand-ins. They are NOT Franklin FOBXX or any real issuer token. This proves financial mechanics; the Franklin Passport proves evidence mechanics.",
   "before": {
-    "recognisedCollateral": "980.13",
-    "availableToBorrow": "416.56",
-    "debt": "416.56",
+    "recognised": "980130906562500000000",
+    "available": "416555635289062499999",
+    "debt": "416555635289062500001",
     "status": "NORMAL"
   },
   "after": {
-    "recognisedCollateral": "490.07",
-    "availableToBorrow": "0.00",
-    "debt": "416.56",
+    "recognised": "490065453281250000000",
+    "available": "0",
+    "debt": "416555748569845852260",
     "status": "NO_NEW_RISK"
   },
   "newRiskBlocked": {
     "attempted": "$10 borrow",
+    "revertReason": "AccountNotHealthy(1)",
     "result": "reverted onchain",
-    "submitted": true
+    "submitted": true,
+    "hash": "0xd5e6877fb5466eeab3313f31f8c7b059d7a1027148c1d8c09e87f2a440753b40",
+    "blockNumber": 38582020,
+    "gasUsed": "243878"
   },
-  "exitRemained": {
-    "repayAll": "succeeded",
-    "debtAfter": "0",
-    "statusAfter": "NORMAL",
-    "note": "Repay initially failed with ERC20InsufficientBalance: the account held exactly the borrowed principal but owed principal plus accrued interest. Correct protocol behaviour, and a real usability finding \u2014 a UI must quote the repay-all amount including interest, never the original borrow."
-  },
-  "afterRestore": {
-    "recognisedCollateral": "980.13",
-    "availableToBorrow": "833.11",
-    "status": "NORMAL"
+  "repaid": {
+    "debtBefore": "416555826995003557958",
+    "debtAfter": "0"
   },
   "transactions": [
     {
-      "label": "createPolicy(tUSTB)",
-      "hash": "0x41e06ad98e6c04e1",
-      "block": 38577213
-    },
-    {
-      "label": "bindRiskPolicy(tUSTB)",
-      "hash": "0x975a282dd3c8fae3",
-      "block": 38577221
-    },
-    {
-      "label": "commitPassport(tUSTB v1)",
-      "hash": "0xbb9a2f6456bd9aa9",
-      "block": 38577227
-    },
-    {
-      "label": "setCapabilities(HOLD|COLLATERAL)",
-      "hash": "0x526d93b1d81f6823",
-      "block": 38577233
-    },
-    {
-      "label": "setStatus(ACTIVE)",
-      "hash": "0x22c025ab543d18f5",
-      "block": 38577239
-    },
-    {
-      "label": "mint tUSD",
-      "hash": "0x514fb0cea97a544f",
-      "block": 38577245
-    },
-    {
-      "label": "approve LiquidityVault",
-      "hash": "0xd40f9d0fc7bd65fd",
-      "block": 38577250
-    },
-    {
-      "label": "supply liquidity",
-      "hash": "0x6621d65d7d62dba3",
-      "block": 38577255
-    },
-    {
-      "label": "mint tUSTB",
-      "hash": "0x0f510a87ce0c4d12",
-      "block": 38577263
-    },
-    {
-      "label": "approve CollateralVault",
-      "hash": "0x05efaed6051ba3ed",
-      "block": 38577268
-    },
-    {
-      "label": "addCollateral 1000 tUSTB",
-      "hash": "0x9dff5a4ec02486a5",
-      "block": 38577273
-    },
-    {
       "label": "borrow $416.56",
-      "hash": "0x9c672f5c51835960",
-      "block": 38577281
+      "hash": "0xf33850bacabf5b35b955873c9fb24d31ccbafef24bf8d4aa8eb9e01431d7d6f8",
+      "blockNumber": 38582000,
+      "status": "success"
     },
     {
       "label": "setAnswer 0.5 (was 1)",
-      "hash": "0x077b7a386bbc88a9",
-      "block": 38577289
+      "hash": "0xfe2999c7e92c5c98e5e561aa9a258ffb3a39aa2df34d87b52bdcf1b419525aaf",
+      "blockNumber": 38582007,
+      "status": "success"
     },
     {
       "label": "bumpEpoch(COLLATERAL_REPRICED)",
-      "hash": "0x109c69bed2fc7696",
-      "block": 38577294
+      "hash": "0x392251befc84c7b1b8972102dd5795a35138f9700b82388b0bdd7a4860925675",
+      "blockNumber": 38582010,
+      "status": "success"
     },
     {
       "label": "approve ClearingHouse (repay)",
-      "hash": "0x05d217ecef96a2c0",
-      "block": 38577307
+      "hash": "0xfe085800ed75036c1d104f0a7aefde8eb1404df6ce58795f67e0709e7cbb20d9",
+      "blockNumber": 38582030,
+      "status": "success"
+    },
+    {
+      "label": "repay all",
+      "hash": "0x6ca18f245fc8e2f2eb11c186a6040ff092c1a299d5c772a6dac5569ad1058e94",
+      "blockNumber": 38582037,
+      "status": "success"
+    },
+    {
+      "label": "restore feed",
+      "hash": "0x2dc6484ee9a12dd051d01b9d25fd675199692590cf62251f775b983ce6fb3556",
+      "blockNumber": 38582045,
+      "status": "success"
+    }
+  ],
+  "priorTransactions": [
+    {
+      "label": "createPolicy(tUSTB)",
+      "hash": "0x41e06ad98e6c04e11af4ca513b1acdd509780b1333d61e3ade46e48769a80d0a",
+      "fromEarlierRun": true,
+      "blockNumber": 38577213,
+      "status": "success"
+    },
+    {
+      "label": "bindRiskPolicy(tUSTB)",
+      "hash": "0x975a282dd3c8fae386539fdfd8f670daec1a367e0ca8d67c27a5d01e38da73a9",
+      "fromEarlierRun": true,
+      "blockNumber": 38577221,
+      "status": "success"
+    },
+    {
+      "label": "commitPassport(tUSTB v1)",
+      "hash": "0xbb9a2f6456bd9aa915fc9e2c7daae64a2344c427ffa71a6fb530d01bd10a493d",
+      "fromEarlierRun": true,
+      "blockNumber": 38577227,
+      "status": "success"
+    },
+    {
+      "label": "setCapabilities(HOLD|COLLATERAL)",
+      "hash": "0x526d93b1d81f682391c5b8a9b74d9e4ff8aa2d33807fc1b1c77d1877705a6863",
+      "fromEarlierRun": true,
+      "blockNumber": 38577233,
+      "status": "success"
+    },
+    {
+      "label": "setStatus(ACTIVE)",
+      "hash": "0x22c025ab543d18f50964f6f6df2991be9212f290ba3576b6b4be656bba1b1c11",
+      "fromEarlierRun": true,
+      "blockNumber": 38577239,
+      "status": "success"
+    },
+    {
+      "label": "mint tUSD",
+      "hash": "0x514fb0cea97a544ff9366c46a44e388eb2522fa748ee6b1f48977ace760e0582",
+      "fromEarlierRun": true,
+      "blockNumber": 38577245,
+      "status": "success"
+    },
+    {
+      "label": "approve LiquidityVault",
+      "hash": "0xd40f9d0fc7bd65fde250e045a64534279d5152359832fc5fdfeba3a7cef0380e",
+      "fromEarlierRun": true,
+      "blockNumber": 38577250,
+      "status": "success"
+    },
+    {
+      "label": "supply liquidity",
+      "hash": "0x6621d65d7d62dba3331b44173d78a6092bbbcfed26ff47edacbab7b3ad1a106f",
+      "fromEarlierRun": true,
+      "blockNumber": 38577255,
+      "status": "success"
+    },
+    {
+      "label": "mint tUSTB",
+      "hash": "0x0f510a87ce0c4d12a6e04615e8806dfb37f48c432c8151dfa6c125c205d3d44b",
+      "fromEarlierRun": true,
+      "blockNumber": 38577263,
+      "status": "success"
+    },
+    {
+      "label": "approve CollateralVault",
+      "hash": "0x05efaed6051ba3ed1af8f2e4d31fe99697ecb748d9c766ae11d7fdb3a2e5ca02",
+      "fromEarlierRun": true,
+      "blockNumber": 38577268,
+      "status": "success"
+    },
+    {
+      "label": "addCollateral 1000 tUSTB",
+      "hash": "0x9dff5a4ec02486a570bc8daeda55fd684fa915cb74e10515d238998b4e27712c",
+      "fromEarlierRun": true,
+      "blockNumber": 38577273,
+      "status": "success"
     },
     {
       "label": "mint tUSD (interest shortfall)",
       "hash": "0x8a2e0c603b2eeedd25ed226bffd0389bc45968c01611f6148afaaefe0033f4da",
       "blockNumber": 38577411,
-      "status": "success"
-    },
-    {
-      "label": "repay all",
-      "hash": "0xb2ac5fa98725b8abdc1893bd511f7a1f31f626e5879745681806421a443d6eb7",
-      "blockNumber": 38577417,
-      "status": "success"
-    },
-    {
-      "label": "restore feed",
-      "hash": "0xf2f8ad8467dde352e6cf7219a0029f328f57b9223304ffa33987e8b8dd2a3fed",
-      "blockNumber": 38577423,
-      "status": "success"
+      "status": "success",
+      "fromEarlierRun": true
     }
   ]
 }
