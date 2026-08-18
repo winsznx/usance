@@ -68,6 +68,10 @@
       "impact": "Low",
       "reason": "Governance setters. A governance key that can set the oracle to a hostile contract is not meaningfully restrained by a zero check, and rejecting zero would remove the only way to unset."
     },
+    "operator-fee-outlier@function:_serviceQueue": {
+      "impact": "Low",
+      "reason": "The loop is bounded at MAX_QUEUE_STEPS_PER_CALL = 16, so the gas cost of servicing the queue does not grow with how many lenders are waiting to leave. Servicing resumes from queueHead on the next call, so a long queue drains over several transactions rather than one that might not fit in a block. The three state writes per iteration are the funding bookkeeping the queue exists to record."
+    },
     "operator-fee-outlier@function:removeRoute": {
       "impact": "Low",
       "reason": "A governance-only function iterating the registered route list, which is bounded by how many routes governance has added \u2014 a handful, not a user-controlled array. The swap-and-pop is there so removal is O(1) in storage writes rather than shifting the tail."

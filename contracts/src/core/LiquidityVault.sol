@@ -42,10 +42,19 @@ contract LiquidityVault is ERC20, Authorized, ReentrancyGuard {
     event CashReturned(uint256 principal, uint256 interest);
     event BadDebtRecorded(uint256 amount);
     event ReservesAccrued(uint256 amount);
+    event WithdrawalRequested(uint256 indexed id, address indexed lender, uint256 shares, uint256 amount);
+    event WithdrawalFunded(uint256 indexed id, uint256 amount);
+    event WithdrawalClaimed(uint256 indexed id, address indexed receiver, uint256 amount);
+    event WithdrawalCancelled(uint256 indexed id, address indexed lender, uint256 shares);
+    event BadDebtAbsorbedByReserves(uint256 fromReserves, uint256 toLenders);
 
     error ZeroAmount();
     error InsufficientCash(uint256 available, uint256 requested);
     error InsufficientShares();
+    error UnknownRequest(uint256 id);
+    error NotYourRequest(uint256 id);
+    error RequestAlreadySettled(uint256 id);
+    error RequestNotFunded(uint256 id, uint256 funded, uint256 owed);
 
     /// @dev Both ClearingHouse and FinancingEngine drive this vault: the first moves cash, the
     ///      second recognises interest. Rather than hardcode one address and discover the other
@@ -76,7 +85,10 @@ contract LiquidityVault is ERC20, Authorized, ReentrancyGuard {
     /// @dev This is the number that bounds a withdrawal and bounds a new borrow. It is not NAV.
     function availableCash() public view returns (uint256) {
         uint256 held = asset.balanceOf(address(this));
-        uint256 spokenFor = reservedCash + reserves;
+        // Cash already promised to the queue is not available to lend and is not a lender's to
+        // redeem. Counting it twice would let new borrowing consume the money a queued redemption
+        // is waiting on.
+        uint256 spokenFor = reservedCash + reserves + queuedFunded;
         return held > spokenFor ? held - spokenFor : 0;
     }
 
@@ -84,7 +96,9 @@ contract LiquidityVault is ERC20, Authorized, ReentrancyGuard {
     ///         less write-offs and the protocol reserve.
     function totalAssets() public view returns (uint256) {
         uint256 gross = asset.balanceOf(address(this)) + totalPrincipal + accruedReceivables;
-        uint256 deductions = badDebt + reserves;
+        // Queued liabilities are already-burned shares. Leaving them in NAV would credit remaining
+        // lenders with money that belongs to people who have left.
+        uint256 deductions = badDebt + reserves + queuedLiabilities;
         return gross > deductions ? gross - deductions : 0;
     }
 
@@ -186,11 +200,186 @@ contract LiquidityVault is ERC20, Authorized, ReentrancyGuard {
         accruedReceivables += interestDeltaTokens;
     }
 
+    /// @notice Apply returning cash to the queue before it becomes lendable again.
+    /// @dev Called after a repayment or a liquidation recovery. Redemptions that are already waiting
+    ///      are senior to new lending; without this, a vault could keep originating loans while
+    ///      lenders who asked to leave a month ago are still queued.
+    function serviceWithdrawalQueue() external onlyClearing {
+        _serviceQueue();
+    }
+
     /// @notice Write off unrecoverable principal, in settlement-token units.
+    /**
+     * @notice Write off unrecoverable principal, in settlement-token units.
+     * @dev The waterfall, in order: the protocol reserve absorbs first, and only what it cannot
+     *      cover reaches lender NAV. Reserves exist to be spent exactly here — a protocol that
+     *      accumulates a reserve out of borrower interest and then socialises the first loss anyway
+     *      has taken a fee for insurance it did not provide.
+     *
+     *      Losses beyond the reserve are borne by lenders in this vault and nowhere else. There is
+     *      no cross-vault socialisation, because a lender who chose one asset's risk did not choose
+     *      another's.
+     */
     function recordBadDebt(uint256 amountTokens) external onlyClearing {
         totalPrincipal = totalPrincipal > amountTokens ? totalPrincipal - amountTokens : 0;
-        badDebt += amountTokens;
+
+        uint256 fromReserves = reserves < amountTokens ? reserves : amountTokens;
+        reserves -= fromReserves;
+        uint256 toLenders = amountTokens - fromReserves;
+        badDebt += toLenders;
+
+        emit BadDebtAbsorbedByReserves(fromReserves, toLenders);
         emit BadDebtRecorded(amountTokens);
+    }
+
+    // ---------------------------------------------------------------------------------
+    // Withdrawal queue
+    // ---------------------------------------------------------------------------------
+
+    /**
+     * A redemption that cannot be paid today.
+     *
+     * `amount` is fixed when the request is made, and the shares are burned then. That is the point
+     * of the queue: a lender who joins it stops earning yield and stops carrying risk from that
+     * moment, so a subsequent default cannot retroactively shrink a claim they already exited. The
+     * alternative — keeping shares alive until cash arrives — would let people queue during good
+     * times and get repriced during bad ones, which is the behaviour that makes queues useless.
+     */
+    struct WithdrawalRequest {
+        address lender;
+        uint256 shares;
+        uint256 amount;
+        uint256 funded;
+        uint64 requestedAt;
+        bool claimed;
+    }
+
+    uint256 public nextRequestId = 1;
+    mapping(uint256 id => WithdrawalRequest) public withdrawalRequests;
+
+    /// @notice Total still owed to the queue. Senior to new lending.
+    uint256 public queuedLiabilities;
+    /// @notice Cash set aside for the queue and no longer lendable.
+    uint256 public queuedFunded;
+    /// @notice The oldest request that has not been fully funded. FIFO, so nobody jumps ahead.
+    uint256 public queueHead = 1;
+
+    /**
+     * @notice Join the withdrawal queue for shares that cannot be redeemed right now.
+     * @dev The honest counterpart to `withdraw` reverting. A vault whose capital is lent out cannot
+     *      promise instant redemption, and pretending otherwise is how a run starts: everybody
+     *      discovers the same thing at the same moment.
+     */
+    function requestWithdrawal(uint256 shares) external nonReentrant returns (uint256 id) {
+        if (shares == 0) revert ZeroAmount();
+        if (balanceOf(msg.sender) < shares) revert InsufficientShares();
+
+        uint256 amount = convertToAssets(shares);
+        _burn(msg.sender, shares);
+
+        id = nextRequestId++;
+        withdrawalRequests[id] = WithdrawalRequest({
+            lender: msg.sender,
+            shares: shares,
+            amount: amount,
+            funded: 0,
+            requestedAt: uint64(block.timestamp),
+            claimed: false
+        });
+        queuedLiabilities += amount;
+        emit WithdrawalRequested(id, msg.sender, shares, amount);
+
+        _serviceQueue();
+    }
+
+    /// @notice Take back an unfunded request and get the shares reissued at the current price.
+    /// @dev Reissued at the current price, not the price when queued. Leaving the queue is
+    ///      re-entering the risk, so it has to be re-entered at today's value — otherwise a lender
+    ///      could queue at a high NAV, wait out a loss, and cancel back in at the old number.
+    function cancelWithdrawal(uint256 id) external nonReentrant {
+        WithdrawalRequest storage r = withdrawalRequests[id];
+        if (r.lender == address(0)) revert UnknownRequest(id);
+        if (r.lender != msg.sender) revert NotYourRequest(id);
+        if (r.claimed) revert RequestAlreadySettled(id);
+
+        uint256 refundCash = r.funded;
+        uint256 unfunded = r.amount - r.funded;
+
+        // The whole liability is discharged, not just the part still waiting on cash. The funded
+        // portion is paid out and the rest becomes shares again; leaving the funded part booked
+        // would keep depressing NAV for a claim that no longer exists.
+        queuedLiabilities -= r.amount;
+        queuedFunded -= refundCash;
+        r.claimed = true;
+
+        if (refundCash > 0) asset.safeTransfer(msg.sender, refundCash);
+        uint256 shares = convertToShares(unfunded);
+        if (shares > 0) _mint(msg.sender, shares);
+        emit WithdrawalCancelled(id, msg.sender, shares);
+    }
+
+    /// @notice Collect a fully funded request.
+    function claimWithdrawal(uint256 id, address receiver) external nonReentrant returns (uint256 amount) {
+        WithdrawalRequest storage r = withdrawalRequests[id];
+        if (r.lender == address(0)) revert UnknownRequest(id);
+        if (r.lender != msg.sender) revert NotYourRequest(id);
+        if (r.claimed) revert RequestAlreadySettled(id);
+        if (r.funded < r.amount) revert RequestNotFunded(id, r.funded, r.amount);
+
+        amount = r.amount;
+        r.claimed = true;
+        queuedLiabilities -= amount;
+        queuedFunded -= amount;
+
+        asset.safeTransfer(receiver, amount);
+        emit WithdrawalClaimed(id, receiver, amount);
+    }
+
+    /**
+     * @dev Push cash into the queue in request order.
+     *
+     * FIFO and partial. Cash that arrives is applied to the oldest request first and can fund it
+     * part-way, because a queue that only pays complete requests strands everybody behind a large
+     * one. `queueHead` advances only past fully funded requests, so the ordering cannot be jumped.
+     */
+    /// @dev Bounded per call. An unbounded loop over the queue makes the gas cost of a repayment a
+    ///      function of how many people are waiting to leave, which is exactly backwards: the more
+    ///      stressed the vault, the more expensive it becomes to feed the queue that relieves it.
+    ///      Servicing resumes from `queueHead` on the next call, so nothing is skipped — a long
+    ///      queue drains over several transactions instead of one that might not fit in a block.
+    uint256 public constant MAX_QUEUE_STEPS_PER_CALL = 16;
+
+    function _serviceQueue() internal {
+        uint256 free = availableCash();
+        uint256 id = queueHead;
+        uint256 steps = 0;
+        while (free > 0 && id < nextRequestId && steps < MAX_QUEUE_STEPS_PER_CALL) {
+            steps++;
+            WithdrawalRequest storage r = withdrawalRequests[id];
+            if (r.claimed || r.funded == r.amount) {
+                if (id == queueHead) queueHead = id + 1;
+                id++;
+                continue;
+            }
+            uint256 need = r.amount - r.funded;
+            uint256 give = need < free ? need : free;
+            r.funded += give;
+            queuedFunded += give;
+            free -= give;
+            emit WithdrawalFunded(id, give);
+            if (r.funded < r.amount) break; // partially funded; nobody behind it may overtake
+            if (id == queueHead) queueHead = id + 1;
+            id++;
+        }
+    }
+
+    /// @notice What the queue looks like to a lender deciding whether to join it.
+    function queueStatus()
+        external
+        view
+        returns (uint256 outstanding, uint256 fundedSoFar, uint256 head, uint256 next)
+    {
+        return (queuedLiabilities, queuedFunded, queueHead, nextRequestId);
     }
 
     function reserveCash(uint256 amount) external onlyClearing {

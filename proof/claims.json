@@ -281,6 +281,24 @@
         "contracts/test/LiquidatorEconomics.t.sol"
       ],
       "detail": "Every ceiling is a Solidity constant, not a settable parameter: governance that can raise its own limit has no limit. The liquidator incentive and the protocol liquidation fee are also bounded jointly, because two individually-safe parameters can be ruinous together. Not yet exercised against a governance attack on a live deployment, so this is UNIT_TESTED."
+    },
+    {
+      "claim": "A vault whose capital is lent out queues redemptions rather than promising instant liquidity.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/src/core/LiquidityVault.sol",
+        "contracts/test/VaultEconomics.t.sol"
+      ],
+      "detail": "withdraw() pays only what is genuinely free; anything else joins a FIFO queue that is senior to new lending. Shares burn when the request is made, so a later default cannot shrink a claim that already exited, and cancelling reissues at today's price rather than the price when queued. Queued cash is excluded from availableCash and queued liabilities from NAV, so the same money is never offered to two parties. Not yet exercised on a live deployment."
+    },
+    {
+      "claim": "Protocol reserves absorb the first loss before lenders do.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/src/core/LiquidityVault.sol",
+        "contracts/test/VaultEconomics.t.sol"
+      ],
+      "detail": "recordBadDebt spends the reserve before writing anything down against lender NAV. A protocol that accumulates a reserve out of borrower interest and then socialises the first loss anyway has charged a fee for insurance it did not provide. Losses beyond the reserve are borne by lenders in that vault only \u2014 there is no cross-vault socialisation, because a lender who chose one asset's risk did not choose another's."
     }
   ]
 }
