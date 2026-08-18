@@ -101,10 +101,24 @@ export type PassportCandidate = z.infer<typeof passportCandidateSchema>;
  */
 export function commitPassportArgs(
   p: PassportCandidate,
-): readonly [`0x${string}`, bigint, `0x${string}`, `0x${string}`, bigint, boolean, number, boolean] {
+): readonly [
+  `0x${string}`,
+  bigint,
+  readonly `0x${string}`[],
+  `0x${string}`,
+  `0x${string}`,
+  bigint,
+  boolean,
+  number,
+  boolean,
+] {
   return [
     p.assetId,
     BigInt(p.version),
+    // Sorted ascending because the registry requires it, and requiring it there is what makes a
+    // duplicate citation impossible. `merkleRoot` sorts internally so the root is unaffected;
+    // sorting here means the caller never has to know that the two agree by accident.
+    [...p.evidenceIds].sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : BigInt(a) > BigInt(b) ? 1 : 0)),
     p.evidenceRoot,
     p.claimsRoot,
     BigInt(p.expiresAt),

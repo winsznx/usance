@@ -27,6 +27,12 @@ contract EvidenceRegistry is Authorized {
     mapping(bytes32 evidenceId => EvidenceCommitment) internal _evidence;
     mapping(bytes32 assetId => bytes32[]) internal _assetEvidence;
 
+    /// @notice Which asset a commitment was filed against.
+    /// @dev A reverse index rather than a scan of `_assetEvidence`. PassportRegistry checks this on
+    ///      every cited evidence id, and an O(n) membership test there would make the cost of
+    ///      committing a Passport depend on how much evidence the asset has accumulated.
+    mapping(bytes32 evidenceId => bytes32 assetId) public evidenceAsset;
+
     event EvidenceCommitted(
         bytes32 indexed evidenceId,
         bytes32 indexed assetId,
@@ -72,6 +78,7 @@ contract EvidenceRegistry is Authorized {
             supersededBy: bytes32(0)
         });
         _assetEvidence[assetId].push(evidenceId);
+        evidenceAsset[evidenceId] = assetId;
 
         emit EvidenceCommitted(evidenceId, assetId, contentHash, sourceClass, effectiveAt);
     }
@@ -105,6 +112,22 @@ contract EvidenceRegistry is Authorized {
         if (e.contentHash == bytes32(0)) revert UnknownEvidence(evidenceId);
         e.invalidated = true;
         emit EvidenceInvalidated(evidenceId, reason);
+    }
+
+    /// @notice Whether `evidenceId` may back a Passport for `assetId` right now.
+    /// @dev Three ways to fail, and they are deliberately not distinguished to the caller here —
+    ///      PassportRegistry raises its own error naming the offending id. Evidence that was never
+    ///      committed, evidence committed against a different asset, and evidence that has since
+    ///      been invalidated are all equally unusable.
+    ///
+    ///      Superseded evidence is still usable. A superseded document was true when it was filed
+    ///      and the Passport version that cited it is a historical record, not a live assertion.
+    ///      Invalidation is the state that says "this should never have counted".
+    function isUsableFor(bytes32 assetId, bytes32 evidenceId) public view returns (bool) {
+        EvidenceCommitment storage e = _evidence[evidenceId];
+        if (e.contentHash == bytes32(0)) return false;
+        if (evidenceAsset[evidenceId] != assetId) return false;
+        return !e.invalidated;
     }
 
     function get(bytes32 evidenceId) external view returns (EvidenceCommitment memory) {

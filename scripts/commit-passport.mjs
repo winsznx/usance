@@ -19,37 +19,13 @@
  * be the single most dishonest thing this repository could do.
  */
 import { readFileSync, existsSync } from "node:fs";
-import nodeModule from "node:module";
 import { join, dirname } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-// packages/* and services/* are TypeScript with extensionless relative imports. Node strips types
-// but resolves specifiers exactly, so both mappings are needed. Same approach as
-// scripts/chaingpt-audit.mjs — resolved from the repository layout rather than node_modules so
-// this script and the packages it loads share one module graph.
-function tsModule(url) {
-  return { url, format: "module-typescript", shortCircuit: true };
-}
-nodeModule.registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const ws = /^@usance\/([a-z][a-z0-9-]*)$/.exec(specifier);
-    if (ws) {
-      for (const root of ["packages", "services"]) {
-        const entry = join(repoRoot, root, ws[1], "src", "index.ts");
-        if (existsSync(entry)) return tsModule(pathToFileURL(entry).href);
-      }
-    }
-    if (specifier.startsWith(".") && !/\.[cm]?[jt]s$/.test(specifier) && context.parentURL) {
-      const base = new URL(specifier, context.parentURL).href;
-      for (const c of [`${base}.ts`, `${base}/index.ts`]) {
-        if (existsSync(fileURLToPath(c))) return tsModule(c);
-      }
-    }
-    return nextResolve(specifier, context);
-  },
-});
+import { registerWorkspaceResolver } from "./_workspace.mjs";
+registerWorkspaceResolver();
 import { createPublicClient, createWalletClient, http, parseAbi, keccak256, toBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 

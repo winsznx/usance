@@ -10,10 +10,11 @@ import { commitPassportArgs, type CanonicalDocument, type Hex32, type PassportCa
  * evidence pipeline that can commit its own conclusions, and `spec/evidence-model.md §8` is a table of
  * guards whose whole content is that no extractor holds a role.
  *
- * The four scalars in `commitPassport` are the complete interface between the evidence world and the
- * money world. There is no string, no free-form field, no bytes blob and no callback. "Document
- * content cannot influence control flow" is a claim about the width of a struct, and this file is
- * where that width is fixed.
+ * The scalars in `commitPassport`, plus a list of 32-byte evidence ids, are the complete interface
+ * between the evidence world and the money world. There is no string, no free-form field, no bytes
+ * blob and no callback. "Document content cannot influence control flow" is a claim about the width
+ * of a struct, and this file is where that width is fixed. The evidence ids widen it by a list of
+ * hashes the registry independently verifies — nothing a document could author.
  */
 
 /**
@@ -25,7 +26,7 @@ import { commitPassportArgs, type CanonicalDocument, type Hex32, type PassportCa
  * (`spec/interfaces.md §3`) — a reordered enum is an RFC-level change, not a refactor.
  */
 export const COMMIT_PASSPORT_SIGNATURE =
-  "commitPassport(bytes32,uint64,bytes32,bytes32,uint64,bool,uint16,bool)" as const;
+  "commitPassport(bytes32,uint64,bytes32[],bytes32,bytes32,uint64,bool,uint16,bool)" as const;
 export const RESTRICT_PASSPORT_SIGNATURE = "restrict(bytes32,uint64,uint8)" as const;
 export const COMMIT_EVIDENCE_SIGNATURE = "commit(bytes32,bytes32,bytes32,uint64,uint64,uint8)" as const;
 export const BUMP_EPOCH_SIGNATURE = "bumpEpoch(bytes32)" as const;
@@ -38,6 +39,10 @@ export const PASSPORT_REGISTRY_ABI = [
     inputs: [
       { name: "assetId", type: "bytes32" },
       { name: "version", type: "uint64" },
+      // The evidence being cited, ascending. The registry checks each id is committed against this
+      // asset and recomputes the root from them, so a Passport can no longer assert a root over
+      // evidence that was never filed.
+      { name: "evidenceIds", type: "bytes32[]" },
       { name: "evidenceRoot", type: "bytes32" },
       { name: "claimsRoot", type: "bytes32" },
       { name: "expiresAt", type: "uint64" },

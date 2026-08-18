@@ -106,8 +106,9 @@ contract AdversarialTest is Fixture {
         oracle.setFeed(assetId, address(feed));
 
         vm.startPrank(admission);
+        (bytes32[] memory evidenceIds, bytes32 evidenceRoot) = _fileEvidence(assetId, "HOSTILE");
         passportReg.commitPassport(
-            assetId, 1, keccak256("HOSTILE_EVIDENCE"), keccak256("HOSTILE_CLAIMS"), 0, true, 9900, false
+            assetId, 1, evidenceIds, evidenceRoot, keccak256("HOSTILE_CLAIMS"), 0, true, 9900, false
         );
         assetsReg.setCapabilities(
             assetId,

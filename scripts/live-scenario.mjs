@@ -15,7 +15,7 @@
  * mechanics. Both run on the same protocol and they are never the same asset identity.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { createPublicClient, createWalletClient, http, parseAbi, decodeErrorResult, formatUnits } from "viem";
+import { createPublicClient, createWalletClient, http, parseAbi, decodeErrorResult, formatUnits, keccak256, toBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 const d = JSON.parse(readFileSync("deployments/1952.json", "utf8"));
@@ -41,7 +41,12 @@ const CH = parseAbi([
 ]);
 const LV = parseAbi(["function supply(uint256,address) returns (uint256)","function availableCash() view returns (uint256)"]);
 const AR = parseAbi(["function setCapabilities(bytes32,uint16)","function setStatus(bytes32,uint8)","function bindRiskPolicy(bytes32,bytes32)","function getAsset(bytes32) view returns ((address,uint256,bytes32,uint8,uint8,uint64,bytes32,uint16))"]);
-const PR = parseAbi(["function commitPassport(bytes32,uint64,bytes32,bytes32,uint64,bool,uint16,bool) returns (bytes32)","function currentVersion(bytes32) view returns (uint64)"]);
+const PR = parseAbi(["function commitPassport(bytes32,uint64,bytes32[],bytes32,bytes32,uint64,bool,uint16,bool) returns (bytes32)","function currentVersion(bytes32) view returns (uint64)"]);
+const ER = parseAbi([
+  "function commit(bytes32,bytes32,bytes32,uint64,uint64,uint8) returns (bytes32)",
+  "function evidenceIdFor(bytes32,bytes32,uint64) view returns (bytes32)",
+  "function isUsableFor(bytes32,bytes32) view returns (bool)",
+]);
 const RP = parseAbi([
   "function createPolicy(bytes32,(uint16,uint16,uint16,uint16,uint16,uint16,uint16,uint16,uint16,uint64,uint64),(uint256,uint16)[])",
   "function exists(bytes32) view returns (bool)","function riskEpoch() view returns (uint64)","function bumpEpoch(bytes32)",
@@ -125,8 +130,19 @@ if (!(await pub.readContract({ address: C.riskPolicyRegistry, abi: RP, functionN
   await send("bindRiskPolicy(tUSTB)", C.assetRegistry, AR, "bindRiskPolicy", [ASSET, POLICY]);
 }
 if (Number(await pub.readContract({ address: C.passportRegistry, abi: PR, functionName: "currentVersion", args: [ASSET] })) === 0) {
+  // Evidence first. A Passport can no longer assert a root over documents that were never filed,
+  // so the scenario files one — labelled as what it is, a testnet fixture rather than a filing.
+  const contentHash = keccak256(toBytes("USANCE-TESTNET-TBILL-FIXTURE-CONTENT"));
+  const sourceHash = keccak256(toBytes("USANCE-TESTNET-TBILL-FIXTURE-SOURCE"));
+  const effectiveAt = 0n;
+  const evidenceId = await pub.readContract({ address: C.evidenceRegistry, abi: ER, functionName: "evidenceIdFor", args: [sourceHash, contentHash, effectiveAt] });
+  if (!(await pub.readContract({ address: C.evidenceRegistry, abi: ER, functionName: "isUsableFor", args: [ASSET, evidenceId] }))) {
+    await send("EvidenceRegistry.commit(tUSTB fixture)", C.evidenceRegistry, ER, "commit",
+      [ASSET, contentHash, sourceHash, effectiveAt, BigInt(Math.floor(Date.now() / 1000)), 4]);
+  }
+  // One leaf is its own root.
   await send("commitPassport(tUSTB v1)", C.passportRegistry, PR, "commitPassport",
-    [ASSET, 1n, "0x" + "11".repeat(32), "0x" + "22".repeat(32), 0n, true, 9900, true]);
+    [ASSET, 1n, [evidenceId], evidenceId, "0x" + "22".repeat(32), 0n, true, 9900, true]);
   await send("setCapabilities(HOLD|COLLATERAL)", C.assetRegistry, AR, "setCapabilities", [ASSET, 3]);
   await send("setStatus(ACTIVE)", C.assetRegistry, AR, "setStatus", [ASSET, 1]);
 }

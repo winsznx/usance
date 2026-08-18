@@ -62,7 +62,7 @@ abstract contract Fixture is Test {
 
         assetsReg = new AssetRegistry(authority);
         evidenceReg = new EvidenceRegistry(authority);
-        passportReg = new PassportRegistry(authority);
+        passportReg = new PassportRegistry(authority, evidenceReg);
         policyReg = new RiskPolicyRegistry(authority);
         oracle = new ChainlinkFeedAdapter(authority);
 
@@ -176,14 +176,41 @@ abstract contract Fixture is Test {
         vm.stopPrank();
     }
 
+    /// Files one evidence commitment for `assetId` and returns the citation a Passport needs.
+    ///
+    /// The fixture has to do this now because a Passport cannot rest on evidence that was never
+    /// filed. That is the point of the invariant: the setup a test needs mirrors the setup reality
+    /// needs, and a fixture that could skip it was quietly testing a protocol nobody could run.
+    function _fileEvidence(bytes32 assetId, string memory tag)
+        internal
+        returns (bytes32[] memory ids, bytes32 root)
+    {
+        bytes32 id = evidenceReg.commit(
+            assetId,
+            keccak256(abi.encodePacked(tag, "-content")),
+            keccak256(abi.encodePacked(tag, "-source")),
+            uint64(block.timestamp),
+            uint64(block.timestamp),
+            Types.SourceClass.REGULATORY_FILING
+        );
+        ids = new bytes32[](1);
+        ids[0] = id;
+        // A single leaf is its own root, so no pair hashing is involved and this stays a fact
+        // about the tree rather than a restatement of MerkleLib.
+        root = id;
+    }
+
     function _commitPassports() internal {
         vm.startPrank(admission);
 
+        (bytes32[] memory ustbEvidence, bytes32 ustbRoot) = _fileEvidence(USTB_ID, "USTB_V1");
         passportReg.commitPassport(
-            USTB_ID, 1, keccak256("EVIDENCE_ROOT_V1"), keccak256("CLAIMS_ROOT_V1"), 0, true, 9900, false
+            USTB_ID, 1, ustbEvidence, ustbRoot, keccak256("CLAIMS_ROOT_V1"), 0, true, 9900, false
         );
+
+        (bytes32[] memory usdcEvidence, bytes32 usdcRoot) = _fileEvidence(USDC_ID, "USDC_V1");
         passportReg.commitPassport(
-            USDC_ID, 1, keccak256("USDC_EVIDENCE_V1"), keccak256("USDC_CLAIMS_V1"), 0, true, 10_000, false
+            USDC_ID, 1, usdcEvidence, usdcRoot, keccak256("USDC_CLAIMS_V1"), 0, true, 10_000, false
         );
 
         assetsReg.setCapabilities(

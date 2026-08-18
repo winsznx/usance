@@ -102,7 +102,7 @@ contract Deploy is Script {
         c.authority = new Authority(deployer);
         c.assetRegistry = new AssetRegistry(c.authority);
         c.evidenceRegistry = new EvidenceRegistry(c.authority);
-        c.passportRegistry = new PassportRegistry(c.authority);
+        c.passportRegistry = new PassportRegistry(c.authority, c.evidenceRegistry);
         c.policyRegistry = new RiskPolicyRegistry(c.authority);
         c.oracle = new ChainlinkFeedAdapter(c.authority);
         c.collateralVault = new CollateralVault(c.authority, c.assetRegistry);

@@ -221,10 +221,12 @@ contract LifecycleTest is Fixture {
         // New evidence lands: the issuer's redemption terms worsened. A new Passport version is
         // committed with a lower redemption floor. Nobody edits a database row; the registry
         // moves and the risk pipeline reads the new value on the next call.
-        vm.prank(admission);
+        vm.startPrank(admission);
+        (bytes32[] memory v2Evidence, bytes32 v2Root) = _fileEvidence(USTB_ID, "USTB_V2");
         passportReg.commitPassport(
-            USTB_ID, 2, keccak256("EVIDENCE_ROOT_V2"), keccak256("CLAIMS_ROOT_V2"), 0, true, 6_000, false
+            USTB_ID, 2, v2Evidence, v2Root, keccak256("CLAIMS_ROOT_V2"), 0, true, 6_000, false
         );
+        vm.stopPrank();
         vm.prank(admission);
         policyReg.bumpEpoch(keccak256("PASSPORT_V2"));
 
@@ -248,10 +250,12 @@ contract LifecycleTest is Fixture {
         vm.prank(alice);
         clearing.borrow(700e18, 0);
 
-        vm.prank(admission);
+        vm.startPrank(admission);
+        (bytes32[] memory v2Evidence, bytes32 v2Root) = _fileEvidence(USTB_ID, "USTB_V2");
         passportReg.commitPassport(
-            USTB_ID, 2, keccak256("EVIDENCE_ROOT_V2"), keccak256("CLAIMS_ROOT_V2"), 0, true, 6_000, false
+            USTB_ID, 2, v2Evidence, v2Root, keccak256("CLAIMS_ROOT_V2"), 0, true, 6_000, false
         );
+        vm.stopPrank();
 
         (Types.RiskResult memory restricted,) = clearing.accountHealth(alice);
         assertGt(uint8(restricted.status), uint8(Types.AccountStatus.NORMAL));

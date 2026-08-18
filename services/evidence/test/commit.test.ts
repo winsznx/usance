@@ -121,10 +121,13 @@ describe("commit calldata", () => {
     const decoded = decodeFunctionData({ abi: PASSPORT_REGISTRY_ABI, data: call.data });
     expect(decoded.functionName).toBe("commitPassport");
     expect(decoded.args).toEqual(commitPassportArgs(candidate));
-    // Spelled out, because two adjacent bytes32 roots swapped is undetectable by type.
+    // Spelled out, because two adjacent bytes32 roots swapped is undetectable by type. The
+    // evidence ids sit between the version and the roots, so a positional mistake there would
+    // otherwise present as a root mismatch on chain rather than as a wiring bug here.
     expect(decoded.args).toEqual([
       candidate.assetId,
       4n,
+      [...candidate.evidenceIds].sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1)),
       candidate.evidenceRoot,
       candidate.claimsRoot,
       1_800_000_000n,

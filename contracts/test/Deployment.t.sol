@@ -106,8 +106,12 @@ contract DeploymentTest is Test {
 
         (Authority authority,) = _deployAndCollect();
 
-        assertTrue(authority.hasRole(authority.GOVERNANCE(), intended), "configured holder never received GOVERNANCE");
-        assertFalse(authority.hasRole(authority.GOVERNANCE(), deployKey), "deploy key kept GOVERNANCE after handover");
+        assertTrue(
+            authority.hasRole(authority.GOVERNANCE(), intended), "configured holder never received GOVERNANCE"
+        );
+        assertFalse(
+            authority.hasRole(authority.GOVERNANCE(), deployKey), "deploy key kept GOVERNANCE after handover"
+        );
 
         // The guardian is a separate power and must not be silently bundled into the handover.
         assertTrue(authority.hasRole(authority.GUARDIAN(), deployKey), "guardian default was not applied");

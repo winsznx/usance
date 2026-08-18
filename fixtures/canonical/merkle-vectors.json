@@ -1,0 +1,101 @@
+{
+  "count": 10,
+  "vectors": [
+    {
+      "name": "single leaf is its own root",
+      "leaves": [
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb"
+      ],
+      "root": "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb"
+    },
+    {
+      "name": "two leaves",
+      "leaves": [
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+        "0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510"
+      ],
+      "root": "0x805b21d846b189efaeb0377d6bb0d201b3872a363e607c25088f025b0c6ae1f8"
+    },
+    {
+      "name": "three leaves — odd node promoted, not duplicated",
+      "leaves": [
+        "0x0b42b6393c1f53060fe3ddbfcd7aadcca894465a5a438f69c87d790b2299b9b2",
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+        "0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510"
+      ],
+      "root": "0xc3b537cc8a2c6dcb3657718e1f3505ff751ff8c2eba2a70460df2cbee2b1413a"
+    },
+    {
+      "name": "four leaves — perfectly balanced",
+      "leaves": [
+        "0x0b42b6393c1f53060fe3ddbfcd7aadcca894465a5a438f69c87d790b2299b9b2",
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+        "0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510",
+        "0xf1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3"
+      ],
+      "root": "0x04acaaffeb0baeb707a4247b9e27734c5af34744b6e9e05c53198814cf8e6606"
+    },
+    {
+      "name": "five leaves — odd at two levels",
+      "leaves": [
+        "0x0b42b6393c1f53060fe3ddbfcd7aadcca894465a5a438f69c87d790b2299b9b2",
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+        "0xa8982c89d80987fb9a510e25981ee9170206be21af3c8e0eb312ef1d3382e761",
+        "0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510",
+        "0xf1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3"
+      ],
+      "root": "0x3cb8ebf3ea51dca2c1dbf070aea7b5c035ecaaea486bc68f4819b59360c5a2f8"
+    },
+    {
+      "name": "seven leaves",
+      "leaves": [
+        "0x0b42b6393c1f53060fe3ddbfcd7aadcca894465a5a438f69c87d790b2299b9b2",
+        "0x14bcc435f49d130d189737f9762feb25c44ef5b886bef833e31a702af6be4748",
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+        "0xa8982c89d80987fb9a510e25981ee9170206be21af3c8e0eb312ef1d3382e761",
+        "0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510",
+        "0xd1e8aeb79500496ef3dc2e57ba746a8315d048b7a664a2bf948db4fa91960483",
+        "0xf1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3"
+      ],
+      "root": "0xfc39d20543bc8933d6b075429f649ecfc67a7a1eef63ae51f907a2a1f8dddd71"
+    },
+    {
+      "name": "eight leaves",
+      "leaves": [
+        "0x0b42b6393c1f53060fe3ddbfcd7aadcca894465a5a438f69c87d790b2299b9b2",
+        "0x14bcc435f49d130d189737f9762feb25c44ef5b886bef833e31a702af6be4748",
+        "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+        "0xa766932420cc6e9072394bef2c036ad8972c44696fee29397bd5e2c06001f615",
+        "0xa8982c89d80987fb9a510e25981ee9170206be21af3c8e0eb312ef1d3382e761",
+        "0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510",
+        "0xd1e8aeb79500496ef3dc2e57ba746a8315d048b7a664a2bf948db4fa91960483",
+        "0xf1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3"
+      ],
+      "root": "0x240d70e511ffd70e6de3db57a7f2a9a096c383bc9ed81800566234f2cb007f0c"
+    },
+    {
+      "name": "adjacent values — pair sorting must not collapse them",
+      "leaves": [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000002"
+      ],
+      "root": "0xe90b7bceb6e7df5418fb78d8ee546e97c83a08bbccc01a0644d599ccd2a7c2e0"
+    },
+    {
+      "name": "values straddling the signed boundary",
+      "leaves": [
+        "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "0x8000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "root": "0x2524d2c41c925efe47e292b5fe289a1dc397f5350987b14b79217b2333cd4b93"
+    },
+    {
+      "name": "minimum and maximum",
+      "leaves": [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      ],
+      "root": "0x9d3f4b35d3a7dca202fde247a7a06c78d8c5fd77130c593212f65d004b29c60a"
+    }
+  ]
+}
