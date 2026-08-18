@@ -45,5 +45,13 @@
     "token": "0x4c1d345400bfe1088050eed665f22f730d307b34"
   },
   "verified": false,
-  "verificationNote": "Explorer source verification not yet attempted."
+  "verificationNote": "Explorer source verification not yet attempted.",
+  "firstPassport": {
+    "assetId": "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
+    "version": 1,
+    "commitTx": "0x5015d664a08cdbe8ffd5ced816e46b97cdebcf9e906e9dcafee370919763fcde",
+    "block": 38571222,
+    "riskEpochAfter": 2,
+    "proof": "proof/passport-franklin-fobxx-v1.json"
+  }
 }
