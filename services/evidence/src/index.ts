@@ -9,6 +9,7 @@ export * from "./queue";
 export * from "./observations";
 export * from "./pipeline";
 export * from "./jobs";
+export * from "./history";
 export * from "./workflow";
 export * from "./workflow-store";
 export * from "./fixtures";

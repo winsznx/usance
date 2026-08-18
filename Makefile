@@ -15,7 +15,8 @@ FIXTURES  := fixtures/canonical/risk-scenarios.json
 .PHONY: help doctor bootstrap fixtures test test-contracts test-ts test-differential \
         build build-contracts build-web lint fmt fmt-check verify-integrations \
         deploy-testnet demo-local clean test-rust deployer deployer-create test-live-xlayer \
-        test-risk test-e2e demo-testnet audit-contracts slither slither-baseline characterize-feeds
+        test-risk test-e2e demo-testnet audit-contracts slither slither-baseline characterize-feeds \
+        franklin-history
 
 # Flags forwarded to the ChainGPT audit gate. CI passes --allow-unavailable on every branch except
 # a protected one, so a missing credential blocks a release without blocking a pull request.
@@ -148,6 +149,11 @@ characterize-feeds: ## Measure real Chainlink feed cadence on X Layer mainnet
 #  Read-only and keyless. Writes artifacts/oracles/ with provenance so a threshold can cite the
 #  measurement it came from rather than a number somebody remembered from a docs page.
 	@node scripts/characterize-feeds.mjs
+
+franklin-history: ## Recompute the Franklin year-over-year semantic diff
+#  Deterministic and offline. The comparison policy lives in @usance/evidence and is unit-tested
+#  there, including the deteriorations these three filings do not contain.
+	@node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/franklin-history.mjs
 
 slither: ## Static analysis; fails on findings that have not been triaged
 	@command -v slither >/dev/null || { \

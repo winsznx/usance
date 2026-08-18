@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, Nav, Notice } from "@/components/primitives";
 import { loadAsset, loadAssets, type AssetView, type ClaimView, type EvidenceView } from "@/lib/passport-data";
+import { loadHistory, CLASSIFICATION_COPY, type HistoryTransition } from "@/lib/history";
 
 /**
  * `/assets/[assetId]` — the proof explorer.
@@ -352,6 +353,7 @@ pnpm --filter @usance/evidence test`}
             </p>
           </div>
         </section>
+        <FilingHistory slug={asset.slug} />
       </main>
 
       <Footer />
@@ -360,6 +362,91 @@ pnpm --filter @usance/evidence test`}
 }
 
 // ------------------------------------------------------------------------------- components
+
+/**
+ * Year-over-year semantic history.
+ *
+ * The honest result for these three filings is that nothing material changed, and that is what the
+ * section says. The temptation with a page like this is to find something to report; a diff over
+ * document text would happily oblige, because a prospectus is re-typeset every year. What is shown
+ * is the diff over normalized claims, and the comparison coverage is shown next to it — "no change
+ * across five comparable fields" is a different statement from "no change across seventeen", and
+ * only one of them is true here.
+ */
+function FilingHistory({ slug }: { slug: string }) {
+  const history = loadHistory(slug);
+  if (!history || history.transitions.length === 0) return null;
+
+  return (
+    <section className="section" style={{ borderTop: "1px solid var(--hairline)" }}>
+      <div className="shell" style={{ maxWidth: 860 }}>
+        <div className="micro">Filing history</div>
+        <h2 className="heading" style={{ margin: "14px 0 8px" }}>
+          What changed between filings
+        </h2>
+        <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>
+          {history.filings.length} filings compared on normalised claims, never on document text. A
+          prospectus is re-typeset every year; that is not a change in what the asset is.
+        </p>
+
+        <div className="stack" style={{ gap: 14 }}>
+          {history.transitions.map((t) => (
+            <TransitionCard key={`${t.from}-${t.to}`} t={t} />
+          ))}
+        </div>
+
+        <p className="caption" style={{ marginTop: 20 }}>
+          Classification is made by deterministic policy from the diff. No model decides whether a
+          change is a risk deterioration — a model that could would be a model that sets risk
+          parameters.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function TransitionCard({ t }: { t: HistoryTransition }) {
+  const copy = CLASSIFICATION_COPY[t.classification];
+  const year = (id: string) => id.match(/(\d{4})$/)?.[1] ?? id;
+
+  return (
+    <div className="card">
+      <div className="row-between" style={{ alignItems: "flex-start", gap: 16 }}>
+        <div>
+          <div style={{ fontWeight: 500 }}>
+            {year(t.from)} → {year(t.to)}
+          </div>
+          <p className="caption" style={{ margin: "8px 0 0" }}>{copy.blurb}</p>
+        </div>
+        <span className="tag">{copy.label}</span>
+      </div>
+
+      {t.changes.length > 0 ? (
+        <div style={{ marginTop: 14 }}>
+          {t.changes.map((c) => (
+            <div key={c.field} className="row-between" style={{ padding: "9px 0", borderTop: "1px solid var(--hairline)" }}>
+              <span className="caption mono">{c.field}</span>
+              <span className="caption">
+                {c.kind === "COVERAGE_DIFFERENCE"
+                  ? "mentioned in only one filing"
+                  : `${JSON.stringify(c.from)} → ${JSON.stringify(c.to)}`}
+                {c.riskDirection ? ` · ${c.riskDirection.toLowerCase()}` : ""}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {/*
+        The denominator, stated. "No material change" over five comparable fields is a weaker claim
+        than over seventeen, and hiding which one it is would be the quiet kind of dishonesty.
+      */}
+      <p className="caption" style={{ margin: "14px 0 0", color: "var(--graphite)" }}>
+        {t.coverage.note}
+      </p>
+    </div>
+  );
+}
 
 function CustodyChain({ asset }: { asset: AssetView }) {
   const steps: Array<{ n: string; title: string; detail: string; value: string | null }> = [
