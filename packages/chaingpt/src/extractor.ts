@@ -129,13 +129,12 @@ export class ChainGptEvidenceExtractor implements EvidenceExtractor {
     const text = new TextDecoder().decode(input.bytes);
     const warnings: string[] = [];
 
-    // Measured against the live API: a trivial task over 25,000 characters returns in under six
-    // seconds, but a structured multi-field extraction over the same length exceeds ChainGPT's
-    // gateway timeout and comes back as a Cloudflare 504 HTML page rather than JSON. The limit is
-    // the work, not the input size. A 6,000-character chunk returns in about three seconds.
-    //
-    // This is why the first live Franklin Passport committed as singleSource: the model path was
-    // invoked, received an error page, failed schema validation, and correctly contributed nothing.
+    // Chunking bounds the input, which is necessary but measurably not sufficient on a dense
+    // filing: a real 6,000-char SEC chunk asking for all eleven fields takes ~38s, and five of
+    // those exceed the provider's ~80s gateway budget once variance is included. See the
+    // measurements in ./chunk.ts. Asking for fewer fields per call is the remaining lever and is
+    // not yet implemented, so a dense filing still legitimately yields no model reading and the
+    // Passport is capped as singleSource.
     const chunks = chunkDocument(text);
     if (chunks.length > 1) {
       warnings.push(

@@ -4,15 +4,28 @@ import type { Hex32 } from "@usance/schemas";
 /**
  * Deterministic document chunking.
  *
- * Measured against the live API: a ~500-character fixture extracts in 11 seconds, a 25,713-character
- * SEC filing does not return inside 150 seconds. That is why the first live Franklin Passport
- * committed as `singleSource` — the model path was invoked, took too long to be usable, and
- * contributed no reading. The corroborator counted honestly and the Passport was capped.
+ * Chunking alone does NOT make ChainGPT usable on a dense filing, and the measurements say why.
+ * Recorded here because an earlier version of this comment claimed it did, on a benchmark run
+ * against repetitive filler rather than real text:
  *
- * The fix is to send less at a time, not to send something different. Nothing here summarises,
- * rewrites or reorders the document: using a model to preprocess a model's input would put an
- * unverifiable transformation between the issuer's words and the claim that cites them, and the
- * quote a reviewer checks would no longer be the quote the extractor saw.
+ *   6,000 chars of repeated filler,   11 fields ->  4s
+ *   6,000 chars of real SEC filing,   11 fields -> 38s
+ *   6,000 chars of real SEC filing,    2 fields -> 16s
+ *   25,713 chars of real filing,      11 fields -> HTTP 504 after 81s
+ *
+ * The cost is dominated by OUTPUT generation over information-dense text, not by input length.
+ * Five chunks at ~38s each, with variance, still exceed the provider's ~80s gateway budget, which
+ * is exactly what happened on the first chunked run: all five chunks failed and the extraction
+ * returned nothing after twenty minutes of retries.
+ *
+ * So chunking is necessary and not sufficient. The remaining lever is asking for fewer fields per
+ * call, which the numbers above show cuts latency roughly in half. Until that lands, a dense
+ * filing legitimately yields `singleSource` and the Passport is capped — which is what the live
+ * Franklin Passport records.
+ *
+ * Nothing here summarises, rewrites or reorders the document: using a model to preprocess a
+ * model's input would put an unverifiable transformation between the issuer's words and the claim
+ * that cites them, and the quote a reviewer checks would no longer be the quote the extractor saw.
  *
  * Chunking is byte-for-byte reproducible. The same canonical text always yields the same chunks
  * with the same offsets and the same digests, so a claim's `locator` still points into the document
@@ -22,8 +35,9 @@ import type { Hex32 } from "@usance/schemas";
 /**
  * Target characters per chunk.
  *
- * Chosen from the latency probe rather than from a token budget: the constraint here is the
- * provider's wall-clock behaviour, not a context window.
+ * Chosen from the latency probe rather than from a token budget: the constraint is the provider's
+ * wall-clock gateway budget, not a context window. Note this size alone is not sufficient on dense
+ * text — see the measurements above.
  */
 export const CHUNK_TARGET_CHARS = 6_000;
 
