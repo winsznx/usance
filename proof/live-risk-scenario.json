@@ -1,0 +1,132 @@
+{
+  "kind": "LIVE_RISK_SCENARIO",
+  "chainId": 1952,
+  "network": "X Layer Testnet",
+  "account": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
+  "explorer": "https://www.oklink.com/x-layer-testnet",
+  "identityWarning": "tUSTB and tUSD are labelled TESTNET stand-ins with no relationship to any issuer. They are NOT Franklin FOBXX. This scenario proves FINANCIAL mechanics; the Franklin Passport proves EVIDENCE mechanics. Same protocol, deliberately different asset identities.",
+  "trigger": "TESTNET RISK SCENARIO \u2014 the tUSTB price feed was halved and the risk epoch bumped. This is a deterministic operator-controlled input, not a claim about any real issuer.",
+  "before": {
+    "recognisedCollateral": "980.13",
+    "availableToBorrow": "416.56",
+    "debt": "416.56",
+    "status": "NORMAL"
+  },
+  "after": {
+    "recognisedCollateral": "490.07",
+    "availableToBorrow": "0.00",
+    "debt": "416.56",
+    "status": "NO_NEW_RISK"
+  },
+  "newRiskBlocked": {
+    "attempted": "$10 borrow",
+    "result": "reverted onchain",
+    "submitted": true
+  },
+  "exitRemained": {
+    "repayAll": "succeeded",
+    "debtAfter": "0",
+    "statusAfter": "NORMAL",
+    "note": "Repay initially failed with ERC20InsufficientBalance: the account held exactly the borrowed principal but owed principal plus accrued interest. Correct protocol behaviour, and a real usability finding \u2014 a UI must quote the repay-all amount including interest, never the original borrow."
+  },
+  "afterRestore": {
+    "recognisedCollateral": "980.13",
+    "availableToBorrow": "833.11",
+    "status": "NORMAL"
+  },
+  "transactions": [
+    {
+      "label": "createPolicy(tUSTB)",
+      "hash": "0x41e06ad98e6c04e1",
+      "block": 38577213
+    },
+    {
+      "label": "bindRiskPolicy(tUSTB)",
+      "hash": "0x975a282dd3c8fae3",
+      "block": 38577221
+    },
+    {
+      "label": "commitPassport(tUSTB v1)",
+      "hash": "0xbb9a2f6456bd9aa9",
+      "block": 38577227
+    },
+    {
+      "label": "setCapabilities(HOLD|COLLATERAL)",
+      "hash": "0x526d93b1d81f6823",
+      "block": 38577233
+    },
+    {
+      "label": "setStatus(ACTIVE)",
+      "hash": "0x22c025ab543d18f5",
+      "block": 38577239
+    },
+    {
+      "label": "mint tUSD",
+      "hash": "0x514fb0cea97a544f",
+      "block": 38577245
+    },
+    {
+      "label": "approve LiquidityVault",
+      "hash": "0xd40f9d0fc7bd65fd",
+      "block": 38577250
+    },
+    {
+      "label": "supply liquidity",
+      "hash": "0x6621d65d7d62dba3",
+      "block": 38577255
+    },
+    {
+      "label": "mint tUSTB",
+      "hash": "0x0f510a87ce0c4d12",
+      "block": 38577263
+    },
+    {
+      "label": "approve CollateralVault",
+      "hash": "0x05efaed6051ba3ed",
+      "block": 38577268
+    },
+    {
+      "label": "addCollateral 1000 tUSTB",
+      "hash": "0x9dff5a4ec02486a5",
+      "block": 38577273
+    },
+    {
+      "label": "borrow $416.56",
+      "hash": "0x9c672f5c51835960",
+      "block": 38577281
+    },
+    {
+      "label": "setAnswer 0.5 (was 1)",
+      "hash": "0x077b7a386bbc88a9",
+      "block": 38577289
+    },
+    {
+      "label": "bumpEpoch(COLLATERAL_REPRICED)",
+      "hash": "0x109c69bed2fc7696",
+      "block": 38577294
+    },
+    {
+      "label": "approve ClearingHouse (repay)",
+      "hash": "0x05d217ecef96a2c0",
+      "block": 38577307
+    },
+    {
+      "label": "mint tUSD (interest shortfall)",
+      "hash": "0x8a2e0c603b2eeedd25ed226bffd0389bc45968c01611f6148afaaefe0033f4da",
+      "blockNumber": 38577411,
+      "status": "success"
+    },
+    {
+      "label": "repay all",
+      "hash": "0xb2ac5fa98725b8abdc1893bd511f7a1f31f626e5879745681806421a443d6eb7",
+      "blockNumber": 38577417,
+      "status": "success"
+    },
+    {
+      "label": "restore feed",
+      "hash": "0xf2f8ad8467dde352e6cf7219a0029f328f57b9223304ffa33987e8b8dd2a3fed",
+      "blockNumber": 38577423,
+      "status": "success"
+    }
+  ]
+}
