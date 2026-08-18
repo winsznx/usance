@@ -38,34 +38,34 @@ export interface DeploymentManifest {
 export const deployments: Record<number, DeploymentManifest> = {
   1952: {
     "chainId": 1952,
-    "deployedAt": "2026-08-18T08:51:44Z",
-    "commit": "c80523d",
+    "deployedAt": "2026-08-18T10:26:06Z",
+    "commit": "8061c06",
     "contracts": {
-      "authority": "0xccb67640f19c51ea1bb11592e1d453a7619981a9",
-      "assetRegistry": "0x04c88b13d613c90823f8819421599b2f5e0d4b63",
-      "evidenceRegistry": "0xfc07686b469667736142b5866dcb7dc51438e8cf",
-      "passportRegistry": "0x9515918cc03e7cae64fa18d82b0785352fdbc68a",
-      "riskPolicyRegistry": "0xacb8991282946b3199ee1dbc5b3aa0a4af66e010",
-      "oracleAdapter": "0xe9a846636157c6b06fecdac0036334e37dcca57a",
-      "collateralVault": "0x7dda63a51e2f70dfdc892de400781bcf15761a03",
-      "liquidityVault": "0xf9c9b43306e3196d5b8e6bd788cb78b811e975d7",
-      "financingEngine": "0x58cec150b122493c0371ed83761c93dbcad1b581",
-      "clearingHouse": "0x7178ffe6acb6b7765d44ce7ad4640e3e13a646f1"
+      "authority": "0xe0bac008cbe72365cb2078a0e61fbe90d038015f",
+      "assetRegistry": "0x3c7c547b14361137743a86acf233960330febd72",
+      "evidenceRegistry": "0x71dfb4568d156429ba17d1ed932bed034b898da5",
+      "passportRegistry": "0xe74d232071f11f7ecabf354415820a75e19510cf",
+      "riskPolicyRegistry": "0x244853b11e050d4a2b9ccff59bbed20e2a74dc65",
+      "oracleAdapter": "0xbde32d075410896fbe7ca2511e693f4b2d19bee2",
+      "collateralVault": "0x8ff79a624d8be744595055610d5f29382ed2decc",
+      "liquidityVault": "0x9c5288238174d4ff590b036e2107520d2e6cd6d6",
+      "financingEngine": "0x27edfc1ff415051cd8d8450e517e1f318ce08b69",
+      "clearingHouse": "0xdd579d7204c429c3a1c4e5df7b96fc04fd09456f"
     },
     "assets": [
       {
-        "assetId": "0xa626617d2c3a856c63c9861f740cb6bf21e19902577475d16cc27f418e57e01f",
+        "assetId": "0xbcda623ae5e57bdc8f930c05289770c35a0339b71025bbbc319c3090b9adc400",
         "symbol": "tUSTB",
         "name": "USANCE TESTNET TOKENIZED T-BILL - NO REAL VALUE",
-        "token": "0x5afb92b98435d5e6c5287d0e18e1a8300f5e3ee1",
+        "token": "0x00f5f35afdf8cb14ec9611a8359544e84fecb6f4",
         "decimals": 18,
         "isTestFixture": true
       }
     ],
     "settlementAsset": {
-      "assetId": "0x19b6638a953289fbe46f75b0e26d905824c3fc26b873eeadc096f7dd5e27004f",
+      "assetId": "0x39687f263f6e6ef2cb72199c30111de157b711c8b13971ef7c769578a3581eca",
       "symbol": "tUSD",
-      "token": "0xd4cdaa20b30be672d68679789afc428f568d5605",
+      "token": "0x3099073688d8d94c63f6b10532b19aa887c54677",
       "decimals": 6
     }
   },

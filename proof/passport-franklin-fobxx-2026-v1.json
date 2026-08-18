@@ -3,43 +3,43 @@
   "chainId": 1952,
   "network": "X Layer Testnet",
   "fixture": "franklin-fobxx-2026",
-  "reconciledFromChainLogs": true,
   "assetId": "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
   "passportId": "0x5a74da8e73cc67b04db5b17a0738da858cc31fb4bf45fa2b6363a064cb702124",
   "version": 1,
   "evidenceRoot": "0x4745f3bce7130e0dab8df6c57605155de294ff8f8f72a5925820065de404471a",
   "claimsRoot": "0xe90cc3301fc6ea64694b76cc86e77a3559e1cf533f25d1a43c470af7b4baa3ee",
-  "createdAt": 1787045430,
+  "createdAt": 1787049740,
   "singleSource": true,
   "redemptionSupported": false,
   "redemptionFloorBps": 0,
   "riskEpoch": 4,
+  "corroboration": "SINGLE_SOURCE",
   "registries": {
-    "evidenceRegistry": "0xfc07686b469667736142b5866dcb7dc51438e8cf",
-    "passportRegistry": "0x9515918cc03e7cae64fa18d82b0785352fdbc68a",
-    "riskPolicyRegistry": "0xacb8991282946b3199ee1dbc5b3aa0a4af66e010"
+    "evidenceRegistry": "0x71dfb4568d156429ba17d1ed932bed034b898da5",
+    "passportRegistry": "0xe74d232071f11f7ecabf354415820a75e19510cf",
+    "riskPolicyRegistry": "0x244853b11e050d4a2b9ccff59bbed20e2a74dc65"
   },
   "transactions": [
     {
       "label": "EvidenceRegistry.commit",
-      "hash": "0x35ff401739f29af2f751ea0fe55c92dbc3b73f7e405c6f7a9344e3bed390296e",
-      "blockNumber": 38586587,
-      "to": "0xfc07686b469667736142b5866dcb7dc51438e8cf",
-      "evidenceId": "0x4745f3bce7130e0dab8df6c57605155de294ff8f8f72a5925820065de404471a"
+      "hash": "0x9297a415762d05c322cc9883d31002f94502bc3d386bcb1f7952931f51feaea2",
+      "blockNumber": 38590896,
+      "builderCode": "usance",
+      "to": "0x71dfb4568d156429ba17d1ed932bed034b898da5"
     },
     {
-      "label": "PassportRegistry.commitPassport (v1)",
-      "hash": "0xcb7c4ecd8beff89911f57d5c436aab1cebc915088399d5a270ea29a9a4fc269a",
-      "blockNumber": 38586593,
-      "to": "0x9515918cc03e7cae64fa18d82b0785352fdbc68a"
+      "label": "PassportRegistry.commitPassport",
+      "hash": "0xbb9c20c8e9b74431029cb83d3c7aa28d4a232f3e44271fb01b3c3c19fa1f0840",
+      "blockNumber": 38590903,
+      "builderCode": "usance",
+      "to": "0xe74d232071f11f7ecabf354415820a75e19510cf"
     },
     {
-      "label": "RiskPolicyRegistry.bumpEpoch (epoch 2)",
-      "hash": "0xa4c78abbb787ba879272ab881baf83bb26b63282d2a5fb939e7e3a46b1ccf60f",
-      "blockNumber": 38586599,
-      "to": "0xacb8991282946b3199ee1dbc5b3aa0a4af66e010",
-      "cause": "0x562d2a51d9749591a7935fea1e28f4e4a73aed107b2540293b47acb37de3c85a",
-      "causedBy": "passport v1"
+      "label": "RiskPolicyRegistry.bumpEpoch",
+      "hash": "0x1e406c5faae365f0383b8dde64e5372b4a7f2f55cb6734ea7a68c55ced962b73",
+      "blockNumber": 38590909,
+      "builderCode": "usance",
+      "to": "0x244853b11e050d4a2b9ccff59bbed20e2a74dc65"
     }
   ]
 }
