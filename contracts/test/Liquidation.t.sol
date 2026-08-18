@@ -119,24 +119,83 @@ contract LiquidationTest is Fixture {
         ustbFeed.set(0.6e8, block.timestamp);
         vm.prank(admission);
         policyReg.bumpEpoch(keccak256("MOVE_A"));
-        uint256 small = manager.planFor(alice, USTB_ID).seizeValueUsd18;
+        LiquidationManager.Plan memory a = manager.planFor(alice, USTB_ID);
 
         ustbFeed.set(0.45e8, block.timestamp);
         vm.prank(admission);
         policyReg.bumpEpoch(keccak256("MOVE_B"));
-        uint256 large = manager.planFor(alice, USTB_ID).seizeValueUsd18;
+        LiquidationManager.Plan memory b = manager.planFor(alice, USTB_ID);
 
-        assertGt(large, small, "a worse breach did not require more collateral");
+        // Monotonicity lives on the curing amount, not on what a single round takes. Once both
+        // breaches exceed the close factor the round is capped at the same fraction of the same
+        // debt, so asserting the seizures differ would be asserting the cap does not work.
+        assertGt(b.curingRepayUsd18, a.curingRepayUsd18, "a worse breach did not need more repayment");
+        assertGe(b.repayTargetUsd18, a.repayTargetUsd18, "a worse breach took strictly less this round");
     }
 
-    /// Restoring exactly to maintenance leaves the account one wei from being liquidatable again,
-    /// which produces a sequence of small liquidations that each charge a bonus.
-    function test_theTargetLeavesABufferAboveMaintenance() public {
+    /**
+     * The plan must be honest about whether one liquidation is enough.
+     *
+     * The version of this test that shipped compared the post-liquidation debt against the
+     * *pre*-liquidation maintenance limit — the one number guaranteed not to apply afterwards — and
+     * therefore passed while the planner was wrong. A live liquidation on X Layer testnet caught it:
+     * the seizure matched the plan exactly, the debt fell, and the account stayed in MARGIN_CALL,
+     * because taking collateral removes borrowing capacity as well as debt.
+     */
+    function test_thePlanSaysWhetherOneLiquidationCuresTheBreach() public {
         _pushIntoMarginCall();
         LiquidationManager.Plan memory plan = manager.planFor(alice, USTB_ID);
 
-        uint256 debtAfter = plan.debtUsd18 - plan.repayTargetUsd18;
-        assertLt(debtAfter, plan.maintenanceLimitUsd18, "no buffer above maintenance");
+        if (plan.curesTheBreach) {
+            // Curable: the post-liquidation debt must sit under the post-liquidation maintenance
+            // limit, which shrinks with the collateral that was taken.
+            uint256 seized = plan.seizeValueUsd18;
+            uint256 mBps = (plan.maintenanceLimitUsd18 * 10_000) / _recognised(alice);
+            uint256 debtAfter = plan.debtUsd18 - plan.repayTargetUsd18;
+            uint256 maintenanceAfter = plan.maintenanceLimitUsd18 - (seized * mBps) / 10_000;
+            assertLe(debtAfter, maintenanceAfter, "claimed a cure that does not clear the new limit");
+        } else {
+            // Not curable: the amount needed is stated even though it cannot be taken this round.
+            assertGt(plan.repayTargetUsd18, 0, "gave up entirely instead of deleveraging");
+            assertLe(
+                plan.repayTargetUsd18,
+                (plan.debtUsd18 * manager.closeFactorBps()) / 10_000,
+                "took more than the close factor allows"
+            );
+        }
+    }
+
+    function _recognised(address who) internal view returns (uint256) {
+        (Types.RiskResult memory r,) = clearing.accountHealth(who);
+        return r.totalRecognizedUsd18;
+    }
+
+    /// A liquidation that cannot cure still has to reduce exposure, and has to say it did not cure.
+    function test_anUncurableBreachIsDeleveragedAndReportedHonestly() public {
+        _pushIntoMarginCall();
+        LiquidationManager.Plan memory plan = manager.planFor(alice, USTB_ID);
+        if (plan.curesTheBreach) return; // covered by the branch above
+
+        (Types.RiskResult memory before,) = clearing.accountHealth(alice);
+        uint256 seize = (plan.seizeValueUsd18 * 1e18) / _price();
+        clearing.executeLiquidation(alice, USTB_ID, seize, address(route), 0);
+
+        (Types.RiskResult memory afterR,) = clearing.accountHealth(alice);
+        assertLt(afterR.debtUsd18, before.debtUsd18, "exposure did not fall");
+        assertGt(plan.curingRepayUsd18, plan.repayTargetUsd18, "the curing amount was not reported as larger");
+    }
+
+    function _price() internal view returns (uint256) {
+        (uint256 p,) = oracle.getPrice(USTB_ID);
+        return p;
+    }
+
+    /// Every dollar seized removes capacity as well as debt, so a bounded round is the norm rather
+    /// than the exception. This pins that the bound is the close factor and not an accident.
+    function test_theCloseFactorBoundsASingleRound() public {
+        _pushIntoMarginCall();
+        LiquidationManager.Plan memory plan = manager.planFor(alice, USTB_ID);
+        assertLe(plan.repayTargetUsd18, (plan.debtUsd18 * manager.closeFactorBps()) / 10_000);
     }
 
     // ------------------------------------------------------------------ execution
@@ -292,6 +351,6 @@ contract LiquidationTest is Fixture {
     function test_aBonusThatCouldExceedThePositionIsRefused() public {
         vm.prank(governance);
         vm.expectRevert(LiquidationManager.BadParameters.selector);
-        manager.setParameters(2_000, 200);
+        manager.setParameters(2_000, 200, 5_000);
     }
 }

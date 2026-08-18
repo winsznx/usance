@@ -1,0 +1,48 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-08-18T13:07:16.019Z",
+    "generatedBy": "scripts/deploy-liquidation.mjs",
+    "gitCommit": "86b4710fc236b66eb12ec1bef2251c08cd098342-dirty",
+    "chainId": 1952,
+    "deploymentDigest": "0xdfb08dae257d2874026e8107f94c1ac000553c4808d18555cc45e24f50850115",
+    "inputDigest": "0x3ebec8dba773800255020b3fb88b7e9e3c3db6d73e9cc01d797c6667f4856a2f",
+    "schema": 1
+  },
+  "attachedToCommit": "365eee5",
+  "clearingHouse": "0x5a50ddb60d93ff0acbac81a2f6589dbb5150e7ec",
+  "contracts": {
+    "liquidationManager": "0x85afa10291d4e90115327157f577808d43a370fc",
+    "directSettlementRoute": "0x98de1b452849e5c61193d74b6c77758f6d5c7e45"
+  },
+  "route": {
+    "routeId": "0x1e8932d352d3b6cbda228b10b030829ae9f69b211a46e8bb6aba05a52e5df2f3",
+    "description": "direct settlement buffer (TESTNET ROUTE - NOT A MARKET VENUE)",
+    "bufferToken": "0x44ba9fdc97cbed8767f6ea027fc26cf440c4c8e9",
+    "bufferFunded": "200000000000"
+  },
+  "liquidator": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
+  "transactions": [
+    {
+      "label": "deploy LiquidationManager",
+      "hash": "0xbf747db831a0f4db89dd5c5ebb79235d1fcfe00a8aa94d94f8212af9e92632c5",
+      "blockNumber": 38599573,
+      "address": "0x85afa10291d4e90115327157f577808d43a370fc"
+    },
+    {
+      "label": "deploy DirectSettlementRoute",
+      "hash": "0xf1eece129693176fb04e5cd9d5ee53151e5a026539a3cc3c82a77609c64a073c",
+      "blockNumber": 38599579,
+      "address": "0x98de1b452849e5c61193d74b6c77758f6d5c7e45"
+    },
+    {
+      "label": "registerRoute",
+      "hash": "0xe271afeb5f7dd16de8fc68b8acaa5728f2574b6aff44da05f1fc170923b149e1",
+      "blockNumber": 38599585
+    },
+    {
+      "label": "fund route buffer (tUSD)",
+      "hash": "0xf5f6261d21a03092b57cdd868818a2f7287e681ca837314e42cb437036cf8110",
+      "blockNumber": 38599594
+    }
+  ]
+}

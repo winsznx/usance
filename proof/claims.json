@@ -188,11 +188,12 @@
     },
     {
       "claim": "Liquidation is progressive and routed on expected recovery.",
-      "proofLevel": "UNIT_TESTED",
+      "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "contracts/test/Liquidation.t.sol"
+        "0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1",
+        "proof/live-liquidation.json"
       ],
-      "detail": "Eligibility starts at MARGIN_CALL, not at the first restriction. Seizure is bounded by the breach plus a bonus rather than the whole position. Routes rank on proceeds - fees - latency - failure. 20 tests; 7 mutations verified. Deployed but not yet exercised on chain."
+      "detail": "Mined on X Layer testnet. An account walked NORMAL to NO_NEW_RISK to MARGIN_CALL as the collateral price fell, then 519.39 of 1000 tUSTB was seized \u2014 51.9% of the position, bounded by the close factor \u2014 retiring $411.36 of $791.46 debt and shrinking the breach from $85.76 to $40.94. The position was not closed. Account state was never set directly."
     },
     {
       "claim": "Generated verification artifacts prove they describe the current world.",
@@ -201,6 +202,32 @@
         "services/evidence/test/artifact-freshness.test.ts"
       ],
       "detail": "Every generated artifact carries provenance and consumers check it. A missing artifact is a failed run. Writes are atomic. 8 tests."
+    },
+    {
+      "claim": "A single liquidation does not always cure a breach, and the protocol says so before acting.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1",
+        "proof/live-liquidation.json"
+      ],
+      "detail": "Seizing collateral removes borrowing capacity as well as debt. At a 90% maintenance LTV and a 5% bonus, each dollar retired repairs 5.5 cents, so curing an $85.76 breach would need $1,815.93 of repayment against $791.46 of debt. planFor reports curesTheBreach=false and the amount that would be required, then deleverages within the close factor."
+    },
+    {
+      "claim": "A cured account cannot be liquidated.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0x0e9f71d76acf2bad8943120594681d15bf2065983752a861d3a6ab95698004b1",
+        "proof/live-liquidation.json"
+      ],
+      "detail": "After repaying to NORMAL, a liquidation with identical arguments to the one that had just succeeded was refused. Eligibility is recomputed from live inputs on every call, so the same code path that authorised the first refuses the replay."
+    },
+    {
+      "claim": "A liquidation route refuses to price a seizure off a stale oracle.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/test/Liquidation.t.sol"
+      ],
+      "detail": "Elsewhere a stale price blocks a transaction; in a route it decides how much collateral leaves an account. isAvailable returns false rather than reverting, so one unusable route does not take the others down with it."
     },
     {
       "claim": "Real issuer tokens (FOBXX, OUSG, ARCOIN, xStocks) are usable as collateral.",
