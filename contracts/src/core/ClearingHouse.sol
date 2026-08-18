@@ -79,11 +79,27 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     error ZeroAmount();
     error NotHolding(bytes32 assetId);
     error ReservationOutstanding();
-    /// @notice Zero means no staleness bound is enforced on the settlement price.
-    uint64 public settlementMaxPriceAge;
+
+    /// @notice How old the settlement price may be before new risk is refused.
+    /// @dev `configured` is a separate field on purpose. The previous version used
+    ///      `maxAge == 0` to mean "no bound", which made an unconfigured deployment and a
+    ///      deliberately unbounded one the same state — and the unsafe reading of that state was
+    ///      the permissive one. Forgetting to configure freshness silently allowed borrowing
+    ///      against a feed that might have stopped publishing a month ago.
+    ///
+    ///      Now the two are distinct and the default is refusal. `configured == false` blocks new
+    ///      risk while leaving every risk-reducing path open, which is the same posture the
+    ///      protocol takes toward any input it does not trust.
+    struct FreshnessPolicy {
+        bool configured;
+        uint64 maxAgeSeconds;
+    }
+
+    FreshnessPolicy public settlementFreshness;
 
     error SettlementAssetUnpriced();
     error SettlementPriceStale(uint64 age, uint64 maxAge);
+    error SettlementFreshnessUnconfigured();
     error BorrowTooSmall(uint256 amountUsd18);
 
     constructor(
@@ -115,19 +131,41 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
         settlementAssetId = assetId;
     }
 
-    /// @notice How old the settlement price may be before new borrowing is refused. Zero disables.
-    /// @dev Deliberately not applied to repayment or collateral top-ups.
+    /// @notice Set how old the settlement price may be before new risk is refused.
+    /// @dev Deliberately not applied to repayment or collateral top-ups: a contract that refuses
+    ///      repayment because a feed went quiet has locked the exit.
     ///
-    ///      Zero means "no bound", which is the most permissive setting rather than the tightest,
-    ///      so it cannot be compared as though it were a small number. Relaxing bumps the epoch;
-    ///      tightening does not, because a tighter bound cannot make an outstanding quote unsafe.
+    ///      `maxAge` of zero is rejected rather than treated as "no bound". A caller who means
+    ///      "stop enforcing this" has to say so through `clearSettlementFreshness`, which is
+    ///      risk-increasing and is priced as such.
+    ///
+    ///      Measured on X Layer mainnet: the documented Chainlink heartbeat is 86,400s and the
+    ///      worst observed gap across 23 rounds of seven feeds was 86,479s. A bound set at the
+    ///      heartbeat would therefore reject honest feeds. See
+    ///      `artifacts/oracles/xlayer-mainnet-feeds.json`.
     function setSettlementMaxPriceAge(uint64 maxAge) external onlyRole(authority.GOVERNANCE()) {
-        uint64 previous = settlementMaxPriceAge;
-        settlementMaxPriceAge = maxAge;
-        emit SettlementMaxPriceAgeSet(previous, maxAge);
+        if (maxAge == 0) revert SettlementFreshnessUnconfigured();
 
-        bool relaxed = maxAge == 0 ? previous != 0 : (previous != 0 && maxAge > previous);
-        if (relaxed) policies.bumpEpoch(keccak256("SETTLEMENT_PRICE_AGE_RELAXED"));
+        FreshnessPolicy memory previous = settlementFreshness;
+        settlementFreshness = FreshnessPolicy({configured: true, maxAgeSeconds: maxAge});
+        emit SettlementMaxPriceAgeSet(previous.configured ? previous.maxAgeSeconds : 0, maxAge);
+
+        // Widening the window, or opening one where there was none, lets risk be taken against
+        // prices that would previously have been refused. Tightening cannot make an outstanding
+        // quote unsafe, so it does not disturb the epoch.
+        if (!previous.configured || maxAge > previous.maxAgeSeconds) {
+            policies.bumpEpoch(keccak256("SETTLEMENT_FRESHNESS_RELAXED"));
+        }
+    }
+
+    /// @notice Stop enforcing settlement-price freshness. New risk is refused until it is set again.
+    /// @dev Explicit, because the honest consequence of "we do not know how fresh this price is" is
+    ///      that the protocol will not lend against it — not that it lends without checking.
+    function clearSettlementFreshness() external onlyRole(authority.GOVERNANCE()) {
+        FreshnessPolicy memory previous = settlementFreshness;
+        settlementFreshness = FreshnessPolicy({configured: false, maxAgeSeconds: 0});
+        emit SettlementMaxPriceAgeSet(previous.configured ? previous.maxAgeSeconds : 0, 0);
+        policies.bumpEpoch(keccak256("SETTLEMENT_FRESHNESS_CLEARED"));
     }
 
     // ---------------------------------------------------------------------------------
@@ -500,26 +538,26 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
 
     /// @dev The settlement price, refused when it is too old to price new risk against.
     ///
-    ///      A stale settlement feed matters most exactly when it is most likely: during a depeg,
-    ///      an unmoved feed pays a borrower fewer real dollars than the debt it records. That is a
+    ///      A stale settlement feed matters most exactly when it is most likely: during a depeg, an
+    ///      unmoved feed pays a borrower fewer real dollars than the debt it records. That is a
     ///      reason to refuse the borrow, not a reason to refuse the repayment that follows it.
     ///
-    ///      `settlementMaxPriceAge` of zero disables the check, which is the honest default for a
-    ///      chain whose feed cadence has not been characterised — a guessed threshold produces
-    ///      outages that look like protocol failures.
+    ///      An unconfigured policy refuses too. "Nobody has said how fresh this price must be" is
+    ///      not a reason to skip the question, and defaulting it to permissive means every
+    ///      deployment is one forgotten transaction away from lending against a dead feed.
     function _settlementPriceForNewRisk() internal view returns (uint256 price, uint8 dec) {
+        FreshnessPolicy memory policy = settlementFreshness;
+        if (!policy.configured) revert SettlementFreshnessUnconfigured();
+
         uint64 updatedAt;
         (price, updatedAt) = oracle.getPrice(settlementAssetId);
         if (price == 0) revert SettlementAssetUnpriced();
 
-        uint64 maxAge = settlementMaxPriceAge;
-        if (maxAge != 0) {
-            // Saturating, because ordinary L2 clock skew puts a feed a second into the future
-            // routinely and unsigned subtraction panics on it. Same reason as RiskMath._age.
-            uint64 nowTs = uint64(block.timestamp);
-            uint64 age = nowTs > updatedAt ? nowTs - updatedAt : 0;
-            if (age > maxAge) revert SettlementPriceStale(age, maxAge);
-        }
+        // Saturating, because ordinary L2 clock skew puts a feed a second into the future routinely
+        // and unsigned subtraction panics on it. Same reason as RiskMath._age.
+        uint64 nowTs = uint64(block.timestamp);
+        uint64 age = nowTs > updatedAt ? nowTs - updatedAt : 0;
+        if (age > policy.maxAgeSeconds) revert SettlementPriceStale(age, policy.maxAgeSeconds);
 
         dec = IERC20Metadata(address(liquidity.asset())).decimals();
     }

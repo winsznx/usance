@@ -184,11 +184,21 @@ contract RiskPolicyRegistry is Authorized {
 
     /// @notice Advance the epoch because something outside this registry changed the inputs —
     ///         a new Passport, an asset status change, an oracle reconfiguration.
+    /// @dev CLEARING is accepted alongside the three governance-shaped roles because ClearingHouse
+    ///      changes risk inputs itself — swapping the oracle, widening the settlement freshness
+    ///      window — and an epoch that does not move after those changes leaves outstanding quotes
+    ///      valid under rules that no longer apply. Without this, `setOracle` and
+    ///      `setSettlementMaxPriceAge` revert whenever they are actually called.
+    ///
+    ///      Widening here is safe in a way that widening most authority is not: the epoch is
+    ///      monotone and advancing it only invalidates quotes. There is no argument, no target and
+    ///      no amount. The worst an attacker with this power can do is force everyone to re-quote.
     function bumpEpoch(bytes32 cause) external {
         if (
             !authority.hasRole(authority.ADMISSION(), msg.sender)
                 && !authority.hasRole(authority.GOVERNANCE(), msg.sender)
                 && !authority.hasRole(authority.GUARDIAN(), msg.sender)
+                && !authority.hasRole(authority.CLEARING(), msg.sender)
         ) revert Unauthorized(authority.ADMISSION());
         _advanceEpoch(cause);
     }

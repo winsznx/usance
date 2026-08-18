@@ -9,6 +9,77 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-015 — A validation artifact is valid only if it proves its own freshness
+
+**Decision.** Every generated verification artifact carries a `$provenance` block —
+`generatedAt`, `gitCommit`, and where applicable `chainId`, `deploymentDigest`, `inputDigest`,
+`generatedBy` — and every consumer checks it. A missing artifact is a failed run, never a clean
+one. Artifacts are written to a temporary path and renamed, so a failed run cannot leave the
+previous successful artifact looking current.
+
+**Why.** The same failure shipped three times in one session, and each time a gate reported success:
+
+| Artifact | What happened | What the gate said |
+|---|---|---|
+| `deployments/manifest.ts` | Described contracts superseded by a redeploy | "deployment is live and wired" |
+| `proof/passport-*.json` | Cited a PassportRegistry that had been replaced | receipt rendered normally |
+| Slither JSON | Slither refuses to overwrite an existing `--json` file, so the gate re-read the previous run | "0 new findings", with an injected `tx.origin` check and a `selfdestruct` in the tree |
+
+In all three the consumer asked "does a file exist?", found one, and stopped. None of them asked
+"does this describe the world I am checking?"
+
+`generatedAt` is deliberately not the load-bearing field. A timestamp says when a file was written,
+not what it was written from. The digests are what actually detect drift, and a wall-clock bound is
+only a backstop for artifacts that describe something changing continuously.
+
+**Displaces.** The implicit convention that a committed artifact is current because it is committed.
+
+**Evidence.** `scripts/_artifact.mjs`, `services/evidence/test/artifact-freshness.test.ts` (8 tests),
+and the bytecode comparison in `scripts/live-xlayer.mjs`, which now fails when the manifest points
+at a contract this checkout does not compile to.
+
+---
+
+## D-014 — Unconfigured oracle freshness refuses new risk
+
+**Decision.** `ClearingHouse.settlementFreshness` is a `{configured, maxAgeSeconds}` pair. An
+unconfigured policy blocks new borrowing and leaves every risk-reducing path open. `maxAge == 0` is
+rejected by the setter; opting out requires calling `clearSettlementFreshness`, which advances the
+epoch.
+
+**Why.** The previous version used `maxAge == 0` to mean "no bound", which made *never configured*
+and *deliberately unbounded* the same state — and the shared reading was the permissive one. Every
+deployment was one forgotten transaction away from lending against a feed that had stopped
+publishing.
+
+The bound itself is measured, not guessed. `make characterize-feeds` walks 23 rounds of each
+Chainlink feed on X Layer mainnet:
+
+| | |
+|---|---|
+| Documented heartbeat | 86,400s |
+| Worst observed gap | 86,479s |
+| USDC/USD median gap | 86,419s |
+| USDT/USD median gap | 86,419s |
+
+Two findings follow. A threshold set at the documented heartbeat would reject honest feeds, because
+the worst real gap is 79 seconds past it. And the settlement-relevant pairs publish *only* on
+heartbeat — they never trip a deviation threshold — so a settlement price is roughly a day old at
+almost all times. Any threshold guessed downward from intuition would have bricked borrowing
+permanently.
+
+The enforced bound is two heartbeats: a feed must miss a full publication cycle before new risk is
+refused.
+
+**Displaces.** "The bound defaults to zero, because a guessed threshold on a chain whose feed
+cadence nobody has characterised produces outages that look like protocol failures." That reasoning
+was right about guessing and wrong about the default. The answer was to measure, not to disable.
+
+**Evidence.** `artifacts/oracles/xlayer-mainnet-feeds.json`,
+`contracts/test/OracleFreshness.t.sol` (14 tests, 6 mutations verified).
+
+---
+
 ## D-013 — Route naming follows the canonical PRD, not the build prompt
 
 **Decision.** Routes follow `internal/usance-prd-canonical.md` §6.3 where the two sources

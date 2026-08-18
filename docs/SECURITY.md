@@ -54,9 +54,18 @@ feed that bricks every account holding an asset is a denial of service with extr
 
 **Stale prices gate new risk only.** Collateral price age is enforced by the risk pipeline. The
 settlement price is checked on borrowing and deliberately not on repayment: refusing repayment when
-a feed goes quiet locks the exit. The bound defaults to zero — disabled — because a guessed
-threshold on a chain whose feed cadence nobody has characterised produces outages that look like
-protocol failures.
+a feed goes quiet locks the exit.
+
+**An unconfigured freshness policy refuses new risk.** `maxAge == 0` used to mean "no bound", which
+made *never configured* and *deliberately unbounded* the same state, with the permissive reading
+shared between them. The two are now distinct and the default is refusal.
+
+**The bound is measured.** `make characterize-feeds` walks 23 rounds of each Chainlink feed on X
+Layer mainnet. The documented heartbeat is 86,400s; the worst observed gap is 86,479s, so a
+threshold set at the heartbeat would reject honest feeds. USDC/USD and USDT/USD — the
+settlement-relevant pairs — publish only on heartbeat at a median gap of 86,419s, so a settlement
+price is roughly a day old at almost all times. The enforced bound is two heartbeats. Mainnet
+deployment has no default and refuses to proceed without one.
 
 **Timestamps ahead of now do not panic.** Ordinary L2 clock skew puts a feed a second into the
 future routinely, and unsigned subtraction reverts on it. Ages use saturating subtraction
@@ -76,8 +85,8 @@ role table (`contracts/test/Deployment.t.sol`), because unit tests construct con
 never execute the thing that decides who holds authority.
 
 **Relaxing bumps the epoch; tightening does not.** A tighter bound cannot make an outstanding quote
-unsafe. `settlementMaxPriceAge` treats zero as "no bound", which is the most permissive setting and
-therefore cannot be compared as though it were a small number.
+unsafe. Widening the freshness window, or opening one where there was none, advances the epoch;
+clearing it entirely advances it too, and then refuses all new risk until it is set again.
 
 ### An attacker is another user
 
@@ -103,6 +112,27 @@ R-03).
 and converted by `ClearingHouse`, which owns that boundary. The original code wrote usd18 straight
 into the vault, inflating NAV by roughly 271,000,000x while `maxWithdraw` reported healthy and every
 lender withdrawal reverted (regression R-01).
+
+## Freshness of the checks themselves
+
+> A validation artifact is valid only if its freshness and provenance are proven as part of the
+> validation. **No fresh data is not success.**
+
+Three artifacts falsely reported success in one session — a deployment manifest describing
+superseded contracts, a proof record citing a retired registry, and a Slither gate reading the
+previous run's JSON because Slither refuses to overwrite an existing output file. In every case the
+consumer checked that a file existed, found one, and stopped.
+
+Generated artifacts now carry `$provenance`: `generatedAt`, `gitCommit`, and where applicable
+`chainId`, `deploymentDigest`, `inputDigest` and the tool that produced them. Consumers compare the
+digests rather than trusting a date, because a timestamp says when a file was written and not what
+it was written from. Artifacts are written to a temporary path and renamed, so a failed run cannot
+leave the previous successful one looking current, and a missing artifact is a failed run rather
+than nothing to verify.
+
+`make test-live-xlayer` applies the same rule to the chain: it compares deployed runtime bytecode
+against what the checkout compiles, so a manifest pointing at superseded contracts fails instead of
+passing.
 
 ## What is verified, and how
 

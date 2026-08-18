@@ -40,6 +40,11 @@ contract Deploy is Script {
     uint256 internal constant X_LAYER_MAINNET = 196;
     uint256 internal constant X_LAYER_TESTNET = 1952;
 
+    /// @dev Two Chainlink heartbeats. Testnet only: the stand-in aggregator publishes whenever a
+    ///      script tells it to, so this number describes nothing about production behaviour. The
+    ///      mainnet value has no default and must be supplied from measured data.
+    uint64 internal constant TESTNET_SETTLEMENT_MAX_PRICE_AGE = 172_800;
+
     error WrongChain(uint256 chainId);
     error MissingConfig(string name);
 
@@ -157,6 +162,29 @@ contract Deploy is Script {
         // The settlement feed is load-bearing for the exit, not just for entry.
         c.oracle.setFeedProtected(settlementId, true);
         c.clearing.setSettlementAsset(settlementId);
+
+        // Settlement-price freshness. Without this the deployment can price collateral and take
+        // deposits but cannot lend, because an unconfigured policy refuses new risk.
+        //
+        // On mainnet the value must be supplied. There is no default worth guessing: the right
+        // bound depends on the cadence of the specific feed, and a wrong one either rejects healthy
+        // feeds or accepts dead ones. `make characterize-feeds` measures it.
+        //
+        // On testnet a labelled stand-in policy is used, because the stand-in aggregator's cadence
+        // is whatever a script sets and says nothing about production. It is deliberately generous
+        // so a demo does not fail on a feed nobody updated, and it can never reach mainnet: this
+        // branch is unreachable there and the mainnet branch has no default.
+        uint64 maxPriceAge = uint64(vm.envOr("USANCE_SETTLEMENT_MAX_PRICE_AGE", uint256(0)));
+        if (maxPriceAge == 0) {
+            if (block.chainid != X_LAYER_TESTNET) {
+                revert MissingConfig("USANCE_SETTLEMENT_MAX_PRICE_AGE required on mainnet; run `make characterize-feeds`");
+            }
+            maxPriceAge = TESTNET_SETTLEMENT_MAX_PRICE_AGE;
+            console2.log("settlementMaxPriceAge", maxPriceAge, "(TESTNET STAND-IN POLICY)");
+        } else {
+            console2.log("settlementMaxPriceAge", maxPriceAge);
+        }
+        c.clearing.setSettlementMaxPriceAge(maxPriceAge);
 
         // A deployment with no collateral asset can price nothing and demonstrate nothing, so on
         // testnet a labelled tokenized-T-bill stand-in is registered alongside the settlement

@@ -117,19 +117,6 @@ contract StaticAnalysisTest is Fixture {
         assertEq(r.debtUsd18, 0, "a stale settlement feed blocked the exit");
     }
 
-    /// Zero is the default and the honest one: a guessed threshold produces outages that look like
-    /// protocol failures on a chain whose feed cadence nobody has characterised.
-    function test_theStalenessBoundIsOffUntilGovernanceSetsIt() public {
-        assertEq(clearing.settlementMaxPriceAge(), 0);
-
-        depositCollateral(alice, 1_000e18);
-        vm.warp(block.timestamp + 10 days);
-        ustbFeed.set(1e8, block.timestamp);
-
-        vm.prank(alice);
-        clearing.borrow(100e18, 0);
-    }
-
     // ------------------------------------------------------------------ incorrect-exp
 
     /**

@@ -21,6 +21,9 @@ import {MockERC20, MockAggregator} from "./mocks/Mocks.sol";
 /// @dev A shared fixture rather than per-test setup, because a wiring mistake that only exists
 ///      in tests proves nothing about the system that ships.
 abstract contract Fixture is Test {
+    /// Two Chainlink heartbeats. See the note in `_configureOracles`.
+    uint64 internal constant SETTLEMENT_MAX_PRICE_AGE = 172_800;
+
     Authority internal authority;
     AssetRegistry internal assetsReg;
     EvidenceRegistry internal evidenceReg;
@@ -173,6 +176,15 @@ abstract contract Fixture is Test {
         oracle.setSequencerFeed(address(sequencerFeed), 3600);
         // The settlement feed prices repayments. A guardian must not be able to close the exit.
         oracle.setFeedProtected(USDC_ID, true);
+
+        // Settlement-price freshness. A deployment that skips this cannot lend, which is the point:
+        // the fixture has to do what a real operator does rather than inherit a permissive default.
+        //
+        // 172,800s is two Chainlink heartbeats. Measured on X Layer mainnet, the documented
+        // heartbeat is 86,400s and the worst observed gap across 23 rounds of seven feeds was
+        // 86,479s — so a bound set at one heartbeat would reject honest feeds. See
+        // artifacts/oracles/xlayer-mainnet-feeds.json.
+        clearing.setSettlementMaxPriceAge(SETTLEMENT_MAX_PRICE_AGE);
         vm.stopPrank();
     }
 

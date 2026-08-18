@@ -33,12 +33,18 @@ contract DeploymentTest is Test {
         vm.setEnv("DEPLOYER_PRIVATE_KEY", vm.toString(DEPLOYER_PK));
         vm.deal(vm.addr(DEPLOYER_PK), 100 ether);
 
-        // `vm.setEnv` writes to the real process environment, which outlives the test that set it.
-        // A governance address configured by one test therefore leaks into every test that runs
-        // after it, and the leak reads as a deployment bug rather than as test pollution. Both
-        // knobs are normalised here so each test starts from the documented default.
+        // `vm.setEnv` writes to the real process environment, which outlives the test that set it,
+        // and forge runs tests concurrently. A value configured by one test therefore leaks into
+        // every test that reads it, and the leak reads as a deployment bug rather than as test
+        // pollution — a mainnet test setting a fake settlement token made three unrelated testnet
+        // tests revert. Every knob the deploy script reads is normalised here, so each test starts
+        // from the documented default whatever ran before it.
         vm.setEnv("USANCE_GOVERNANCE", vm.toString(vm.addr(DEPLOYER_PK)));
         vm.setEnv("USANCE_GUARDIAN", vm.toString(vm.addr(DEPLOYER_PK)));
+        vm.setEnv("USANCE_SETTLEMENT_TOKEN", vm.toString(address(0)));
+        vm.setEnv("USANCE_SETTLEMENT_FEED", vm.toString(address(0)));
+        vm.setEnv("USANCE_SETTLEMENT_MAX_PRICE_AGE", "0");
+        vm.setEnv("USANCE_SEQUENCER_FEED", vm.toString(address(0)));
     }
 
     /// Runs the real script and recovers what it deployed, so the assertions run against the wired
@@ -137,6 +143,41 @@ contract DeploymentTest is Test {
         (, ClearingHouse clearing) = _deployAndCollect();
         assertTrue(address(clearing) != address(0), "ClearingHouse not found");
         assertTrue(clearing.settlementAssetId() != bytes32(0), "settlement asset never bound");
+    }
+
+    // ------------------------------------------------------------------ freshness config
+
+    /**
+     * Both freshness postures, in one test on purpose.
+     *
+     * `vm.setEnv` writes to the real process environment and forge runs tests concurrently, so two
+     * tests that disagree about the same variable race. Normalising in `setUp` does not fix it: the
+     * other test rewrites the variable mid-flight, after this one's setUp has run. A mainnet test
+     * setting a fake settlement token made three unrelated testnet tests revert exactly this way.
+     *
+     * Sequential sections inside one test have no such window. This is the second time the pattern
+     * has come up in this file; the first was governance handover.
+     */
+    function test_freshnessMustBeConfiguredAndOnlyTestnetGetsADefault() public {
+        // Testnet: a labelled stand-in policy, so a demo does not fail on a feed nobody updated.
+        (, ClearingHouse clearing) = _deployAndCollect();
+        (bool configured, uint64 maxAge) = clearing.settlementFreshness();
+        assertTrue(configured, "testnet deployment left freshness unconfigured");
+        assertEq(maxAge, 172_800, "stand-in policy is not the documented two heartbeats");
+
+        // Mainnet: no default. The right bound depends on the cadence of the specific feed, and a
+        // guessed one either rejects healthy feeds or accepts dead ones.
+        vm.chainId(196);
+        vm.setEnv("USANCE_SETTLEMENT_TOKEN", vm.toString(makeAddr("usdc")));
+        vm.setEnv("USANCE_SETTLEMENT_FEED", vm.toString(makeAddr("usdc-feed")));
+
+        Deploy mainnetScript = new Deploy();
+        vm.expectRevert();
+        mainnetScript.run();
+
+        // Put the environment back so a concurrently-scheduled test does not inherit mainnet config.
+        vm.setEnv("USANCE_SETTLEMENT_TOKEN", vm.toString(address(0)));
+        vm.setEnv("USANCE_SETTLEMENT_FEED", vm.toString(address(0)));
     }
 
     /// Mainnet must never receive the labelled testnet stand-ins.
