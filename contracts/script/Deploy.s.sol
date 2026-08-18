@@ -14,6 +14,7 @@ import {LiquidityVault} from "../src/core/LiquidityVault.sol";
 import {FinancingEngine} from "../src/core/FinancingEngine.sol";
 import {FeeController} from "../src/core/FeeController.sol";
 import {MandateRegistry} from "../src/core/MandateRegistry.sol";
+import {IntentBook} from "../src/core/IntentBook.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {ChainlinkFeedAdapter} from "../src/adapters/ChainlinkFeedAdapter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -65,6 +66,7 @@ contract Deploy is Script {
         ClearingHouse clearing;
         FeeController fees;
         MandateRegistry mandates;
+        IntentBook intents;
     }
 
     function run() external {
@@ -182,6 +184,13 @@ contract Deploy is Script {
         // answers correctly and is never consulted authorises everything.
         c.mandates = new MandateRegistry(c.authority);
         c.clearing.setMandateRegistry(c.mandates);
+
+        // IntentBook reserves capital against the account before anything is submitted to a venue,
+        // which is what stops two concurrent intents each believing the same capacity is free. It
+        // needs CLEARING to do that — the reservation calls are held behind it precisely so an
+        // arbitrary caller cannot pin somebody's capacity.
+        c.intents = new IntentBook(c.authority, c.mandates, c.clearing);
+        c.authority.grantRole(c.authority.CLEARING(), address(c.intents));
     }
 
     /// @dev The ADMISSION role goes to the broadcasting EOA, not to `address(this)`. Under
@@ -275,6 +284,7 @@ contract Deploy is Script {
         console2.log("oracleAdapter", address(c.oracle));
         console2.log("feeController", address(c.fees));
         console2.log("mandateRegistry", address(c.mandates));
+        console2.log("intentBook", address(c.intents));
         console2.log("USANCE_DEPLOYMENT_END");
     }
 }

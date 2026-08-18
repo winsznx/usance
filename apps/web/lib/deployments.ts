@@ -23,6 +23,16 @@ export interface Deployment {
     financingEngine: `0x${string}`;
     clearingHouse: `0x${string}`;
     oracleAdapter: `0x${string}`;
+    /**
+     * Modules a deployment may or may not carry.
+     *
+     * Optional rather than required, because a manifest generated before a module existed is still
+     * a valid manifest for the deployment it describes. A page that assumed presence would crash on
+     * exactly the historical records the freshness rules exist to preserve.
+     */
+    feeController?: `0x${string}`;
+    mandateRegistry?: `0x${string}`;
+    intentBook?: `0x${string}`;
   };
   assets: Array<{
     assetId: `0x${string}`;
