@@ -23,13 +23,13 @@
         "deployments/1952.json",
         "make test-live-xlayer"
       ],
-      "detail": "Ten contracts at commit 8061c06, first block 38589796. The verifier compares deployed runtime bytecode against what this checkout builds, so a manifest pointing at a superseded deployment fails instead of passing."
+      "detail": "Ten contracts at commit 365eee5, first block 38596008. The verifier compares deployed runtime bytecode against what this checkout builds, so a manifest pointing at a superseded deployment fails instead of passing."
     },
     {
       "claim": "A Passport derived from a real issuer filing is committed onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xbb9c20c8e9b74431029cb83d3c7aa28d4a232f3e44271fb01b3c3c19fa1f0840",
+        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
         "proof/passport-franklin-fobxx-2026-v1.json"
       ],
       "detail": "Franklin Templeton SEC Form 497K, CIK 1786958."
@@ -38,10 +38,10 @@
       "claim": "The committed Passport was verified by reading it back from the registry.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xbb9c20c8e9b74431029cb83d3c7aa28d4a232f3e44271fb01b3c3c19fa1f0840",
+        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
         "scripts/commit-passport.mjs"
       ],
-      "detail": "Version, assetId, evidenceRoot, claimsRoot, ACTIVE status and singleSource all compared against the candidate before any proof record was written. A transaction hash is not a commit."
+      "detail": "Version, assetId, evidenceRoot, claimsRoot, ACTIVE status and singleSource all compared against the candidate before any proof record was written."
     },
     {
       "claim": "ERC-8021 builder attribution is present on Usance X Layer writes.",
@@ -55,24 +55,24 @@
       "claim": "A risk epoch transition occurred onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x1e406c5faae365f0383b8dde64e5372b4a7f2f55cb6734ea7a68c55ced962b73"
+        "0x32ecee8c05fbddaa64d33063bea0b0f5cd410f40295e9fb107b81d1de741dafe"
       ],
-      "detail": "Caused by the committed Passport, not by a governance call made for the demo."
+      "detail": "RiskEpoch is 5 on the current deployment, advanced by the committed Passport."
     },
     {
       "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xa23bddc978f6e8c2a1acb306672c4475436be5992840dc284723d23ada4b53f5",
+        "0x3e0da382ec33324a1e25763d70d6b58b9cb9b548aa062b95c4be675d02efbe60",
         "proof/live-risk-scenario.json"
       ],
-      "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 the figure canonical fixture S02 asserts and all four implementations agree on."
+      "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 fixture S02, reproduced by a fourth independent deployment."
     },
     {
       "claim": "A borrow within the limit succeeds onchain.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x9bc3678c2ed150f36877b3ac0ad07a30b40f30a869517dc6fdb9f72f2bfa2995"
+        "0xdb71289b04c95bfbd867bc4d5ec7b9e4b189b546d18f114663afa6003e4357cb"
       ],
       "detail": "$416.56 against $833.11 of capacity."
     },
@@ -80,16 +80,16 @@
       "claim": "After a material risk deterioration, new borrowing is rejected by the contract.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x9516fc164425ee38cc63f069ed0f06993105bdd5732d5fe6b363f700bc32fae2",
+        "0xa027fae7ae5e566fdf25de4fbc577ca23aa783faf2899a3b71a81c063abbfe9a",
         "proof/live-risk-scenario.json"
       ],
-      "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow was submitted with an explicit gas limit so it would bypass client-side estimation and reach a block: it mined at 38590123, burned 243900 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status 1 is NO_NEW_RISK. The reason is decoded by replaying the calldata pinned to that block. Not a disabled button and not a simulation."
+      "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow submitted with an explicit gas limit mined at block 38596307, burned 243878 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status 1 is NO_NEW_RISK."
     },
     {
       "claim": "Risk-reducing actions remain available while new risk is blocked.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x73f3437680a6e8a68f4456b5069ee3fd578c1ca860f826c521f0c8463e29d754"
+        "0x7c6d70f02682fcb9275f014e22800cb0de18f576407f8aa4fc5381e7ee0bc0d2"
       ],
       "detail": "Repay-all succeeded under NO_NEW_RISK, clearing debt to zero and returning the account to NORMAL."
     },
@@ -97,10 +97,10 @@
       "claim": "A Passport cannot be committed onchain citing evidence that was never filed.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0x9297a415762d05c322cc9883d31002f94502bc3d386bcb1f7952931f51feaea2",
-        "0xbb9c20c8e9b74431029cb83d3c7aa28d4a232f3e44271fb01b3c3c19fa1f0840"
+        "0x826f39c546f0238d49f7229bf298f7607d19cc329de025895a4ea5e0e7a294b9",
+        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358"
       ],
-      "detail": "The deployed PassportRegistry checks every cited evidence id against the EvidenceRegistry and recomputes the Merkle root from them. Evidence landed in block 38590896, the Passport in 38590903; reversing that order is a revert, not a convention."
+      "detail": "The deployed PassportRegistry checks every cited evidence id and recomputes the Merkle root. Evidence landed in block 38597280, the Passport in 38597284; reversing that order is a revert, not a convention."
     },
     {
       "claim": "Four independent implementations of the risk pipeline agree to the wei.",
@@ -114,10 +114,10 @@
       "claim": "A Passport built from one extraction path is capped and cannot claim corroboration.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xbb9c20c8e9b74431029cb83d3c7aa28d4a232f3e44271fb01b3c3c19fa1f0840",
+        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
         "proof/passport-franklin-fobxx-2026-v1.json"
       ],
-      "detail": "The live Franklin Passport is singleSource because ChainGPT could not complete the extraction over a dense filing. The corroborator counts paths that produced a reading, not paths attempted."
+      "detail": "singleSource because ChainGPT could not complete the extraction over a dense filing. The corroborator counts paths that produced a reading, not paths attempted."
     },
     {
       "claim": "A claim conflict cannot commit a Passport.",
@@ -152,6 +152,55 @@
         "docs/INTEGRATIONS.md"
       ],
       "detail": "Corrects the planning material. Chainlink's registry lists X Layer with supportedFeatures feeds only."
+    },
+    {
+      "claim": "Settlement-price freshness is explicitly configured and enforced for new risk.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "deployments/1952.json",
+        "artifacts/oracles/xlayer-mainnet-feeds.json"
+      ],
+      "detail": "ClearingHouse.settlementFreshness is {configured, maxAgeSeconds}. The deployed testnet value is 172,800s, two Chainlink heartbeats. Measured on X Layer mainnet: documented heartbeat 86,400s, worst observed gap 86,479s across 23 rounds of seven feeds, so a bound set at the heartbeat would reject honest feeds."
+    },
+    {
+      "claim": "An unconfigured freshness policy cannot silently allow borrowing.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/test/OracleFreshness.t.sol"
+      ],
+      "detail": "maxAge == 0 used to mean 'no bound', making never-configured and deliberately-unbounded the same state with the permissive reading shared between them. 14 tests; 6 mutations verified."
+    },
+    {
+      "claim": "The evidence-to-Passport workflow survives restart and retry without double-committing.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "services/evidence/test/workflow.test.ts"
+      ],
+      "detail": "Identity is derived from inputs, state is persisted atomically per workflow, and an unknown submission is resolved by reading the registry rather than resending. 32 tests; 8 mutations verified, including partial evidence confirmation counting as confirmed."
+    },
+    {
+      "claim": "Three years of Franklin filings have a deterministic semantic-diff result.",
+      "proofLevel": "INTEGRATION_TESTED",
+      "evidence": [
+        "artifacts/evidence/franklin-history.json"
+      ],
+      "detail": "2024 to 2025 and 2025 to 2026 both classify NO_MATERIAL_CHANGE over 5 comparable fields, with the documents differing byte-for-byte. No deterioration was manufactured. The coverage denominator is reported because 5 of 17 is a weaker claim than 17 of 17."
+    },
+    {
+      "claim": "Liquidation is progressive and routed on expected recovery.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "contracts/test/Liquidation.t.sol"
+      ],
+      "detail": "Eligibility starts at MARGIN_CALL, not at the first restriction. Seizure is bounded by the breach plus a bonus rather than the whole position. Routes rank on proceeds - fees - latency - failure. 20 tests; 7 mutations verified. Deployed but not yet exercised on chain."
+    },
+    {
+      "claim": "Generated verification artifacts prove they describe the current world.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "services/evidence/test/artifact-freshness.test.ts"
+      ],
+      "detail": "Every generated artifact carries provenance and consumers check it. A missing artifact is a failed run. Writes are atomic. 8 tests."
     },
     {
       "claim": "Real issuer tokens (FOBXX, OUSG, ARCOIN, xStocks) are usable as collateral.",
