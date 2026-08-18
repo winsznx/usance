@@ -23,6 +23,7 @@ export const receiptKindSchema = z.enum([
   "REPAID",
   "COLLATERAL_WITHDRAWN",
   "ACCOUNT_RESTRICTED",
+  "LIQUIDATED",
 ]);
 export type ReceiptKind = z.infer<typeof receiptKindSchema>;
 

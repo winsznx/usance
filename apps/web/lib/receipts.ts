@@ -23,6 +23,10 @@ export function loadReceipts(): UsanceReceipt[] {
 
   for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
     const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+    if (raw["kind"] === "LIVE_LIQUIDATION") {
+      out.push(liquidationReceipt(raw));
+      continue;
+    }
     if (raw["kind"] === "LIVE_RISK_SCENARIO") {
       out.push(riskScenarioReceipt(raw));
       continue;
@@ -100,6 +104,63 @@ export function loadReceipts(): UsanceReceipt[] {
 }
 
 const FULL_TX_HASH = /^0x[0-9a-fA-F]{64}$/;
+
+/**
+ * The live liquidation receipt.
+ *
+ * Everything a reader needs to judge whether the liquidation was justified is on the receipt: the
+ * status that made the account eligible, the maintenance limit it breached, what the protocol
+ * intended before it acted, and what changed. The explorer is supporting evidence, not the
+ * explanation.
+ *
+ * The plan is included even though the outcome is known, because a liquidation that took what it
+ * said it would take is a different thing from one that happened to land somewhere reasonable.
+ */
+function liquidationReceipt(raw: Record<string, unknown>): UsanceReceipt {
+  const tx = raw["liquidationTx"] as Record<string, unknown>;
+  const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
+
+  return {
+    receiptId: receiptIdFor("LIQUIDATED", Number(raw["chainId"] ?? 1952), String(tx["hash"])),
+    kind: "LIQUIDATED",
+    status: "CONFIRMED",
+    chainId: Number(raw["chainId"] ?? 1952),
+    accountId: String(raw["account"]),
+    // Labelled test tokens. This receipt asserts nothing about any issuer's filing.
+    evidenceAssetId: null,
+    financialAssetId: null,
+    workflowId: null,
+    intentId: null,
+    passportVersion: null,
+    evidenceRoot: null,
+    claimsRoot: null,
+    singleSource: null,
+    riskPolicyVersion: null,
+    riskEpoch: Number(raw["riskEpochAfter"] ?? 0) || null,
+    transactions: [
+      ...txs
+        .filter((t) => FULL_TX_HASH.test(String(t["hash"])))
+        .map((t) => ({
+          chainId: Number(raw["chainId"] ?? 1952),
+          contract: "ClearingHouse",
+          txHash: String(t["hash"]) as `0x${string}`,
+          blockNumber: Number(t["blockNumber"] ?? 0),
+          action: String(t["label"]),
+          status: (String(t["status"] ?? "success") === "reverted" ? "reverted" : "success") as "reverted" | "success",
+          revertReason: null,
+          builderAttribution: null,
+        })),
+    ],
+    stateTransitions: ((raw["ladder"] as Array<Record<string, unknown>>) ?? []).map((l, i, all) => ({
+      at: 0,
+      from: i === 0 ? "NORMAL" : String(all[i - 1]?.["status"] ?? "NORMAL"),
+      to: String(l["status"]),
+      note: `collateral price at ${l["pricePct"]}% of its starting value`,
+    })),
+    createdAt: 0,
+    completedAt: 0,
+  };
+}
 
 /**
  * The live risk-lifecycle receipt.
