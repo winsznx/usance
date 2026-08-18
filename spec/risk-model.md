@@ -408,3 +408,38 @@ Stated so nobody mistakes silence for coverage.
   the bands an account moves through without describing what happens at the bottom of them. The
   waterfall in `threat-model.md §2` (user equity, then penalties and reserves, then insurance,
   then the affected vault) is the intended answer and has no code.
+
+---
+
+## Liquidation settlement and the repair-per-dollar identity
+
+What leaves a borrower is collateral. What that collateral becomes:
+
+```
+collateral seized (market) = debt retired
+                           + keeper incentive
+                           + protocol fee
+                           + route loss
+```
+
+`route loss` is the gap between the mark and what the route actually returned, realised at
+execution. The other three are the split of the proceeds, with debt retirement computed as the
+residual so rounding dust falls on the debt rather than into a fee.
+
+A liquidation does **not** repair a breach dollar for dollar, because seizing collateral removes
+borrowing capacity as well as debt. Retiring `R` consumes `R(1 + t)` of recognised value, where `t`
+is the total take (incentive plus protocol fee), and removes `R(1 + t)m` of maintenance limit at
+effective maintenance LTV `m`. So:
+
+```
+repairPerDollar = 1 - (1 + t)m
+```
+
+At `m = 0.90`, `t = 0.055`: `repairPerDollar = 0.0505`. Curing an $85.76 shortfall on a $791.46 debt
+would require roughly $1,700 of repayment, more than the account owes. A single liquidation can
+therefore be valid, reduce debt, reduce collateral, and correctly leave the account in
+`MARGIN_CALL`. `LiquidationManager.planFor` reports this as `curesTheBreach = false` alongside the
+amount that would be required, and bounds the round by a close factor.
+
+This was found by a live liquidation on X Layer testnet, not by unit tests: the seizure matched the
+plan, the debt fell, and the account stayed breached.

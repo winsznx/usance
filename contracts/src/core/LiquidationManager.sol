@@ -3,6 +3,7 @@ pragma solidity 0.8.28;
 
 import {Authority, Authorized} from "./Authority.sol";
 import {ClearingHouse} from "./ClearingHouse.sol";
+import {FeeController} from "./FeeController.sol";
 import {ILiquidationRoute} from "../interfaces/ILiquidationRoute.sol";
 import {RiskMath} from "../libraries/RiskMath.sol";
 import {Types} from "../libraries/Types.sol";
@@ -37,6 +38,9 @@ contract LiquidationManager is Authorized {
     mapping(bytes32 fillId => bool) public filled;
 
     /// @notice Extra collateral, in bps, taken to pay whoever does the work.
+    /// @dev Retained as a fallback for a deployment with no FeeController attached. Where one is
+    ///      attached, `_takeBps` reads the real split instead — a locally cached economic parameter
+    ///      is one that keeps being charged after governance changed it.
     uint16 public liquidationBonusBps;
 
     /// @notice How far above the maintenance limit an account is restored to.
@@ -193,6 +197,31 @@ contract LiquidationManager is Authorized {
      *      cures it, and what happens if they do nothing. A margin call that does not say how much
      *      is a red banner.
      */
+    /**
+     * @dev Basis points of a liquidation's proceeds that do not retire debt.
+     *
+     *      Paying a keeper makes each round repair *less*, because value now genuinely leaves the
+     *      system instead of circling back to the borrower as extra debt retirement. At a 90%
+     *      maintenance LTV the repair per dollar falls from 0.0550 to 0.0505 once a 5% incentive and
+     *      a 0.5% protocol fee are real. That is the true cost of having a liquidation market, and
+     *      a planner that ignored it would size every seizure short.
+     */
+    function _takeBps() internal view returns (uint16) {
+        FeeController f = clearing.fees();
+        return address(f) == address(0) ? liquidationBonusBps : f.liquidationTakeBps();
+    }
+
+    /// @notice The current economics a liquidation would settle under.
+    function economics()
+        external
+        view
+        returns (uint16 keeperIncentiveBps, uint16 protocolFeeBps, uint16 totalTakeBps)
+    {
+        FeeController f = clearing.fees();
+        if (address(f) == address(0)) return (0, 0, liquidationBonusBps);
+        return (f.liquidatorIncentiveBps(), f.protocolLiquidationFeeBps(), f.liquidationTakeBps());
+    }
+
     function planFor(address account, bytes32 assetId) public view returns (Plan memory plan) {
         (Types.RiskResult memory r,) = clearing.accountHealth(account);
 
@@ -218,8 +247,7 @@ contract LiquidationManager is Authorized {
         plan.curesTheBreach = plan.curingRepayUsd18 != 0 && plan.curingRepayUsd18 <= maxThisRound;
         plan.repayTargetUsd18 = plan.curesTheBreach ? plan.curingRepayUsd18 : maxThisRound;
 
-        plan.seizeValueUsd18 =
-            RiskMath.mulDivUp(plan.repayTargetUsd18, Types.BPS + liquidationBonusBps, Types.BPS);
+        plan.seizeValueUsd18 = RiskMath.mulDivUp(plan.repayTargetUsd18, Types.BPS + _takeBps(), Types.BPS);
 
         if (plan.seizeValueUsd18 >= r.totalRecognizedUsd18) {
             // Not enough collateral to cure. The position closes and whatever debt is left is bad
@@ -270,7 +298,7 @@ contract LiquidationManager is Authorized {
         // several collateral assets there is no single configured number, and the ratio the risk
         // engine actually produced is the one the arithmetic needs.
         uint256 mBps = RiskMath.mulDiv(r.maintenanceLimitUsd18, Types.BPS, r.totalRecognizedUsd18);
-        uint256 lossPerUnit = RiskMath.mulDiv(Types.BPS + liquidationBonusBps, mBps, Types.BPS);
+        uint256 lossPerUnit = RiskMath.mulDiv(Types.BPS + _takeBps(), mBps, Types.BPS);
 
         // At or above 1, seizing collateral removes at least as much capacity as it retires debt,
         // so liquidation cannot close the gap at any size. Deleveraging still reduces absolute

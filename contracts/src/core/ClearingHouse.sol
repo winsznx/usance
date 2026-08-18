@@ -13,6 +13,7 @@ import {RiskPolicyRegistry} from "./RiskPolicyRegistry.sol";
 import {CollateralVault} from "./CollateralVault.sol";
 import {LiquidityVault} from "./LiquidityVault.sol";
 import {FinancingEngine} from "./FinancingEngine.sol";
+import {FeeController} from "./FeeController.sol";
 import {IOracleAdapter} from "../interfaces/IOracleAdapter.sol";
 import {RiskMath} from "../libraries/RiskMath.sol";
 import {ILiquidationRoute} from "../interfaces/ILiquidationRoute.sol";
@@ -69,6 +70,15 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     event ReservationReleased(address indexed account, uint256 amountUsd18, bytes32 intentId);
     event OracleSet(address oracle);
     event SettlementMaxPriceAgeSet(uint64 previous, uint64 current);
+    event FeeControllerSet(address feeController);
+    event LiquidationSettled(
+        address indexed account,
+        address indexed keeper,
+        uint256 proceedsTokens,
+        uint256 toDebtTokens,
+        uint256 keeperIncentiveTokens,
+        uint256 protocolFeeTokens
+    );
     event LiquidationExecuted(
         address indexed account,
         bytes32 indexed assetId,
@@ -99,6 +109,12 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     ///      Now the two are distinct and the default is refusal. `configured == false` blocks new
     ///      risk while leaving every risk-reducing path open, which is the same posture the
     ///      protocol takes toward any input it does not trust.
+    /// @notice Where liquidation splits and reserve factors are read from.
+    /// @dev Optional at construction so the module can be attached to a live core, and read on
+    ///      every use rather than cached: a cached fee is a fee that keeps being charged after
+    ///      governance lowered it.
+    FeeController public fees;
+
     struct FreshnessPolicy {
         bool configured;
         uint64 maxAgeSeconds;
@@ -140,6 +156,13 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
 
     function setSettlementAsset(bytes32 assetId) external onlyRole(authority.GOVERNANCE()) {
         settlementAssetId = assetId;
+    }
+
+    function setFeeController(FeeController fees_) external onlyRole(authority.GOVERNANCE()) {
+        fees = fees_;
+        emit FeeControllerSet(address(fees_));
+        // Attaching or replacing the source of every economic parameter changes what a quote means.
+        policies.bumpEpoch(keccak256("FEE_CONTROLLER_SET"));
     }
 
     /// @notice Set how old the settlement price may be before new risk is refused.
@@ -433,7 +456,7 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
         if (before.debtUsd18 == 0) revert NoDebt();
 
         proceedsTokens = _seizeAndSell(account, assetId, collateralAmount, route, minProceedsTokens);
-        repaidUsd18 = _applyLiquidationProceeds(account, proceedsTokens, before.debtUsd18);
+        repaidUsd18 = _settleLiquidation(account, msg.sender, proceedsTokens, before.debtUsd18);
 
         if (collateral.balanceOf(assetId, account) == 0) _removeHeld(account, assetId);
         emit LiquidationExecuted(account, assetId, route, collateralAmount, repaidUsd18, proceedsTokens);
@@ -459,28 +482,68 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
             ILiquidationRoute(route).execute(assetId, collateralAmount, minProceedsTokens, address(this));
     }
 
-    function _applyLiquidationProceeds(address account, uint256 proceedsTokens, uint256 debtUsd18)
+    /**
+     * @dev Split the proceeds three ways and settle each.
+     *
+     *      The previous version applied every unit of proceeds to the debt, which meant the
+     *      liquidation "bonus" accrued to the borrower as extra debt retirement and nobody was paid
+     *      to perform liquidations at all. That is a fine proof of mechanics and not a liquidation
+     *      market: at scale, a protocol whose keepers earn nothing has no keepers on the day it
+     *      first needs them.
+     *
+     *      Value is conserved and the equation is the one in spec/accounting.md:
+     *
+     *          collateral seized (market) = debt retired
+     *                                     + keeper incentive
+     *                                     + protocol fee
+     *                                     + route loss
+     *
+     *      `route loss` is the gap between what the collateral was marked at and what the route
+     *      actually returned, and it is already realised by the time this runs.
+     *
+     *      The keeper is `msg.sender`, never a caller-supplied address. Paying the account that
+     *      passed the authorisation check is the strongest possible binding between doing the work
+     *      and being paid for it; a recipient parameter would let a `LIQUIDATOR` holder direct
+     *      rewards anywhere and turn one compromised key into a drain.
+     */
+    function _settleLiquidation(address account, address keeper, uint256 proceedsTokens, uint256 debtUsd18)
         private
         returns (uint256 repaidUsd18)
     {
-        uint256 proceedsUsd18 = _tokensToUsd18(proceedsTokens);
-        uint256 applyUsd18 = proceedsUsd18 > debtUsd18 ? debtUsd18 : proceedsUsd18;
-
-        uint256 applyTokens = _usd18ToTokens(applyUsd18);
-        if (applyTokens > proceedsTokens) applyTokens = proceedsTokens;
-
         IERC20 settlement = liquidity.asset();
-        settlement.safeTransfer(address(liquidity), applyTokens);
 
-        // Booked exactly like an ordinary repayment: the vault's books are token-denominated, so
-        // the tokens that actually arrived are what get recorded, with the real reserve factor.
+        // Without a FeeController every unit goes to the debt, which is the old behaviour. Failing
+        // closed here would brick liquidation on a core that has not been attached yet.
+        uint256 toKeeper;
+        uint256 toProtocol;
+        uint256 toDebt = proceedsTokens;
+        address treasury;
+        if (address(fees) != address(0)) {
+            (toKeeper, toProtocol, toDebt) = fees.splitLiquidationProceeds(proceedsTokens);
+            treasury = fees.treasury();
+        }
+
+        // Debt first. A borrower's obligation is settled before anybody is paid out of it, so a
+        // rounding argument can never leave the debt short to make a fee whole.
+        uint256 toDebtUsd18 = _tokensToUsd18(toDebt);
+        uint256 applyUsd18 = toDebtUsd18 > debtUsd18 ? debtUsd18 : toDebtUsd18;
+        uint256 applyTokens = _usd18ToTokens(applyUsd18);
+        if (applyTokens > toDebt) applyTokens = toDebt;
+
+        settlement.safeTransfer(address(liquidity), applyTokens);
         repaidUsd18 = financing.onRepay(account, applyUsd18, false);
         (,,,, uint16 reserveFactorBps) = financing.rate();
         liquidity.onRepaid(applyTokens, reserveFactorBps);
 
-        // Anything above the debt goes back to the account. Liquidation exists to make lenders
-        // whole, not to take the upside of a position it happened to close.
-        if (proceedsTokens > applyTokens) settlement.safeTransfer(account, proceedsTokens - applyTokens);
+        if (toKeeper > 0) settlement.safeTransfer(keeper, toKeeper);
+        if (toProtocol > 0 && treasury != address(0)) settlement.safeTransfer(treasury, toProtocol);
+
+        // Whatever the debt could not absorb returns to the borrower. Liquidation exists to make
+        // lenders whole, not to keep the upside of a position it happened to close.
+        uint256 residual = toDebt - applyTokens;
+        if (residual > 0) settlement.safeTransfer(account, residual);
+
+        emit LiquidationSettled(account, keeper, proceedsTokens, applyTokens, toKeeper, toProtocol);
     }
 
     function repay(uint256 amountUsd18, bool repayAll) external nonReentrant returns (uint256 applied) {

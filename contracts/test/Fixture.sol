@@ -94,6 +94,9 @@ abstract contract Fixture is Test {
         // interest delta in USD and lets ClearingHouse convert, so it needs no vault authority
         // at all — which also keeps the CLEARING role's blast radius to one contract.
         authority.grantRole(authority.CLEARING(), address(clearing));
+        // ClearingHouse changes risk inputs — oracle, settlement freshness — so it has to be able
+        // to advance the epoch those changes invalidate.
+        policyReg.setEpochBumper(address(clearing), true);
         vm.stopPrank();
 
         _registerAssets();

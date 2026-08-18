@@ -29,6 +29,53 @@ running Playwright.
 
 ---
 
+## D-019 — Liquidation proceeds split three ways; the keeper is `msg.sender`
+
+**Decision.** Route proceeds are divided into debt retirement, a keeper incentive and a protocol
+fee. The keeper is the account that called `executeLiquidation`, never a caller-supplied recipient.
+The split is computed in one call with `toDebt` as the residual.
+
+**Why.** The previous design applied every unit of proceeds to the borrower's debt, so the
+liquidation "bonus" accrued to the borrower as extra debt retirement and nobody was paid to perform
+liquidations. Fine as a proof of mechanics, not a liquidation market: a protocol whose keepers earn
+nothing has no keepers on the day it first needs them.
+
+Value conservation, which every test in `LiquidatorEconomics.t.sol` defends:
+
+```
+collateral seized (market) = debt retired
+                           + keeper incentive
+                           + protocol fee
+                           + route loss
+```
+
+Paying keepers makes each round repair **less**, because value now genuinely leaves the system. At a
+90% maintenance LTV the repair per dollar falls from 0.0550 to 0.0505 once a 5% incentive and a 0.5%
+protocol fee are real. The planner prices it; a planner that did not would size every seizure short.
+
+`toDebt` is the residual by construction so rounding dust lands on the borrower's debt rather than
+in a fee, and the debt is settled before anybody is paid out of the proceeds.
+
+Paying `msg.sender` is the strongest binding between doing the work and being paid for it. A
+recipient parameter would let one compromised `LIQUIDATOR` key direct every reward anywhere.
+
+---
+
+## D-018 — Advancing the risk epoch is a named capability, not a role
+
+**Decision.** `RiskPolicyRegistry.canBumpEpoch` is an explicit governance-set allowlist. ClearingHouse
+and FeeController hold it.
+
+**Why.** The first version accepted `CLEARING`, which worked and was the wrong shape. CLEARING is
+cash authority over the liquidity vault, so the second contract that needed to bump would have had
+to be handed the ability to move lender funds in order to do it. Naming the capability separately
+means granting it conveys exactly one power.
+
+The power is unusually safe to widen: the epoch is monotone and advancing it only invalidates
+quotes. No argument, no target, no amount. The worst a holder can do is force everybody to re-quote.
+
+---
+
 ## D-017 — Liquidation reports whether one round can cure a breach
 
 **Decision.** `LiquidationManager.planFor` solves for the repayment that actually restores an

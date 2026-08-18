@@ -145,6 +145,11 @@ contract Deploy is Script {
         // interest delta in USD and ClearingHouse converts, so granting it CLEARING would hand
         // cash authority to a contract that does not need it.
         c.authority.grantRole(c.authority.CLEARING(), address(c.clearing));
+
+        // ClearingHouse changes risk inputs — the oracle, the settlement freshness window — so it
+        // must be able to advance the epoch those changes invalidate. A named capability rather
+        // than a role, so granting it conveys exactly one power and not cash authority.
+        c.policyRegistry.setEpochBumper(address(c.clearing), true);
     }
 
     /// @dev The ADMISSION role goes to the broadcasting EOA, not to `address(this)`. Under
