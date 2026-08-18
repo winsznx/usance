@@ -11,6 +11,7 @@ import {
   type ProviderStatus,
 } from "@usance/schemas";
 import { CHAINGPT_MODELS, ChainGptClient } from "./client";
+import { chunkDocument, CHUNK_TARGET_CHARS, type DocumentChunk } from "./chunk";
 
 /**
  * ChainGPT evidence extractor.
@@ -126,45 +127,106 @@ export class ChainGptEvidenceExtractor implements EvidenceExtractor {
   async extract(input: CanonicalDocument, signal?: AbortSignal): Promise<Extraction> {
     const startedAt = Math.floor(Date.now() / 1000);
     const text = new TextDecoder().decode(input.bytes);
-
-    // Fenced so the model has an unambiguous boundary for where the untrusted data begins and
-    // ends. This does not make injection impossible; the authority boundary does that.
-    const question = `${SYSTEM_RULES}
-
---- BEGIN UNTRUSTED DOCUMENT ---
-${text}
---- END UNTRUSTED DOCUMENT ---`;
-
-    const raw = await this.client.chat(CHAINGPT_MODELS.GENERAL, question, this.id, signal);
-    const finishedAt = Math.floor(Date.now() / 1000);
-
-    const parsed = parseModelExtraction(raw, this.id);
     const warnings: string[] = [];
+
+    // Measured against the live API: a trivial task over 25,000 characters returns in under six
+    // seconds, but a structured multi-field extraction over the same length exceeds ChainGPT's
+    // gateway timeout and comes back as a Cloudflare 504 HTML page rather than JSON. The limit is
+    // the work, not the input size. A 6,000-character chunk returns in about three seconds.
+    //
+    // This is why the first live Franklin Passport committed as singleSource: the model path was
+    // invoked, received an error page, failed schema validation, and correctly contributed nothing.
+    const chunks = chunkDocument(text);
+    if (chunks.length > 1) {
+      warnings.push(
+        `document split into ${chunks.length} chunks of ~${CHUNK_TARGET_CHARS} chars to stay inside the provider's gateway timeout`,
+      );
+    }
+
+    const perChunk: Array<{ chunk: DocumentChunk; claims: EvidenceClaim[] }> = [];
+
+    for (const chunk of chunks) {
+      let raw: string;
+      try {
+        raw = await this.client.chat(
+          CHAINGPT_MODELS.GENERAL,
+          this.promptFor(chunk),
+          this.id,
+          signal,
+        );
+      } catch (e) {
+        // One chunk failing must not discard the others, but it also must not vanish. A field only
+        // present in a lost chunk stays UNKNOWN, which is the conservative outcome.
+        warnings.push(`chunk ${chunk.index + 1}/${chunk.total} failed: ${(e as Error).message}`);
+        continue;
+      }
+
+      let parsed: ModelExtraction;
+      try {
+        parsed = parseModelExtraction(raw, this.id);
+      } catch (e) {
+        warnings.push(`chunk ${chunk.index + 1}/${chunk.total} returned unusable output: ${(e as Error).message}`);
+        continue;
+      }
+
+      perChunk.push({ chunk, claims: this.materialise(parsed, chunk, input, text, warnings) });
+    }
+
+    return {
+      extractor: this.id,
+      documentEvidenceId: input.evidenceId,
+      claims: mergeChunkClaims(perChunk, warnings),
+      startedAt,
+      finishedAt: Math.floor(Date.now() / 1000),
+      warnings,
+    };
+  }
+
+  private promptFor(chunk: DocumentChunk): string {
+    const locator =
+      chunk.total > 1
+        ? `\nThis is part ${chunk.index + 1} of ${chunk.total} of one document${chunk.section ? `, under the heading "${chunk.section}"` : ""}. Report ONLY what this part states. If a field is not addressed here, return UNKNOWN for it — another part may cover it.\n`
+        : "";
+
+    return `${SYSTEM_RULES}
+${locator}
+--- BEGIN UNTRUSTED DOCUMENT ---
+${chunk.text}
+--- END UNTRUSTED DOCUMENT ---`;
+  }
+
+  /** Turn a model response into claims, attaching provenance the model cannot influence. */
+  private materialise(
+    parsed: ModelExtraction,
+    chunk: DocumentChunk,
+    input: CanonicalDocument,
+    fullText: string,
+    warnings: string[],
+  ): EvidenceClaim[] {
     const claims: EvidenceClaim[] = [];
 
     for (const mc of parsed.claims) {
+      const where = chunk.total > 1 ? ` [chunk ${chunk.index + 1}]` : "";
+
       if (!EXTRACTABLE_FIELDS.includes(mc.field)) {
-        // A field outside the allowed set is dropped rather than passed through. This is the line
-        // that stops a model inventing a key that a downstream consumer might read.
-        warnings.push(`dropped out-of-scope field: ${mc.field}`);
+        warnings.push(`dropped out-of-scope field${where}: ${mc.field}`);
         continue;
       }
       if (mc.value !== UNKNOWN && (mc.quote === null || mc.quote.trim() === "")) {
-        warnings.push(`dropped unquoted claim: ${mc.field}`);
+        warnings.push(`dropped unquoted claim${where}: ${mc.field}`);
         continue;
       }
       if (mc.value !== UNKNOWN && mc.value.kind !== FIELD_KINDS[mc.field]) {
-        // Right meaning, wrong type. Dropping it costs one claim; accepting it costs a spurious
-        // conflict on a risk-bearing field, which restricts the asset.
         warnings.push(
-          `dropped ${mc.field}: expected kind ${FIELD_KINDS[mc.field]}, got ${mc.value.kind}`,
+          `dropped ${mc.field}${where}: expected kind ${FIELD_KINDS[mc.field]}, got ${mc.value.kind}`,
         );
         continue;
       }
-      if (mc.value !== UNKNOWN && mc.quote !== null && !quoteAppearsInDocument(mc.quote, text)) {
-        // A quote the document does not contain is a fabrication, whatever the value beside it
-        // says. Verifying it here is cheap and catches the most common hallucination shape.
-        warnings.push(`dropped claim whose quote is absent from the document: ${mc.field}`);
+      // Checked against the WHOLE document, not just the chunk. The overlap window means a quote
+      // can legitimately straddle a boundary, and rejecting it for that would punish the model for
+      // our chunking.
+      if (mc.value !== UNKNOWN && mc.quote !== null && !quoteAppearsInDocument(mc.quote, fullText)) {
+        warnings.push(`dropped claim whose quote is absent from the document${where}: ${mc.field}`);
         continue;
       }
 
@@ -175,12 +237,11 @@ ${text}
           mc.value === UNKNOWN
             ? null
             : {
-                section: mc.section,
-                startOffset: null,
-                endOffset: null,
+                section: mc.section ?? chunk.section,
+                startOffset: chunk.startOffset,
+                endOffset: chunk.endOffset,
                 quote: mc.quote ?? "",
               },
-        // Provenance the model cannot influence, taken from the already-hashed document.
         evidenceId: input.evidenceId,
         sourceClass: input.sourceClass,
         retrievedAt: input.retrievedAt,
@@ -192,16 +253,57 @@ ${text}
         attestation: null,
       });
     }
-
-    return {
-      extractor: this.id,
-      documentEvidenceId: input.evidenceId,
-      claims,
-      startedAt,
-      finishedAt,
-      warnings,
-    };
+    return claims;
   }
+}
+
+/**
+ * Merge per-chunk claims into one reading per field.
+ *
+ * Chunks that disagree produce UNKNOWN, never a winner. Choosing the last answer would let the
+ * arbitrary position of a chunk boundary decide what a filing says, and an extractor that guesses
+ * is worse than one that abstains — at corroboration time a guess is indistinguishable from a
+ * reading, so it would silently manufacture agreement with the deterministic path.
+ *
+ * This is a within-path disagreement, so it resolves to abstention here rather than escalating to
+ * CLAIM_CONFLICT. A cross-path conflict is the corroborator's job and means something different:
+ * two independent readers of the same text reached different conclusions.
+ */
+function mergeChunkClaims(
+  perChunk: Array<{ chunk: DocumentChunk; claims: EvidenceClaim[] }>,
+  warnings: string[],
+): EvidenceClaim[] {
+  const byField = new Map<string, EvidenceClaim[]>();
+  for (const { claims } of perChunk) {
+    for (const c of claims) {
+      byField.set(c.field, [...(byField.get(c.field) ?? []), c]);
+    }
+  }
+
+  const merged: EvidenceClaim[] = [];
+
+  for (const [field, candidates] of byField) {
+    const stated = candidates.filter((c) => c.value !== UNKNOWN);
+    if (stated.length === 0) {
+      merged.push({ ...candidates[0]!, value: UNKNOWN, locator: null });
+      continue;
+    }
+
+    const distinct = new Set(stated.map((c) => JSON.stringify(c.value)));
+    if (distinct.size > 1) {
+      warnings.push(
+        `chunks disagreed on ${field} (${[...distinct].join(" vs ")}); abstaining rather than choosing one`,
+      );
+      merged.push({ ...stated[0]!, value: UNKNOWN, locator: null });
+      continue;
+    }
+
+    // Agreement. Keep the highest-confidence instance so the quote a reviewer sees is the one the
+    // model was most sure of.
+    merged.push(stated.reduce((a, b) => (b.confidenceBps > a.confidenceBps ? b : a)));
+  }
+
+  return merged;
 }
 
 /**
