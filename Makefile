@@ -16,7 +16,7 @@ FIXTURES  := fixtures/canonical/risk-scenarios.json
         build build-contracts build-web lint fmt fmt-check verify-integrations \
         deploy-testnet demo-local clean test-rust deployer deployer-create test-live-xlayer \
         test-risk test-e2e demo-testnet audit-contracts slither slither-baseline characterize-feeds \
-        franklin-history
+        franklin-history test-artifact-freshness check-proof-currency
 
 # Flags forwarded to the ChainGPT audit gate. CI passes --allow-unavailable on every branch except
 # a protected one, so a missing credential blocks a release without blocking a pull request.
@@ -149,6 +149,15 @@ characterize-feeds: ## Measure real Chainlink feed cadence on X Layer mainnet
 #  Read-only and keyless. Writes artifacts/oracles/ with provenance so a threshold can cite the
 #  measurement it came from rather than a number somebody remembered from a docs page.
 	@node scripts/characterize-feeds.mjs
+
+test-artifact-freshness: ## Attack the freshness gates with deliberately stale artifacts
+#  Three times a gate here reported success while reading data describing a world that no longer
+#  existed. Each was found by accident. This finds them on purpose, and restores every artifact it
+#  corrupts — an attack campaign that leaves damage behind is indistinguishable from the damage.
+	@node scripts/attack-freshness.mjs
+
+check-proof-currency: ## Refuse proof records that cite a superseded deployment
+	@node scripts/check-proof-currency.mjs
 
 franklin-history: ## Recompute the Franklin year-over-year semantic diff
 #  Deterministic and offline. The comparison policy lives in @usance/evidence and is unit-tested
