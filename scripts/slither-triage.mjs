@@ -59,10 +59,21 @@ const findings = report.results.detectors;
 const baseline = existsSync(baselinePath) ? JSON.parse(readFileSync(baselinePath, "utf8")) : { accepted: {} };
 
 if (write) {
-  const accepted = { ...baseline.accepted };
-  for (const f of findings) accepted[keyOf(f)] ??= { impact: f.impact, reason: "TRIAGE ME" };
+  // Re-seeding both adds and prunes. Keeping a triage note for a finding that no longer fires is
+  // documentation pointing at code that has moved, and the gate reports those as failures — so the
+  // fix has to actually remove them rather than leave them accumulating.
+  const live = new Set(findings.map(keyOf));
+  const accepted = {};
+  const pruned = [];
+
+  for (const f of findings) {
+    accepted[keyOf(f)] = baseline.accepted[keyOf(f)] ?? { impact: f.impact, reason: "TRIAGE ME" };
+  }
+  for (const k of Object.keys(baseline.accepted)) if (!live.has(k)) pruned.push(k);
+
   writeFileSync(baselinePath, JSON.stringify({ accepted }, null, 2) + "\n");
   console.log(`Wrote ${Object.keys(accepted).length} entries. Every "TRIAGE ME" needs a real reason.`);
+  for (const k of pruned) console.log(`  pruned, no longer fires: ${k}`);
   process.exit(0);
 }
 

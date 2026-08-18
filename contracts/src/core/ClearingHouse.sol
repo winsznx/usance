@@ -15,6 +15,7 @@ import {LiquidityVault} from "./LiquidityVault.sol";
 import {FinancingEngine} from "./FinancingEngine.sol";
 import {IOracleAdapter} from "../interfaces/IOracleAdapter.sol";
 import {RiskMath} from "../libraries/RiskMath.sol";
+import {ILiquidationRoute} from "../interfaces/ILiquidationRoute.sol";
 import {Types} from "../libraries/Types.sol";
 
 /// @title ClearingHouse
@@ -68,6 +69,14 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     event ReservationReleased(address indexed account, uint256 amountUsd18, bytes32 intentId);
     event OracleSet(address oracle);
     event SettlementMaxPriceAgeSet(uint64 previous, uint64 current);
+    event LiquidationExecuted(
+        address indexed account,
+        bytes32 indexed assetId,
+        address indexed route,
+        uint256 collateralSeized,
+        uint256 repaidUsd18,
+        uint256 proceedsTokens
+    );
 
     error RiskLimitExceeded(uint256 requested, uint256 maximum);
     error AccountNotHealthy(Types.AccountStatus status);
@@ -100,6 +109,8 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     error SettlementAssetUnpriced();
     error SettlementPriceStale(uint64 age, uint64 maxAge);
     error SettlementFreshnessUnconfigured();
+    error AccountNotLiquidatable(Types.AccountStatus status);
+    error SeizureExceedsHoldings(uint256 requested, uint256 held);
     error BorrowTooSmall(uint256 amountUsd18);
 
     constructor(
@@ -377,6 +388,101 @@ contract ClearingHouse is Authorized, ReentrancyGuard {
     }
 
     /// @notice Repay debt. `repayAll` clears the position exactly and refunds nothing extra.
+    // ---------------------------------------------------------------------------------
+    // Liquidation
+    // ---------------------------------------------------------------------------------
+
+    /**
+     * @notice Move collateral out to a liquidation route and apply what comes back to the debt.
+     *
+     * @dev Money movement stays here rather than in `LiquidationManager`, because this contract
+     *      already owns the two boundaries a liquidation crosses: the collateral vault and the
+     *      usd18-to-token conversion. A manager that moved funds itself would be a second place
+     *      those boundaries are implemented, and they would drift.
+     *
+     *      The manager decides *whether* and *how much*. This decides nothing; it enforces.
+     *
+     *      Three refusals are structural rather than policy:
+     *
+     *      - A healthy account cannot be liquidated. Status is recomputed here from live inputs,
+     *        never taken from the caller, so a manager bug cannot liquidate a solvent account.
+     *      - Proceeds only ever reduce debt. There is no path from here that increases it, so a
+     *        route that returns more than the debt cannot leave the account owing more than it did.
+     *      - Seizure is bounded by what the account actually holds.
+     */
+    function executeLiquidation(
+        address account,
+        bytes32 assetId,
+        uint256 collateralAmount,
+        address route,
+        uint256 minProceedsTokens
+    )
+        external
+        onlyRole(authority.LIQUIDATOR())
+        nonReentrant
+        returns (uint256 repaidUsd18, uint256 proceedsTokens)
+    {
+        if (collateralAmount == 0) revert ZeroAmount();
+
+        _accrueAndRecognise();
+
+        (Types.RiskResult memory before,) = accountHealth(account);
+        if (uint8(before.status) < uint8(Types.AccountStatus.MARGIN_CALL)) {
+            revert AccountNotLiquidatable(before.status);
+        }
+        if (before.debtUsd18 == 0) revert NoDebt();
+
+        proceedsTokens = _seizeAndSell(account, assetId, collateralAmount, route, minProceedsTokens);
+        repaidUsd18 = _applyLiquidationProceeds(account, proceedsTokens, before.debtUsd18);
+
+        if (collateral.balanceOf(assetId, account) == 0) _removeHeld(account, assetId);
+        emit LiquidationExecuted(account, assetId, route, collateralAmount, repaidUsd18, proceedsTokens);
+    }
+
+    /// @dev Split out of `executeLiquidation` because the two halves together exceed the stack.
+    ///      Enabling `via_ir` would also compile, and would change codegen for every contract in
+    ///      the system to work around one function.
+    function _seizeAndSell(
+        address account,
+        bytes32 assetId,
+        uint256 collateralAmount,
+        address route,
+        uint256 minProceedsTokens
+    ) private returns (uint256 proceedsTokens) {
+        uint256 held = collateral.balanceOf(assetId, account);
+        if (collateralAmount > held) revert SeizureExceedsHoldings(collateralAmount, held);
+
+        // The route is called between the seizure and the repayment, so a route that reverts
+        // unwinds the whole liquidation rather than leaving collateral in transit.
+        collateral.withdraw(assetId, account, route, collateralAmount);
+        proceedsTokens =
+            ILiquidationRoute(route).execute(assetId, collateralAmount, minProceedsTokens, address(this));
+    }
+
+    function _applyLiquidationProceeds(address account, uint256 proceedsTokens, uint256 debtUsd18)
+        private
+        returns (uint256 repaidUsd18)
+    {
+        uint256 proceedsUsd18 = _tokensToUsd18(proceedsTokens);
+        uint256 applyUsd18 = proceedsUsd18 > debtUsd18 ? debtUsd18 : proceedsUsd18;
+
+        uint256 applyTokens = _usd18ToTokens(applyUsd18);
+        if (applyTokens > proceedsTokens) applyTokens = proceedsTokens;
+
+        IERC20 settlement = liquidity.asset();
+        settlement.safeTransfer(address(liquidity), applyTokens);
+
+        // Booked exactly like an ordinary repayment: the vault's books are token-denominated, so
+        // the tokens that actually arrived are what get recorded, with the real reserve factor.
+        repaidUsd18 = financing.onRepay(account, applyUsd18, false);
+        (,,,, uint16 reserveFactorBps) = financing.rate();
+        liquidity.onRepaid(applyTokens, reserveFactorBps);
+
+        // Anything above the debt goes back to the account. Liquidation exists to make lenders
+        // whole, not to take the upside of a position it happened to close.
+        if (proceedsTokens > applyTokens) settlement.safeTransfer(account, proceedsTokens - applyTokens);
+    }
+
     function repay(uint256 amountUsd18, bool repayAll) external nonReentrant returns (uint256 applied) {
         _accrueAndRecognise();
 
