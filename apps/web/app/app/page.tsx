@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { CapacityDerivation, StatusLadder } from "@/components/capacity";
+import { SafetyBuffer } from "@/components/buffer";
+import { Advanced } from "@/components/mode";
+import { Copyable } from "@/components/copyable";
 import { Icon } from "@/components/icon";
 import { Notice, RiskBadge } from "@/components/primitives";
 import { activeChain } from "@/lib/deployments";
@@ -84,8 +87,10 @@ export default function AppOverview() {
     }
   }, []);
 
+  const alertCount = data?.outcome === "OK" ? countAlerts(data.view) : 0;
+
   return (
-    <AppShell account={address}>
+    <AppShell account={address} alertCount={alertCount}>
       <div className="stack" style={{ gap: 20 }}>
         <div>
           <h1 className="heading-lg" style={{ margin: 0, fontSize: 26 }}>Overview</h1>
@@ -141,6 +146,24 @@ export default function AppOverview() {
   );
 }
 
+/** Shared with the shell so the rail badge and the panel can never disagree. */
+function countAlerts(view: Serialised): number {
+  return alertsFor({
+    status: view.status,
+    debt: BigInt(view.debt),
+    maintenanceLimit: BigInt(view.maintenanceLimit),
+    borrowLimit: BigInt(view.borrowLimit),
+    reserved: BigInt(view.reserved),
+    riskEpoch: view.riskEpoch,
+    lastSeenEpoch: null,
+    gates: view.gates,
+    withdrawableNow: 0n,
+    queuedForWithdrawal: 0n,
+    mandates: [],
+    now: Math.floor(Date.now() / 1000),
+  }).length;
+}
+
 function Dashboard({ view }: { view: Serialised }) {
   const allowed = permittedActions(view.status);
   const totals = view.assets.reduce(
@@ -193,6 +216,12 @@ function Dashboard({ view }: { view: Serialised }) {
             </Notice>
           )}
 
+          <SafetyBuffer
+            debt={BigInt(view.debt)}
+            borrowLimit={BigInt(view.borrowLimit)}
+            maintenanceLimit={BigInt(view.maintenanceLimit)}
+          />
+
           <section className="card">
             <h2 className="heading" style={{ fontSize: 17, margin: "0 0 4px" }}>What you can do now</h2>
             <p className="caption" style={{ margin: "0 0 14px", color: "var(--graphite)" }}>
@@ -215,9 +244,18 @@ function Dashboard({ view }: { view: Serialised }) {
               <RiskBadge status={view.status} />
             </div>
             <Row label="Risk epoch" value={String(view.riskEpoch)} />
-            <Row label="Read at block" value={view.blockNumber} />
             <Row label="Maintenance limit" value={`$${money(view.maintenanceLimit)}`} />
             <Row label="Liquidation limit" value={`$${money(view.liquidationLimit)}`} />
+            {/* Provenance: what a reader needs to verify the figures above, not the figures. */}
+            <Advanced>
+              <Row label="Read at block" value={view.blockNumber} />
+              {view.assets.map((a) => (
+                <div key={a.assetId} className="row-between" style={{ padding: "9px 0", borderTop: "1px solid var(--hairline)" }}>
+                  <span className="caption">Asset</span>
+                  <Copyable value={a.assetId} label="asset id" />
+                </div>
+              ))}
+            </Advanced>
             <p className="caption" style={{ margin: "12px 0 0", color: "var(--graphite)" }}>
               Every quote cites an epoch. If policy moves between a preview and your signature, the
               transaction is refused rather than executed under rules you never saw.

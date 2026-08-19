@@ -6,7 +6,7 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
-> **Total** 209 · **Complete** 127 · **P0 open** 3 · **P1 open** 33 · **P2 open** 43 · **Externally blocked** 3
+> **Total** 225 · **Complete** 138 · **P0 open** 3 · **P1 open** 36 · **P2 open** 45 · **Externally blocked** 3
 >
 > P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
 > security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
@@ -341,3 +341,37 @@ Current: **16/34 canonical routes**,
 ## AK. Audit handoff
 
 - [x] `docs/AUDIT_HANDOFF.md`
+
+## AL. Terminal-grade dashboard (from the second review)
+
+- [x] Persistent collapsible rail, drawer and bottom tabs from one component
+- [x] Contextual action row, disabled with a stated reason rather than hidden
+- [x] Capacity derivation with the binding constraint named
+- [x] Status ladder showing what the next rung costs
+- [x] Safety buffer against real thresholds, with the borrow limit marked inside it
+- [x] Simple / Advanced, sticky, asserted never to hide risk
+- [x] Copy-to-clipboard on ids and hashes, with a keyboard-reachable fallback
+- [x] Degraded banner driven by /api/ready, forced in a test
+- [x] Unread alert count on the rail and the tab bar
+- [x] Keyboard navigation, `g` then a letter, ignored while typing
+- [x] Skeletons matching the final layout rather than a spinner
+- [ ] **P1** Toast system, non-blocking and stackable
+- [ ] **P1** Global search
+- [ ] **P1** Dark theme
+- [ ] **P2** Virtualised activity list
+- [ ] **P2** Pin / hide on metric cards
+
+### Rejected, with reasons rather than silence
+
+- **Dual-line "usable collateral vs capacity, last 7/30 days".** No time series exists. Drawing one
+  means inventing the past, which is the one thing a risk interface must never do. The derivation
+  replaces it and is more specific to Usance than any chart would be.
+- **Sparklines and "% change vs previous risk epoch" on metric cards.** Same reason. Nothing records
+  a per-epoch history of these figures.
+- **Safety buffer over time.** Same reason.
+- **Three-dot overflow on every card.** The reference's own slop. Pin and hide are real features and
+  are listed above as P2; a menu that only contains "view detail" is a second way to click the card.
+- **Real-time WebSocket with optimistic UI.** There is no service to push from. Optimistic financial
+  state that later reconciles away is worse than a value that arrives a second later.
+- **Live PnL on positions.** Usance has collateral and debt, not trading positions with a cost basis.
+- **"Good morning, [Name]".** Usance knows an address, not a name, and a greeting is not information.

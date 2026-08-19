@@ -1061,3 +1061,151 @@ h4 {
     font-size: 22px;
   }
 }
+
+/* ==========================================================================
+   Detail level, copyable values, safety buffer
+   ========================================================================== */
+
+.mode-toggle {
+  display: inline-flex;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  background: var(--paper);
+}
+
+.mode-option {
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--graphite);
+  cursor: pointer;
+}
+
+.mode-option-active {
+  background: var(--espresso);
+  color: var(--paper);
+}
+
+.mode-option:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 1px;
+}
+
+.copyable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copyable-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
+  background: var(--paper);
+  color: var(--graphite);
+  cursor: pointer;
+  flex: none;
+}
+
+.copyable-button:hover {
+  color: var(--charcoal);
+}
+
+.copyable-button:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 1px;
+}
+
+.copyable-status {
+  font-size: 11px;
+  color: var(--risk-healthy);
+  min-width: 44px;
+}
+
+.buffer-track {
+  position: relative;
+  height: 10px;
+  background: var(--mist);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.buffer-fill {
+  height: 100%;
+  background: var(--espresso);
+  border-radius: 3px;
+}
+
+/* Breach is marked by a distinct fill AND by the figure above turning negative, so the state does
+   not depend on telling two colours apart. */
+.buffer-fill-breached {
+  background: var(--risk-restricted);
+}
+
+.buffer-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+/* ==========================================================================
+   Degraded banner
+   ========================================================================== */
+
+.degraded {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 24px;
+  background: var(--risk-attention-bg);
+  border-bottom: 1px solid rgba(122, 90, 30, 0.28);
+  color: var(--risk-attention);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .degraded {
+    padding: 10px 14px;
+  }
+}
+
+/* An unread count on a navigation item. Sized so a two-digit number does not distort the row. */
+.rail-badge,
+.tabbar-badge {
+  margin-left: auto;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--risk-restricted);
+  color: var(--paper);
+  font-size: 11px;
+  line-height: 19px;
+  text-align: center;
+}
+
+.app-frame-collapsed .rail-badge {
+  display: none;
+}
+
+.tabbar-badge {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  margin-left: 6px;
+}
+
+.tabbar-item {
+  position: relative;
+}

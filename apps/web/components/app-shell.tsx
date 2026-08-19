@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, Mark, type IconName } from "@/components/icon";
 import { activeChain } from "@/lib/deployments";
+import { ModeToggle } from "@/components/mode";
 
 /**
  * The application frame.
@@ -42,7 +43,27 @@ const NAV: NavItem[] = [
 
 const STORAGE_KEY = "usance.rail.collapsed";
 
-export function AppShell({ children, account }: { children: React.ReactNode; account?: `0x${string}` | null }) {
+/** `g` then one of these. Chosen so the letter matches the destination's first sound. */
+const SHORTCUTS: Record<string, string> = {
+  o: "/app",
+  p: "/app/positions",
+  a: "/app/activity",
+  n: "/app/alerts",
+  m: "/app/mandates",
+  e: "/earn",
+  s: "/app/settings",
+};
+
+export function AppShell({
+  children,
+  account,
+  alertCount = 0,
+}: {
+  children: React.ReactNode;
+  account?: `0x${string}` | null;
+  /** Shown against Alerts. Zero renders nothing rather than a "0" nobody needs to see. */
+  alertCount?: number;
+}) {
   const chain = activeChain();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
@@ -57,6 +78,64 @@ export function AppShell({ children, account }: { children: React.ReactNode; acc
       localStorage.setItem(STORAGE_KEY, c ? "0" : "1");
       return !c;
     });
+  }, []);
+
+  /**
+   * Readiness, polled once on mount.
+   *
+   * A page that quotes numbers while the chain is unreachable is worse than one that says so: the
+   * user acts on a figure nobody can honour and finds out through a reverted transaction they paid
+   * for. `/api/ready` already knows; this surfaces it.
+   */
+  const [degraded, setDegraded] = useState<string[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    fetch("/api/ready")
+      .then((r) => r.json())
+      .then((d) => live && setDegraded(d.ready ? [] : (d.blockedBy ?? ["unknown"])))
+      // A failed readiness check is itself a degraded signal, not something to swallow.
+      .catch(() => live && setDegraded(["the app could not reach its own readiness check"]));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  /**
+   * Keyboard navigation: `g` then a letter.
+   *
+   * Ignored while typing, or the sequence would swallow characters in a form. Deliberately not
+   * single-letter shortcuts for the same reason — a bare `p` jumping pages while somebody types an
+   * amount is the kind of thing that gets a shortcut system turned off.
+   */
+  useEffect(() => {
+    let armed = false;
+    let timer: number | undefined;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (armed) {
+        const hit = SHORTCUTS[e.key.toLowerCase()];
+        armed = false;
+        window.clearTimeout(timer);
+        if (hit) {
+          e.preventDefault();
+          window.location.assign(hit);
+        }
+        return;
+      }
+      if (e.key.toLowerCase() === "g") {
+        armed = true;
+        // The sequence expires, so a stray `g` does not turn the next keystroke into navigation.
+        timer = window.setTimeout(() => (armed = false), 1400);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      window.clearTimeout(timer);
+    };
   }, []);
 
   // A route change closes the drawer. Leaving it open over the destination is the commonest
@@ -100,6 +179,9 @@ export function AppShell({ children, account }: { children: React.ReactNode; acc
               >
                 <Icon name={item.icon} size={20} />
                 <span className="rail-label">{item.label}</span>
+                {item.href === "/app/alerts" && alertCount > 0 ? (
+                  <span className="rail-badge" aria-label={`${alertCount} needing attention`}>{alertCount}</span>
+                ) : null}
               </Link>
             </li>
           ))}
@@ -123,6 +205,7 @@ export function AppShell({ children, account }: { children: React.ReactNode; acc
           </Link>
 
           <div className="topbar-right">
+            <ModeToggle />
             <span className="tag">{chain.name}</span>
             {account ? (
               <span className="tag mono" style={{ fontSize: 12 }}>
@@ -131,6 +214,16 @@ export function AppShell({ children, account }: { children: React.ReactNode; acc
             ) : null}
           </div>
         </header>
+
+        {degraded && degraded.length > 0 ? (
+          <div className="degraded" role="status">
+            <Icon name="warn" size={16} />
+            <span>
+              Usance cannot safely quote right now ({degraded.join(", ")}). Figures on screen may be
+              stale, and actions may be refused. Nothing on chain has changed.
+            </span>
+          </div>
+        ) : null}
 
         {chain.id !== 196 ? (
           <div className="testnet-strip">
@@ -179,6 +272,9 @@ export function AppShell({ children, account }: { children: React.ReactNode; acc
           >
             <Icon name={item.icon} size={22} />
             <span>{item.label}</span>
+            {item.href === "/app/alerts" && alertCount > 0 ? (
+              <span className="tabbar-badge" aria-label={`${alertCount} needing attention`}>{alertCount}</span>
+            ) : null}
           </Link>
         ))}
       </nav>

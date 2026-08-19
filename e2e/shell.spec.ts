@@ -126,3 +126,76 @@ test.describe("the overview invents no data", () => {
     expect(body).not.toMatch(/good morning|good afternoon|welcome back/);
   });
 });
+
+test.describe("detail level", () => {
+  test("defaults to simple and remembers advanced", async ({ page }) => {
+    await page.goto("/app");
+    await expect(page.getByRole("button", { name: "Simple" })).toHaveAttribute("aria-pressed", "true");
+
+    await page.getByRole("button", { name: "Advanced" }).click();
+    await expect(page.getByRole("button", { name: "Advanced" })).toHaveAttribute("aria-pressed", "true");
+
+    // Switching back on every visit teaches people the toggle does not work.
+    await page.goto("/app/positions");
+    await expect(page.getByRole("button", { name: "Advanced" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("simple mode never hides risk information", async ({ page }) => {
+    await page.goto("/app/settings/security");
+    const simple = await page.locator("body").innerText();
+
+    await page.getByRole("button", { name: "Advanced" }).click();
+    const advanced = await page.locator("body").innerText();
+
+    // Advanced adds detail. A mode that could conceal a margin call would get somebody liquidated
+    // for using the default, so simple must be a subset only of provenance, never of risk.
+    for (const phrase of ["Disconnecting does not close anything", "cannot withdraw your collateral"]) {
+      expect(simple.toLowerCase()).toContain(phrase.toLowerCase());
+      expect(advanced.toLowerCase()).toContain(phrase.toLowerCase());
+    }
+  });
+});
+
+test.describe("degraded state", () => {
+  test("says so when readiness reports a blocker", async ({ page }) => {
+    // Forced rather than waited for. A degraded banner nobody can trigger is a banner nobody has
+    // seen render, and this is the state a user most needs to be told about.
+    await page.route("**/api/ready", (route) =>
+      route.fulfill({ status: 503, body: JSON.stringify({ ready: false, blockedBy: ["rpc"], checks: [] }) }),
+    );
+    await page.goto("/app");
+
+    const banner = page.getByRole("status").filter({ hasText: /cannot safely quote/i });
+    await expect(banner).toBeVisible();
+    // It must not imply the user's position changed.
+    await expect(banner).toContainText(/nothing on chain has changed/i);
+  });
+
+  test("stays quiet when everything is reachable", async ({ page }) => {
+    await page.route("**/api/ready", (route) =>
+      route.fulfill({ status: 200, body: JSON.stringify({ ready: true, blockedBy: [], checks: [] }) }),
+    );
+    await page.goto("/app");
+    await expect(page.getByText(/cannot safely quote/i)).toHaveCount(0);
+  });
+});
+
+test.describe("keyboard navigation", () => {
+  test.skip(({ isMobile }) => isMobile === true, "pointer-free navigation is a desktop affordance");
+
+  test("g then a letter moves between sections", async ({ page }) => {
+    await page.goto("/app");
+    await page.keyboard.press("g");
+    await page.keyboard.press("p");
+    await expect(page).toHaveURL(/\/app\/positions/);
+  });
+
+  test("a stray g does not arm navigation forever", async ({ page }) => {
+    await page.goto("/app");
+    await page.keyboard.press("g");
+    await page.waitForTimeout(1600);
+    await page.keyboard.press("p");
+    // The sequence expires, so the next keystroke is not silently turned into navigation.
+    await expect(page).toHaveURL(/\/app$/);
+  });
+});
