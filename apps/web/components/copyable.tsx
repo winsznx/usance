@@ -49,7 +49,9 @@ export function Copyable({
 
   return (
     <span className="copyable">
-      <span className="mono" id={`copyable-${value}`}>{shown}</span>
+      {/* An empty display means the caller already rendered the value — usually as a link — and
+          wants only the copy affordance beside it. */}
+      {shown === "" ? null : <span className="mono" id={`copyable-${value}`}>{shown}</span>}
       <button type="button" className="copyable-button" onClick={copy} aria-label={`Copy ${label}`}>
         <Icon name={copied ? "check" : "external"} size={13} />
       </button>

@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Footer, Logo, Notice } from "@/components/primitives";
+import {Notice} from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { activeChain } from "@/lib/deployments";
 import {
   MANDATE_ACTIONS,
@@ -38,15 +39,9 @@ export default function NewMandatePage() {
   const agentLooksValid = /^0x[0-9a-fA-F]{40}$/.test(agentAddress.trim());
 
   return (
-    <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <span className="tag">{chain.name}</span>
-        </div>
-      </header>
+    <AppShell>
 
-      <main className="shell" style={{ padding: "48px 24px 80px", maxWidth: 780 }}>
+      <div style={{ maxWidth: 820 }}>
         <h1 className="heading-lg" style={{ marginBottom: 10 }}>Create a mandate</h1>
         <p className="muted" style={{ marginTop: 0, marginBottom: 28 }}>
           You are about to let another address act on your account. Read what it can do before you
@@ -141,9 +136,8 @@ export default function NewMandatePage() {
             <Link className="btn btn-ghost btn-lg" href="/app/mandates">Cancel</Link>
           </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }
 

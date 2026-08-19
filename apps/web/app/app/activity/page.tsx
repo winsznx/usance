@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { chainById } from "@usance/xlayer";
-import { Footer, Logo, Notice } from "@/components/primitives";
+import {Notice} from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { loadReceipts } from "@/lib/receipts";
 
 /**
@@ -32,17 +33,9 @@ export default function ActivityPage() {
   });
 
   return (
-    <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <Link href="/app" className="caption" style={{ textDecoration: "underline" }}>
-            Portfolio
-          </Link>
-        </div>
-      </header>
+    <AppShell>
 
-      <main className="shell" style={{ padding: "40px 24px 80px", maxWidth: 820 }}>
+      <div style={{ maxWidth: 900 }}>
         <h1 className="heading" style={{ margin: "0 0 8px" }}>
           Activity
         </h1>
@@ -116,9 +109,7 @@ export default function ActivityPage() {
           </Link>
           .
         </p>
-      </main>
-
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }

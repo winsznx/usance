@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Footer, Nav, Notice } from "@/components/primitives";
+import {Notice} from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { activeChain } from "@/lib/deployments";
 import { loadVault, type VaultView } from "@/lib/vault";
 
@@ -23,22 +24,16 @@ export default async function EarnPage() {
   const vault = await loadVault();
 
   return (
-    <>
-      <Nav />
-      <main>
-        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "48px 0" }}>
-          <div className="shell" style={{ maxWidth: 900 }}>
-            <div className="micro">Supply liquidity · {chain.name}</div>
-            <h1 className="heading-lg" style={{ margin: "18px 0 14px" }}>
+    <AppShell>
+      <div>
+        <h1 className="heading-lg" style={{ margin: "0 0 8px", fontSize: 26 }}>
               Lend against admitted collateral
             </h1>
-            <p className="body-lg muted" style={{ margin: 0, maxWidth: 620 }}>
+        <p className="muted" style={{ margin: "0 0 28px", maxWidth: "62ch" }}>
               Borrowers post assets Usance has read and priced. You supply the settlement asset they
               draw against, and earn the financing they pay. Your capital is lent out, so redemption
               is not always instant.
             </p>
-          </div>
-        </section>
 
         <section className="section">
           <div className="shell" style={{ maxWidth: 900 }}>
@@ -60,9 +55,8 @@ export default async function EarnPage() {
             )}
           </div>
         </section>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }
 

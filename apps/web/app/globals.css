@@ -39,9 +39,12 @@
   --hairline: rgba(27, 6, 36, 0.12);
   --hairline-strong: rgba(27, 6, 36, 0.22);
 
-  --radius-card: 16px;
+  --radius-card: 20px;
   --radius-image: 24px;
-  --radius-input: 8px;
+  /* Inputs, chips and small surfaces. Was 8px, which reads as a square with the corners filed
+     off rather than as a rounded shape. */
+  --radius-input: 12px;
+  --radius-small: 10px;
   --radius-pill: 999px;
   --radius-large-button: 60px;
 
@@ -922,14 +925,14 @@ h4 {
   height: 6px;
   margin: 8px 0 6px;
   background: var(--mist);
-  border-radius: 2px;
+  border-radius: var(--radius-small);
   overflow: hidden;
 }
 
 .derivation-fill {
   height: 100%;
   background: var(--stone);
-  border-radius: 2px;
+  border-radius: var(--radius-small);
 }
 
 /* The result is the only bar in full-strength ink. Every step above it is context. */
@@ -1040,11 +1043,24 @@ h4 {
   margin-top: 4px;
 }
 
+/*
+ * Two columns that both carry weight.
+ *
+ * The previous split was 1.55/1, which on a wide screen left the right column short and the page
+ * with a visible hole below it. Closer to even, with the content column allowed to grow, fills the
+ * viewport at 1440 without either side running out of things to say.
+ */
 .dash-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+}
+
+/* The frame stops the content stretching to a width nothing is designed for, and centres it so a
+   very wide display does not leave everything hugging the rail. */
+.app-content {
+  max-width: 1440px;
 }
 
 @media (max-width: 1080px) {
@@ -1134,14 +1150,14 @@ h4 {
   position: relative;
   height: 10px;
   background: var(--mist);
-  border-radius: 3px;
+  border-radius: var(--radius-small);
   overflow: hidden;
 }
 
 .buffer-fill {
   height: 100%;
   background: var(--espresso);
-  border-radius: 3px;
+  border-radius: var(--radius-small);
 }
 
 /* Breach is marked by a distinct fill AND by the figure above turning negative, so the state does
@@ -1272,7 +1288,7 @@ h4 {
   height: 3px;
   padding: 0;
   border: 0;
-  border-radius: 2px;
+  border-radius: var(--radius-small);
   background: rgba(237, 236, 231, 0.24);
   cursor: pointer;
 }
@@ -1563,6 +1579,17 @@ h4 {
  * never does. The gradient dissolves the artwork into Linen so the section has no visible edge —
  * a hard cut between a photograph and a flat colour is the thing that makes a hero look pasted on.
  */
+/*
+ * Dither, then grain, then a fade into the canvas.
+ *
+ * The dither is an ordered dot screen — a repeating radial-gradient on a 3px pitch — not noise.
+ * That is what gives a printed halftone its character: the dots sit on a grid, so the eye reads
+ * texture rather than dirt. Noise on its own looks like a bad JPEG; this looks like ink.
+ *
+ * Both layers are inline CSS rather than image requests. They are a few hundred bytes, they cannot
+ * fail to load, and a hero whose texture arrives a beat after the artwork looks broken in a way a
+ * flat hero never does.
+ */
 .hero::after {
   content: "";
   position: absolute;
@@ -1570,9 +1597,25 @@ h4 {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(to bottom, rgba(247, 247, 245, 0) 55%, var(--linen) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
-  background-size: cover, 180px 180px;
+    /* fade into the canvas */
+    linear-gradient(to bottom, rgba(247, 247, 245, 0) 52%, rgba(247, 247, 245, 0.72) 84%, var(--linen) 100%),
+    /* ordered dot screen */
+    radial-gradient(rgba(22, 15, 12, 0.16) 0.6px, transparent 0.7px),
+    /* offset second pass, so the grid does not read as a single flat mesh */
+    radial-gradient(rgba(22, 15, 12, 0.1) 0.6px, transparent 0.7px),
+    /* fine grain under it all */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  background-size: cover, 3px 3px, 3px 3px, 160px 160px;
+  background-position: center, 0 0, 1.5px 1.5px, 0 0;
+}
+
+/* The screen coarsens on small viewports. A 3px pitch on a 3x display is invisible, and the
+   texture is the point. */
+@media (max-width: 760px) {
+  .hero::after {
+    background-size: cover, 4px 4px, 4px 4px, 160px 160px;
+    background-position: center, 0 0, 2px 2px, 0 0;
+  }
 }
 
 .hero-inner {
@@ -1647,25 +1690,92 @@ h4 {
   gap: 18px;
 }
 
+/* ==========================================================================
+   Closing image, then the footer
+   ==========================================================================
+   The page ends the way it opened: one full-bleed picture carrying a single
+   action, with the footer sitting under it on paper. It gives the last screen
+   somewhere to rest instead of trailing off into a list of links.
+   ========================================================================== */
+
+.closer {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 460px;
+  padding: 96px 24px;
+  overflow: hidden;
+  border-radius: var(--radius-image) var(--radius-image) 0 0;
+}
+
+.closer-art {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  object-fit: cover;
+}
+
+/* The same dot screen as the hero, so the two images read as one treatment rather than two
+   different pictures that happen to be on the same page. */
+.closer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(22, 15, 12, 0.14) 0.6px, transparent 0.7px),
+    radial-gradient(rgba(22, 15, 12, 0.09) 0.6px, transparent 0.7px);
+  background-size: 3px 3px, 3px 3px;
+  background-position: 0 0, 1.5px 1.5px;
+}
+
+.closer-inner {
+  text-align: center;
+  max-width: 640px;
+}
+
+.closer-headline {
+  margin: 0 0 16px;
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+}
+
+.closer-sub {
+  margin: 0 0 30px;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--graphite);
+}
+
+.closer-cta {
+  /* The one raised element on the site. It is the last thing on the page and it has to read as
+     pressable against a photograph, which a flat fill cannot do. */
+  box-shadow: 0 10px 30px rgba(22, 15, 12, 0.28);
+}
+
 .site-footer {
-  border-top: 1px solid var(--hairline);
-  padding: 56px 0 40px;
-  background: var(--linen);
+  padding: 64px 0 36px;
+  background: var(--paper);
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
-  gap: 32px;
-  margin-bottom: 40px;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 0.8fr)) minmax(0, 1.3fr);
+  gap: 40px;
+  margin-bottom: 48px;
 }
 
 .footer-col h4 {
-  margin: 0 0 12px;
-  font-size: 12px;
-  letter-spacing: 0.07em;
+  margin: 0 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--graphite);
+  color: var(--stone);
   font-weight: 400;
 }
 
@@ -1675,35 +1785,57 @@ h4 {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 11px;
 }
 
 .footer-col a {
   color: var(--charcoal);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .footer-col a:hover {
+  color: var(--aubergine-ink);
   text-decoration: underline;
 }
 
 .footer-subscribe {
   display: flex;
-  gap: 8px;
-  margin-top: 14px;
-  max-width: 380px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  padding: 5px 5px 5px 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-pill);
+  max-width: 320px;
 }
 
 .footer-subscribe input {
   flex: 1;
   min-width: 0;
-  padding: 10px 14px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius-input);
-  background: var(--mist);
+  border: 0;
+  background: transparent;
+  padding: 8px 8px;
   font: inherit;
   font-size: 14px;
+}
+
+.footer-subscribe input:focus {
+  outline: none;
+}
+
+.footer-note {
+  margin: 8px 0 0;
+  color: var(--stone);
+}
+
+.footer-base {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--hairline);
 }
 
 @media (max-width: 900px) {
@@ -1713,9 +1845,18 @@ h4 {
   }
   .footer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+  }
+  .footer-brand,
+  .footer-join {
+    grid-column: 1 / -1;
   }
   .hero {
-    padding: 64px 0 80px;
+    padding: 48px 0 72px;
+  }
+  .closer {
+    min-height: 380px;
+    padding: 72px 20px;
   }
 }
 
@@ -1906,4 +2047,60 @@ h4 {
   height: auto;
   margin-bottom: 20px;
   border-radius: var(--radius-input);
+}
+
+/* The collapse control, on the rail's edge.
+   Buried at the bottom of the list it read as one more destination and nobody found it. Here it
+   sits where the boundary is, which is the thing it moves. */
+.rail-handle {
+  position: absolute;
+  top: 26px;
+  right: -11px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  color: var(--graphite);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.rail-handle:hover {
+  color: var(--aubergine-ink);
+  border-color: var(--hairline-strong);
+}
+
+.rail-handle:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 2px;
+}
+
+.rail {
+  position: sticky;
+  overflow: visible; /* the handle sits outside the rail's own box */
+}
+
+/* A hash or an address is something somebody takes elsewhere to check. Every one is reachable. */
+.hashlink {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline-strong);
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.hashlink:hover {
+  color: var(--aubergine-ink);
+  border-bottom-color: var(--aubergine-ink);
+}
+
+.hashlink:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 2px;
+  border-radius: var(--radius-small);
 }

@@ -293,3 +293,37 @@ test.describe("the harness refuses to move value", () => {
     expect(outcome).toContain("refuses eth_sendTransaction");
   });
 });
+
+test.describe("every account route keeps the frame", () => {
+  const ROUTES = [
+    "/app", "/app/positions", "/app/activity", "/app/alerts",
+    "/app/settings", "/app/settings/security", "/app/mandates", "/app/mandates/new",
+    "/app/borrow", "/app/repay", "/app/withdraw", "/app/collateral/add",
+    "/earn", "/earn/positions",
+  ];
+
+  for (const route of ROUTES) {
+    test(`${route} renders inside the application frame`, async ({ page, isMobile }) => {
+      await signedIn(page);
+      await page.goto(route);
+
+      // Navigating from the dashboard to any of these used to drop the rail, the tab bar and the
+      // network indicator, so the app appeared to have thrown the user back onto the marketing
+      // site. The frame is the thing that makes them one product.
+      const frame = isMobile
+        ? page.getByRole("navigation", { name: "Primary" })
+        : page.getByRole("navigation", { name: "Main" });
+      await expect(frame, `${route} lost the application frame`).toBeVisible({ timeout: 15_000 });
+    });
+  }
+
+  test("no account route carries the marketing footer", async ({ page }) => {
+    await signedIn(page);
+    for (const route of ["/app", "/app/activity", "/earn", "/app/mandates"]) {
+      await page.goto(route);
+      // The landing footer belongs to the landing page. Inside the app it is a dead end that looks
+      // like the user left the product.
+      await expect(page.locator("footer.site-footer"), `${route} shows the marketing footer`).toHaveCount(0);
+    }
+  });
+});

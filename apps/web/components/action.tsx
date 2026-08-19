@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AppShell } from "@/components/app-shell";
 import { useMemo, useState } from "react";
 import { formatUsd, parseUsd, formatTokens, type Gate, GATE_COPY } from "@usance/domain";
 import type { TxState } from "@/lib/tx";
@@ -236,23 +237,28 @@ export function ActionShell({
   backLabel?: string | undefined;
   children: React.ReactNode;
 }) {
+  // Inside the application frame, not beside it. These are account routes; rendering them with
+  // landing chrome meant navigating from the dashboard to "Repay" dropped the rail, the tab bar and
+  // the network indicator, and the app appeared to have thrown the user out.
   return (
-    <main className="shell" style={{ padding: "40px 24px 80px", maxWidth: 660 }}>
-      <Link href={backHref} className="caption" style={{ textDecoration: "underline" }}>
-        ← {backLabel}
-      </Link>
-      <h1 className="heading" style={{ margin: "18px 0 8px" }}>
-        {title}
-      </h1>
-      {intro ? (
-        <p className="muted" style={{ marginTop: 0, marginBottom: 30 }}>
-          {intro}
-        </p>
-      ) : (
-        <div style={{ height: 24 }} />
-      )}
-      {children}
-    </main>
+    <AppShell>
+      <div style={{ maxWidth: 660 }}>
+        <Link href={backHref} className="caption" style={{ textDecoration: "underline" }}>
+          ← {backLabel}
+        </Link>
+        <h1 className="heading-lg" style={{ margin: "16px 0 8px", fontSize: 26 }}>
+          {title}
+        </h1>
+        {intro ? (
+          <p className="muted" style={{ marginTop: 0, marginBottom: 30 }}>
+            {intro}
+          </p>
+        ) : (
+          <div style={{ height: 24 }} />
+        )}
+        {children}
+      </div>
+    </AppShell>
   );
 }
 

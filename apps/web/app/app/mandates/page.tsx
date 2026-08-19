@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Footer, Nav, Notice } from "@/components/primitives";
+import {Notice} from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { activeChain, loadDeployment } from "@/lib/deployments";
 import { WITHDRAWAL_IS_NOT_DELEGABLE } from "@/lib/mandate";
 
@@ -19,19 +20,13 @@ export default async function MandatesPage() {
   const registry = deployment?.contracts?.mandateRegistry as string | undefined;
 
   return (
-    <>
-      <Nav />
-      <main>
-        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "48px 0" }}>
-          <div className="shell" style={{ maxWidth: 860 }}>
-            <div className="micro">Delegated authority · {chain.name}</div>
-            <h1 className="heading-lg" style={{ margin: "18px 0 14px" }}>Mandates</h1>
-            <p className="body-lg muted" style={{ margin: 0, maxWidth: 620 }}>
+    <AppShell>
+      <div>
+        <h1 className="heading-lg" style={{ margin: "0 0 8px", fontSize: 26 }}>Mandates</h1>
+        <p className="muted" style={{ margin: "0 0 28px", maxWidth: "62ch" }}>
               A mandate lets an agent act on your account inside limits you sign. It can only ever
               narrow what the protocol already allows, never widen it.
             </p>
-          </div>
-        </section>
 
         <section className="section">
           <div className="shell stack" style={{ maxWidth: 860, gap: 18 }}>
@@ -69,8 +64,7 @@ export default async function MandatesPage() {
             )}
           </div>
         </section>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }

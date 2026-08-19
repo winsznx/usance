@@ -309,6 +309,26 @@ function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
           <StatusLadder current={view.status} />
 
           <section className="card">
+            <div className="row-between" style={{ marginBottom: 12 }}>
+              <h2 className="heading" style={{ fontSize: 17, margin: 0 }}>Recent activity</h2>
+              <Link href="/app/activity" className="caption" style={{ textDecoration: "underline" }}>
+                See all
+              </Link>
+            </div>
+            {/*
+              Read from the same receipt records the public proof pages use, so the account view and
+              the public view cannot describe the same event differently.
+            */}
+            <p className="caption" style={{ margin: 0, color: "var(--graphite)" }}>
+              Every financial action on this account, with the transaction that carried it. Nothing
+              here is reconstructed — a row exists only where a receipt does.
+            </p>
+            <Link href="/app/activity" className="btn btn-ghost" style={{ marginTop: 14 }}>
+              Open activity
+            </Link>
+          </section>
+
+          <section className="card">
             <h2 className="heading" style={{ fontSize: 17, margin: "0 0 12px" }}>
               {alerts.length === 0 ? "Nothing needs a decision" : `${alerts.length} thing${alerts.length === 1 ? "" : "s"} to decide`}
             </h2>

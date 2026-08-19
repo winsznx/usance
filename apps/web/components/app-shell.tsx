@@ -188,9 +188,18 @@ export function AppShell({
           ))}
         </ul>
 
-        <button className="rail-toggle" onClick={toggle} aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}>
-          <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={16} />
-          <span className="rail-label">Collapse</span>
+        {/*
+          On the edge of the rail rather than buried at the bottom of the list. A collapse control
+          that looks like a nav item reads as one more destination, and the previous version was a
+          row of small text nobody found — which is exactly the report that produced this change.
+        */}
+        <button
+          className="rail-handle"
+          onClick={toggle}
+          aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+          aria-expanded={!collapsed}
+        >
+          <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={14} />
         </button>
       </nav>
 

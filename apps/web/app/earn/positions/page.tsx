@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Footer, Logo, Notice } from "@/components/primitives";
+import {Notice} from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { activeChain } from "@/lib/deployments";
 import { connect, detectProvider, WalletError } from "@/lib/wallet";
 import type { LenderPosition, VaultView } from "@/lib/vault";
@@ -53,15 +54,9 @@ export default function PositionsPage() {
   }, [load]);
 
   return (
-    <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <span className="tag">{chain.name}</span>
-        </div>
-      </header>
+    <AppShell>
 
-      <main className="shell" style={{ padding: "48px 24px 80px", maxWidth: 780 }}>
+      <div style={{ maxWidth: 820 }}>
         <h1 className="heading-lg" style={{ marginBottom: 10 }}>Your position</h1>
         <p className="muted" style={{ marginTop: 0, marginBottom: 30 }}>
           What you supplied, what you can take out today, and anything you are queued for.
@@ -103,9 +98,8 @@ export default function PositionsPage() {
         ) : (
           <Position data={data} />
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }
 
