@@ -246,9 +246,7 @@ Current: **16/34 canonical routes**,
 - [x] Deploy, manifest generation, drift detection
 - [x] Live scenario, liquidation, delegated-authority scripts
 - [x] Feed characterisation
-- [ ] Runbooks (RPC degraded, indexer stalled, ChainGPT unavailable, workflow stuck,
-      confirmation-unknown accumulation, deployment drift, oracle stale/unconfigured,
-      vault stressed, withdrawal backlog, bad debt, keeper inactivity, webhook backlog, reorg)
+- [x] Runbooks — docs/RUNBOOKS.md (10 scenarios; webhook backlog pending S)
 
 ## X. Security
 
@@ -336,4 +334,4 @@ Current: **16/34 canonical routes**,
 
 ## AK. Audit handoff
 
-- [ ] `docs/AUDIT_HANDOFF.md`
+- [x] `docs/AUDIT_HANDOFF.md`
