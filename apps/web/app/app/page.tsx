@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { CapacityDerivation, StatusLadder } from "@/components/capacity";
 import { SafetyBuffer } from "@/components/buffer";
+import { Holdings } from "@/components/holdings";
 import { Advanced } from "@/components/mode";
 import { Copyable } from "@/components/copyable";
 import { TransactionHistory, type TxRow } from "@/components/transactions";
@@ -225,40 +226,7 @@ function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
             </Notice>
           )}
 
-          {view.assets.length > 1 ? (
-            <section className="card" aria-labelledby="holdings-heading">
-              <h2 id="holdings-heading" className="heading" style={{ fontSize: 17, margin: "0 0 4px" }}>
-                What each holding contributes
-              </h2>
-              <p className="caption" style={{ margin: "0 0 14px", color: "var(--graphite)" }}>
-                The derivation above is the total. This is where it comes from, so a capacity that
-                moved can be traced to the asset that moved it.
-              </p>
-              {view.assets.map((a) => {
-                const market = BigInt(a.marketValueUsd18);
-                const recognised = BigInt(a.recognizedUsd18);
-                // How much of this asset's market value survives to become capacity. The single
-                // number that says whether a holding is pulling its weight as collateral.
-                const kept = market === 0n ? 0 : Number((recognised * 1000n) / market) / 10;
-                return (
-                  <div key={a.assetId} style={{ padding: "12px 0", borderTop: "1px solid var(--hairline)" }}>
-                    <div className="row-between" style={{ gap: 12 }}>
-                      <span className="caption mono">{a.assetId.slice(0, 14)}…</span>
-                      <span className="tnum">${money(a.recognizedUsd18)}</span>
-                    </div>
-                    <div className="row-between" style={{ marginTop: 4 }}>
-                      <span className="caption" style={{ color: "var(--graphite)" }}>
-                        ${money(a.marketValueUsd18)} at market
-                      </span>
-                      <span className="caption" style={{ color: "var(--graphite)" }}>
-                        {kept.toFixed(1)}% recognised
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </section>
-          ) : null}
+          <Holdings assets={view.assets} />
 
           <SafetyBuffer
             debt={BigInt(view.debt)}

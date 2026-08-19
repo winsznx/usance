@@ -155,3 +155,44 @@ test.describe("the condensing header", () => {
     await expect(page.getByRole("link", { name: /open usance/i })).toBeVisible();
   });
 });
+
+test.describe("the hero runs to the top", () => {
+  test("no band of canvas sits above the artwork", async ({ page }) => {
+    await page.goto("/");
+    const art = await page.locator("img.hero-art").boundingBox();
+    // The image starts at the very top of the viewport and the header overlays it. A sticky header
+    // left a strip of empty canvas as the first thing on the page.
+    expect(art?.y ?? 99).toBeLessThanOrEqual(1);
+  });
+
+  test("the header floats over the image rather than sitting on a bar", async ({ page }) => {
+    await page.goto("/");
+    const header = page.locator("#site-header");
+    await expect(header).toHaveCSS("position", "fixed");
+
+    const box = await header.boundingBox();
+    expect(box?.y ?? 99).toBeLessThanOrEqual(1);
+  });
+
+  test("pages without a hero still clear the fixed header", async ({ page }) => {
+    for (const path of ["/status", "/security", "/assets"]) {
+      await page.goto(path);
+      const heading = await page.getByRole("heading", { level: 1 }).boundingBox();
+      // A fixed header removes itself from flow, so a page with no hero would otherwise start
+      // underneath it with its first heading hidden.
+      expect(heading?.y ?? 0, `${path} starts under the header`).toBeGreaterThan(60);
+    }
+  });
+});
+
+test.describe("holdings", () => {
+  test("wide content scrolls inside its own container", async ({ page }) => {
+    await page.goto("/");
+    // Asserted on the landing page's own tables too: a table that widens the page makes every
+    // other section scroll sideways with it, which on a phone stops the layout being readable.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    expect(overflow).toBe(false);
+  });
+});

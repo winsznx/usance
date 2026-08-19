@@ -1553,12 +1553,12 @@ h4 {
   isolation: isolate;
   display: flex;
   align-items: center;
-  /* The hero owns the first screen. `svh` rather than `vh` because mobile browsers report `vh`
-     including the address bar, which pushes the next section into view on load and then hides it
-     again when the bar collapses. Minus the header so the composition is centred in what is
-     actually visible, not in the viewport behind it. */
-  min-height: calc(100svh - 68px);
-  padding: 64px 0 96px;
+  /* The hero owns the first screen, header included — it sits behind the bar rather than below it.
+     `svh` rather than `vh` because mobile browsers report `vh` including the address bar, which
+     pushes the next section into view on load and then hides it again when the bar collapses. */
+  min-height: 100svh;
+  /* Top padding clears the header so the composition is centred in what is actually readable. */
+  padding: 132px 0 96px;
   overflow: hidden;
 }
 
@@ -1879,12 +1879,54 @@ h4 {
    from under a cursor already travelling toward it.
    ========================================================================== */
 
+/*
+ * Fixed and transparent at rest, so the hero runs to the very top of the viewport.
+ *
+ * Sticky left a band of canvas above the artwork — the image began under the header rather than
+ * behind it, and the first thing on the page was an empty strip. Overlaying costs a scrim (below)
+ * to keep the links legible against whatever the picture is doing at the top, which is a better
+ * trade than a bar of nothing.
+ */
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
-  padding: 12px 0;
+  padding: 14px 0;
   transition: padding 320ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/*
+ * A short gradient under the header at rest, not a filled bar.
+ *
+ * The hero is light at the top so ink reads on it, but "light at the top" is a property of this
+ * particular picture. The scrim means the header stays legible if the artwork is ever replaced,
+ * and at 0.35 it is invisible against the sky while still doing that job.
+ */
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 140px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(247, 247, 245, 0.35), rgba(247, 247, 245, 0));
+  transition: opacity 320ms ease;
+}
+
+.site-header[data-condensed="true"]::before {
+  /* The pill carries its own ground once condensed; the scrim would only muddy the page behind it. */
+  opacity: 0;
+}
+
+/*
+ * Pages without a hero need the space the fixed header no longer occupies.
+ *
+ * Scoped to the first section so it cannot double up on a page that already offsets itself, and
+ * excluded on the hero, which is the one section meant to run underneath.
+ */
+main > section:first-child:not(.hero) {
+  padding-top: 96px;
 }
 
 .site-header-inner {
@@ -2103,4 +2145,72 @@ h4 {
   outline: 2px solid var(--charcoal);
   outline-offset: 2px;
   border-radius: var(--radius-small);
+}
+
+/* ==========================================================================
+   Data tables
+   ==========================================================================
+   Wide content scrolls inside its own container. A table that widens the page
+   makes every other section scroll sideways with it, which on a phone is how a
+   layout stops being readable at all.
+   ========================================================================== */
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+  /* Momentum scrolling on iOS, and a scrollbar that does not sit over the last row. */
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.data-table th,
+.data-table td {
+  padding: 11px 14px 11px 0;
+  text-align: left;
+  font-weight: 400;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.data-table thead th {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--stone);
+  border-bottom-color: var(--hairline-strong);
+  padding-bottom: 8px;
+}
+
+.data-table tbody tr:last-child th,
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding-right: 0;
+}
+
+.data-table thead .num {
+  text-align: right;
+}
+
+.data-table .strong {
+  font-weight: 500;
+}
+
+.survives {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--bone);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
 }
