@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { receiptSlug, passport } from "./fixtures";
+import { installWallet, signedIn } from "./wallet-harness";
 
 /**
  * First run, in the one place Usance asks for a wallet.
@@ -110,5 +111,42 @@ test.describe("mobile", () => {
     await page.goto("/app/onboarding");
     const box = await page.getByRole("button", { name: /connect wallet/i }).boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test.describe("connection is not a session", () => {
+  test("a wallet that is already connected still goes through onboarding", async ({ page }) => {
+    // The bug this exists to prevent. `eth_accounts` reports an address for any site the wallet has
+    // ever been connected to, so gating on it dropped a returning visitor straight into the
+    // dashboard having never seen onboarding and never signed anything. `/security` spends a page
+    // on exactly this distinction and the gate was contradicting it.
+    await installWallet(page);
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/app\/onboarding/, { timeout: 10_000 });
+  });
+
+  test("a signed-in browser goes straight to the dashboard", async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+    await expect(page.getByText("Recognised collateral")).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("a session signed for another address is refused", async ({ page }) => {
+    // The session is bound to the address it was signed for. A wallet that switched accounts holds
+    // somebody else's signature, and showing one person another person's position is not
+    // recoverable by an apology.
+    await signedIn(page, { account: "0x2222222222222222222222222222222222222222" });
+    await page.addInitScript(() => {
+      sessionStorage.setItem("usance.session", "0x9999999999999999999999999999999999999999");
+    });
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/app\/onboarding/, { timeout: 10_000 });
+  });
+
+  test("Launch Usance enters through onboarding, not the dashboard", async ({ page }) => {
+    await installWallet(page);
+    await page.goto("/");
+    await page.getByRole("link", { name: /launch usance/i }).first().click();
+    await expect(page).toHaveURL(/\/app\/onboarding/);
   });
 });

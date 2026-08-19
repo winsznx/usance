@@ -42,7 +42,7 @@ export default function Landing() {
               can safely do with it.
             </p>
             <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-              <Link className="btn btn-primary btn-lg" href="/app">Launch Usance</Link>
+              <Link className="btn btn-primary btn-lg" href="/app/onboarding">Launch Usance</Link>
               <Link className="btn btn-ghost btn-lg" href="/assets">Explore supported assets</Link>
             </div>
           </div>
@@ -306,7 +306,7 @@ export default function Landing() {
               <ul>
                 <li><Link href="/assets">Assets</Link></li>
                 <li><Link href="/earn">Earn</Link></li>
-                <li><Link href="/app">Launch Usance</Link></li>
+                <li><Link href="/app/onboarding">Launch Usance</Link></li>
                 <li><Link href="/simulate">Walkthrough</Link></li>
               </ul>
             </div>

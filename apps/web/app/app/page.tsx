@@ -14,6 +14,7 @@ import { activeChain } from "@/lib/deployments";
 import { alertsFor, type Alert } from "@/lib/alerts";
 import { permittedActions } from "@/lib/account";
 import { detectProvider } from "@/lib/wallet";
+import { readSession, clearSession } from "@/lib/session";
 import { useRouter } from "next/navigation";
 import type { AccountStatus } from "@usance/domain";
 
@@ -53,38 +54,36 @@ export default function AppOverview() {
   const [txs, setTxs] = useState<TxRow[]>([]);
 
   /**
-   * The overview does not ask for a wallet either.
+   * Gated on the session, not on a wallet being attached.
    *
-   * This route had its own connect card while every other account route redirected, which meant the
-   * one screen a user actually lands on still prompted — the exact duplication the redirect was
-   * meant to remove.
+   * `eth_accounts` returns an address for any site the wallet has ever been connected to, so gating
+   * on it dropped a returning visitor straight into the dashboard having never seen onboarding and
+   * never signed anything. Connection is not a session — which is the distinction `/security`
+   * spends a page on, and which this gate was quietly contradicting.
    */
   useEffect(() => {
-    const { provider } = detectProvider();
-    if (!provider) {
+    let live = true;
+    readSession().then((state) => {
+      if (!live) return;
       setChecked(true);
-      router.replace("/app/onboarding");
-      return;
-    }
-    provider
-      .request({ method: "eth_accounts" })
-      .then((accts) => {
-        const found = (accts as string[])[0] as `0x${string}` | undefined;
-        if (found) setAddress(found);
-        else router.replace("/app/onboarding");
-      })
-      .catch(() => router.replace("/app/onboarding"))
-      .finally(() => setChecked(true));
+      if (state.status === "ACTIVE") setAddress(state.address);
+      else router.replace("/app/onboarding");
+    });
+    return () => {
+      live = false;
+    };
   }, [router]);
 
   useEffect(() => {
     const { provider } = detectProvider();
     if (!provider?.on) return;
-    const onAccounts = (a: string[]) => {
-      const next = (a[0] as `0x${string}`) ?? null;
-      setAddress(next);
+    // A wallet that changes account invalidates the signature, because it was signed for the
+    // previous one. Showing somebody another account's position is not recoverable by an apology.
+    const onAccounts = () => {
+      clearSession();
+      setAddress(null);
       setData(null);
-      if (!next) router.replace("/app/onboarding");
+      router.replace("/app/onboarding");
     };
     provider.on("accountsChanged", onAccounts);
     return () => provider.removeListener?.("accountsChanged", onAccounts);

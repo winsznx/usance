@@ -83,7 +83,7 @@ export function Nav({ cta = true }: { cta?: boolean }) {
           </Link>
         </nav>
         {cta ? (
-          <Link href="/app" className="btn btn-primary">
+          <Link href="/app/onboarding" className="btn btn-primary">
             Open Usance
           </Link>
         ) : (

@@ -113,6 +113,9 @@ export async function installWallet(page: Page, options: HarnessOptions = {}): P
 export async function signedIn(page: Page, options: HarnessOptions = {}): Promise<void> {
   await installWallet(page, options);
   await page.addInitScript((account: string) => {
-    sessionStorage.setItem("usance.session", account);
+    // Lower-cased, because the app binds the session to the address it was signed for and compares
+    // case-insensitively. A harness writing the checksummed form would look signed-in and then be
+    // treated as a different account.
+    sessionStorage.setItem("usance.session", account.toLowerCase());
   }, options.account ?? TEST_ACCOUNT);
 }

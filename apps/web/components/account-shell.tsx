@@ -6,6 +6,7 @@ import { Notice } from "@/components/primitives";
 import { AppShell } from "@/components/app-shell";
 import { activeChain } from "@/lib/deployments";
 import { detectProvider } from "@/lib/wallet";
+import { readSession, clearSession } from "@/lib/session";
 import { useRouter } from "next/navigation";
 
 /**
@@ -35,39 +36,31 @@ export function AccountShell({
   const [checked, setChecked] = useState(false);
 
   /**
-   * One place asks for a wallet, and it is not here.
+   * One place asks for a wallet, and it is not here — and it asks for a signature, not a connection.
    *
-   * Every signed-in route used to carry its own connect prompt, so a user could meet the same
-   * question four different ways on four different screens. Now an unauthenticated visit redirects
-   * to onboarding, which owns the whole sequence, and everything past it assumes a session.
+   * Gating on `eth_accounts` let a returning visitor past onboarding entirely, because a wallet
+   * reports an address for any site it has previously been connected to.
    */
   useEffect(() => {
-    const { provider } = detectProvider();
-    if (!provider) {
+    let live = true;
+    readSession().then((state) => {
+      if (!live) return;
       setChecked(true);
-      router.replace("/app/onboarding");
-      return;
-    }
-    provider
-      .request({ method: "eth_accounts" })
-      .then((accts) => {
-        const found = (accts as string[])[0] as `0x${string}` | undefined;
-        if (found) setAddress(found);
-        else router.replace("/app/onboarding");
-      })
-      .catch(() => router.replace("/app/onboarding"))
-      .finally(() => setChecked(true));
+      if (state.status === "ACTIVE") setAddress(state.address);
+      else router.replace("/app/onboarding");
+    });
+    return () => {
+      live = false;
+    };
   }, [router]);
 
-  // A wallet that switches to a locked or different account must not leave the previous account's
-  // figures on screen.
   useEffect(() => {
     const { provider } = detectProvider();
     if (!provider?.on) return;
-    const onAccounts = (accts: string[]) => {
-      const next = (accts[0] as `0x${string}`) ?? null;
-      setAddress(next);
-      if (!next) router.replace("/app/onboarding");
+    const onAccounts = () => {
+      clearSession();
+      setAddress(null);
+      router.replace("/app/onboarding");
     };
     provider.on("accountsChanged", onAccounts);
     return () => provider.removeListener?.("accountsChanged", onAccounts);

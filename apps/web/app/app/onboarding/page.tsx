@@ -8,6 +8,7 @@ import { Notice } from "@/components/primitives";
 import { Illustration, Lockup } from "@/components/kit-icon";
 import { activeChain, loadDeployment } from "@/lib/deployments";
 import { WalletError, connect, detectProvider, ensureChain, signSession } from "@/lib/wallet";
+import { recordSession } from "@/lib/session";
 
 /**
  * `/app/onboarding` — the one place Usance asks for a wallet.
@@ -111,9 +112,9 @@ export default function OnboardingPage() {
     setDetail(null);
     try {
       await signSession(address, chainId, "usance.xyz");
-      // Remembered so the app does not send the user back here on the next navigation. The chain
-      // is still the authority for everything financial; this only records that they signed in.
-      sessionStorage.setItem("usance.session", address);
+      // Bound to the address it was signed for, and held only for this browser session. The chain
+      // remains the authority for everything financial; this records that they signed in.
+      recordSession(address);
       setPhase("READY");
       router.push("/app");
     } catch (e) {
