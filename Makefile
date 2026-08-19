@@ -16,7 +16,7 @@ FIXTURES  := fixtures/canonical/risk-scenarios.json
         build build-contracts build-web lint fmt fmt-check verify-integrations \
         deploy-testnet demo-local clean test-rust deployer deployer-create test-live-xlayer \
         test-risk test-e2e demo-testnet audit-contracts slither slither-baseline characterize-feeds \
-        franklin-history test-artifact-freshness check-proof-currency
+        franklin-history test-indexer test-artifact-freshness check-proof-currency
 
 # Flags forwarded to the ChainGPT audit gate. CI passes --allow-unavailable on every branch except
 # a protected one, so a missing credential blocks a release without blocking a pull request.
@@ -158,6 +158,9 @@ test-artifact-freshness: ## Attack the freshness gates with deliberately stale a
 
 check-proof-currency: ## Refuse proof records that cite a superseded deployment
 	@node scripts/check-proof-currency.mjs
+
+test-indexer: ## Indexer projections, idempotency, reorg and deployment binding
+	@pnpm --filter @usance/indexer test
 
 franklin-history: ## Recompute the Franklin year-over-year semantic diff
 #  Deterministic and offline. The comparison policy lives in @usance/evidence and is unit-tested

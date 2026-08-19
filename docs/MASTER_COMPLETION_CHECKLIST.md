@@ -149,14 +149,14 @@ Current: **16/34 canonical routes**,
 ## M. Indexer
 
 - [ ] Event ingestion for all 16 deployed contracts
-- [ ] Projections: accounts, assets, vaults, mandates, intents, liquidations, receipts
-- [ ] Cursor/checkpoint persistence
-- [ ] Idempotent replay, duplicate-event handling
-- [ ] Restart recovery
-- [ ] Reorg handling appropriate to X Layer finality
+- [ ] Projections: mandates and account activity done; assets, vaults, intents, liquidations open
+- [x] Cursor/checkpoint persistence
+- [x] Idempotent replay, duplicate-event handling
+- [x] Restart recovery
+- [x] Reorg handling appropriate to X Layer finality
 - [ ] Backfill from deployment block
-- [ ] Startup refuses a retired deployment (chainId + manifest digest + bytecode)
-- [ ] `make test-indexer`
+- [x] Startup refuses a retired deployment (chainId + manifest digest + bytecode)
+- [x] `make test-indexer`
 
 ## N. Backend / API
 
