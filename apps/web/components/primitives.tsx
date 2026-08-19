@@ -152,9 +152,14 @@ export function Notice({
   action?: React.ReactNode | undefined;
 }) {
   const cls = tone === "warn" ? "notice notice-warn" : tone === "stop" ? "notice notice-stop" : "notice";
+  // Severity is named, not just coloured. A reader who cannot tell the two browns apart, or who is
+  // looking at a greyscale screenshot, still learns which of these needs acting on.
+  const label = tone === "warn" ? "Needs attention" : tone === "stop" ? "Action required" : null;
+
   return (
-    <div className={cls}>
+    <div className={cls} role={tone === "stop" ? "alert" : undefined}>
       <div className="stack-sm">
+        {label ? <span className="notice-label">{label}</span> : null}
         <strong style={{ fontWeight: 500 }}>{title}</strong>
         {children ? <div className="caption" style={{ color: "var(--graphite)" }}>{children}</div> : null}
         {action ? <div style={{ marginTop: 6 }}>{action}</div> : null}

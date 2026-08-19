@@ -124,7 +124,7 @@ export default function OnboardingPage() {
       <main className="shell" style={{ padding: "48px 24px 80px", maxWidth: 720 }}>
         <h1 className="heading-lg" style={{ marginBottom: 10 }}>Get set up</h1>
         <p className="muted" style={{ marginTop: 0, marginBottom: 30 }}>
-          Three steps. None of them move funds, and none of them cost gas.
+          Usance needs your address and your network before it can show you anything.
         </p>
 
         <div className="card stack" style={{ gap: 24 }}>
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
             steps={[
               { label: "Connect your wallet", state: step(["DISCONNECTED", "CONNECTING"], CONNECTED) },
               { label: `Switch to ${chain.name}`, state: step(["WRONG_NETWORK", "NETWORK_SWITCH_REJECTED"], ON_NETWORK) },
-              { label: "Sign in — no gas, no transfer", state: step(["SESSION_SIGNATURE_PENDING", "SESSION_REJECTED"], SIGNED_IN) },
+              { label: "Sign in", state: step(["SESSION_SIGNATURE_PENDING", "SESSION_REJECTED"], SIGNED_IN) },
             ]}
           />
           <hr className="divider" />
@@ -237,9 +237,9 @@ function PhasePanel({
               </>
             ) : (
               <>
-                This signature proves you control this wallet so Usance can show you your own
-                portfolio. It does not move funds, does not grant any allowance, and costs no gas.
-                It is not a transaction.
+                Your wallet will show a plain-text message rather than a transaction. There is no
+                gas estimate on it and no spending limit. Signing proves the address is yours, so
+                Usance can show you what it holds.
               </>
             )}
           </Notice>

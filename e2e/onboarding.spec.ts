@@ -10,13 +10,16 @@ import { receiptSlug, passport } from "./fixtures";
  */
 
 test.describe("/app/onboarding", () => {
-  test("opens on connect and promises nothing will move", async ({ page }) => {
+  test("opens on connect, and says why before asking", async ({ page }) => {
     const res = await page.goto("/app/onboarding");
     expect(res?.status()).toBeLessThan(400);
     await expect(page.locator("body")).not.toContainText("Application error");
 
     const body = (await page.locator("body").innerText()).toLowerCase();
-    expect(body).toContain("none of them move funds");
+    // The disconnected screen explains what connecting is for and what it cannot do. The signing
+    // copy lives in a later phase and is asserted separately, because asserting it here would pass
+    // only if the page leaked a state the user has not reached.
+    expect(body).toContain("needs your address and your network");
     expect(body).toContain("cannot move anything");
     await expect(page.getByRole("button", { name: /connect wallet/i })).toBeVisible();
   });
@@ -27,7 +30,7 @@ test.describe("/app/onboarding", () => {
     // Somebody deciding whether to start should see how long it is before they begin.
     expect(body).toContain("connect your wallet");
     expect(body).toContain("switch to");
-    expect(body).toMatch(/sign in\s*—?\s*no gas, no transfer/);
+    expect(body).toContain("sign in");
   });
 
   test("warns about test assets before anything is signed", async ({ page }) => {

@@ -133,7 +133,7 @@ export function AccountShell({
               {connecting ? "Waiting for your wallet…" : "Connect wallet"}
             </button>
             <p className="caption" style={{ margin: 0, textAlign: "center" }}>
-              Connecting reads your address. It moves nothing and grants nothing.{" "}
+              Connecting shows Usance your address and nothing else.{" "}
               <Link href="/assets" style={{ textDecoration: "underline" }}>Browse assets instead</Link>.
             </p>
           </div>

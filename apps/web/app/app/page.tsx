@@ -132,7 +132,7 @@ export default function AppHome() {
         <p className="muted" style={{ marginTop: 0, marginBottom: 34 }}>
           {phase === "ready" || phase === "readonly"
             ? "What you hold, how much of it Usance can recognise, and what you can do with it."
-            : "Three steps, none of which move any funds."}
+            : "Usance needs your address and your network before it can show you anything."}
         </p>
 
         {error ? (
@@ -158,7 +158,7 @@ export default function AppHome() {
               steps={[
                 { label: "Connect your wallet", state: step(["disconnected", "connecting"], ["wrong-network", "session"]) },
                 { label: `Switch to ${chain.name}`, state: step(["wrong-network"], ["session"]) },
-                { label: "Sign in (no gas, no transfer)", state: step(["session"], []) },
+                { label: "Sign in", state: step(["session"], []) },
               ]}
             />
 
@@ -204,8 +204,9 @@ export default function AppHome() {
             {phase === "session" ? (
               <div className="stack">
                 <Notice title="Sign in to Usance">
-                  This signature proves you control this wallet so Usance can show you your
-                  portfolio. It does not move funds, does not grant any allowance, and costs no gas.
+                  Your wallet will show a plain-text message rather than a transaction. There is no
+                  gas estimate on it and no spending limit. Signing proves the address is yours, so
+                  Usance can show you what it holds.
                 </Notice>
                 <button className="btn btn-primary btn-lg btn-block" onClick={doSignIn}>
                   Sign in
@@ -253,9 +254,9 @@ export default function AppHome() {
               >
                 No deployment manifest is published for chain {chain.id}, so there are no contracts
                 to read and no balances to show. Rather than render an empty portfolio that looks
-                like a working account, Usance tells you plainly. The full mechanism — evidence,
-                Passport, recognised value, borrowing limits — is reproducible right now from the
-                canonical scenarios in the walkthrough.
+                like a working account, Usance tells you plainly. The full mechanism, from evidence
+                through Passport to recognised value and borrowing limits, is reproducible right now
+                from the canonical scenarios in the walkthrough.
               </Notice>
             ) : (
               <PortfolioSummary deployment={deployment} address={address} />

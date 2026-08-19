@@ -480,22 +480,51 @@ h4 {
   }
 }
 
+/*
+ * Callouts carry severity typographically, not with a coloured left stripe.
+ *
+ * The `border-left: 3px solid` accent bar is the default alert in every utility-CSS starter, and it
+ * reads as a template rather than as a decision. It also encodes severity in colour alone, which is
+ * invisible to a reader who cannot distinguish the two browns and meaningless in a screenshot
+ * printed in grey.
+ *
+ * What replaces it: an even hairline box, a background tint that carries tone quietly, and a small
+ * uppercase label naming the severity in words. The label is the accessible channel — the colour
+ * only reinforces something already stated.
+ */
 .notice {
   border: 1px solid var(--hairline);
-  border-left: 3px solid var(--charcoal);
   border-radius: var(--radius-input);
   padding: 16px 18px;
   background: var(--paper);
 }
 
 .notice-warn {
-  border-left-color: var(--risk-attention);
+  border-color: rgba(122, 90, 30, 0.28);
   background: var(--risk-attention-bg);
 }
 
 .notice-stop {
-  border-left-color: var(--risk-restricted);
+  border-color: rgba(138, 63, 29, 0.3);
   background: var(--risk-restricted-bg);
+}
+
+/* The severity, in words. Sits above the title so it is read first. */
+.notice-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--graphite);
+  margin-bottom: 6px;
+}
+
+.notice-warn .notice-label {
+  color: var(--risk-attention);
+}
+
+.notice-stop .notice-label {
+  color: var(--risk-restricted);
 }
 
 .mono {

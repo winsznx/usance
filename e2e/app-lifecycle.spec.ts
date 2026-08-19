@@ -32,8 +32,15 @@ test.describe("first run", () => {
     await page.goto("/app");
     await expect(page.getByRole("button", { name: /connect/i }).first()).toBeVisible();
 
-    // Onboarding must be honest that none of it moves money.
-    expect(await bodyText(page)).toMatch(/none of which move any funds|no gas|does not move funds/i);
+    // Two properties, phrased as meaning rather than as an exact string. The copy moved away from
+    // a stack of three negations toward one concrete statement, and an assertion pinned to the old
+    // wording would fail for a rewrite that improved it.
+    //
+    // /app and /app/onboarding are separate first-run screens whose wording has already drifted
+    // apart once, which is why this matches on intent and not on a sentence.
+    const text = await bodyText(page);
+    expect(text, "the page does not say why it needs a wallet").toMatch(/needs your address and your network/i);
+    expect(text, "the page offers no way in without a wallet").toMatch(/without connecting|browse/i);
   });
 
   test("assets are browsable without connecting", async ({ page }) => {
