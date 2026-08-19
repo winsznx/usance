@@ -108,7 +108,7 @@ Current: **16/34 canonical routes**,
 - [x] Live delegated repay, distinct owner/agent
 - [x] Live unauthorized outflow mined and reverted
 - [x] `/app/mandates`, `/app/mandates/new`
-- [ ] `/app/mandates/[mandateId]` — needs M
+- [x] `/app/mandates/[mandateId]`
 - [ ] Signing wired to the deployed registry from the browser
 - [ ] Live revocation proof
 - [ ] Pause/resume from the UI
@@ -185,7 +185,7 @@ Current: **16/34 canonical routes**,
 - [ ] `/app/positions`
 - [x] `/app/mandates`
 - [x] `/app/mandates/new`
-- [ ] `/app/mandates/[mandateId]`
+- [x] `/app/mandates/[mandateId]`
 - [x] `/app/activity`
 - [ ] `/app/activity/[receiptId]`
 - [ ] `/app/alerts`

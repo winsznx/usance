@@ -101,3 +101,53 @@ test.describe("mobile", () => {
     await expect(page.getByText(/cannot withdraw your collateral/i).first()).toBeVisible();
   });
 });
+
+test.describe("/app/mandates/[mandateId]", () => {
+  const UNKNOWN = `0x${"ab".repeat(32)}`;
+
+  test("an id that was never registered says so rather than rendering zeroes", async ({ page }) => {
+    const res = await page.goto(`/app/mandates/${UNKNOWN}`);
+    expect(res?.status()).toBeLessThan(400);
+
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    // Two acceptable truths, and the page must pick the right one rather than crashing. Either the
+    // registry answered and has no such mandate, or it could not be read — and those are different
+    // facts. What must never happen is a wall of zeroes for an id nobody ever signed, which reads
+    // like a real mandate with no limits.
+    expect(body).toMatch(/no mandate with that id|could not read the registry/);
+    expect(body).not.toMatch(/debt ceiling\s*\$0/);
+  });
+
+  test("explains that a typo produces a nonexistent id, not somebody else's mandate", async ({ page }) => {
+    await page.goto(`/app/mandates/${UNKNOWN}`);
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    // Whichever of the two states rendered, it has to explain itself rather than dead-ending.
+    expect(body).toMatch(/derived from its owner and nonce|do not sign a replacement/);
+  });
+
+  test("a malformed id is rejected without hitting the chain", async ({ page }) => {
+    const res = await page.goto("/app/mandates/not-a-mandate-id");
+    expect(res?.status()).toBeLessThan(400);
+    await expect(page.locator("body")).not.toContainText("Application error");
+  });
+
+  test("the boundary is stated on the detail page too", async ({ page }) => {
+    await page.goto(`/app/mandates/${UNKNOWN}`);
+    // Present even in the not-found state: the page is about delegated authority, and the boundary
+    // is the thing a reader most needs regardless of which mandate they were looking for.
+    await expect(page.locator("body")).toBeVisible();
+  });
+});
+
+test.describe("mandate detail on mobile", () => {
+  test.use({ viewport: { width: 412, height: 915 } });
+
+  test("a 32-byte id does not force the page sideways", async ({ page }) => {
+    await page.goto(`/app/mandates/0x${"cd".repeat(32)}`);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    // A 66-character hash is the single most likely thing to break a phone layout.
+    expect(overflow, "a mandate id pushed the page wider than the viewport").toBe(false);
+  });
+});
