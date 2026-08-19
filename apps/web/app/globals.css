@@ -587,3 +587,477 @@ h4 {
   border-color: var(--espresso);
   border-width: 2px;
 }
+
+/* ==========================================================================
+   Application frame
+   ==========================================================================
+   One component, three layouts. A separate mobile build is a second product to
+   keep in step with the first, and it never stays in step.
+
+   The breakpoint is 900px because that is roughly where a rail plus content
+   stops fitting without either becoming cramped, not because it is a round
+   number in a framework somebody wrote.
+   ========================================================================== */
+
+.app-frame {
+  --rail-w: 216px;
+  display: grid;
+  grid-template-columns: var(--rail-w) 1fr;
+  min-height: 100vh;
+  background: var(--linen);
+}
+
+.app-frame-collapsed {
+  --rail-w: 64px;
+}
+
+/* ---------------------------------------------------------------- desktop rail */
+
+.rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 12px;
+  background: var(--espresso);
+  color: var(--bone);
+  overflow: hidden;
+  /* Width animates; nothing else does. A rail that fades and slides on every toggle draws
+     attention to itself, and this is chrome. */
+  transition: width 160ms ease;
+}
+
+.rail-head {
+  padding: 4px 8px 20px;
+}
+
+.rail-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--bone);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rail-wordmark {
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+
+.rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.rail-item,
+.rail-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: rgba(237, 236, 231, 0.72);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.rail-item:hover,
+.rail-toggle:hover {
+  background: rgba(237, 236, 231, 0.08);
+  color: var(--bone);
+}
+
+/* The active item is marked by fill and full-strength text, not by a coloured left stripe. */
+.rail-item-active,
+.rail-item-active:hover {
+  background: rgba(237, 236, 231, 0.14);
+  color: var(--paper);
+}
+
+.rail-item:focus-visible,
+.rail-toggle:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: -2px;
+}
+
+.rail-toggle {
+  margin-top: auto;
+  color: rgba(237, 236, 231, 0.5);
+}
+
+.app-frame-collapsed .rail-label,
+.app-frame-collapsed .rail-wordmark {
+  /* Removed from the accessible tree as well as from view. A label that is invisible but still
+     announced makes a collapsed rail read as a duplicated menu. */
+  display: none;
+}
+
+.app-frame-collapsed .rail-item,
+.app-frame-collapsed .rail-toggle {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+/* ---------------------------------------------------------------- content column */
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* lets long hashes wrap instead of widening the grid track */
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.testnet-strip {
+  padding: 9px 24px;
+  background: var(--bone);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--graphite);
+  text-align: center;
+}
+
+.app-content {
+  padding: 28px 24px 40px;
+  max-width: 1180px;
+  width: 100%;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
+  background: var(--paper);
+  color: var(--charcoal);
+  cursor: pointer;
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 2px;
+}
+
+.only-mobile {
+  display: none;
+}
+
+.tabbar,
+.drawer-scrim {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- phone */
+
+@media (max-width: 900px) {
+  .app-frame,
+  .app-frame-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .rail {
+    display: none;
+  }
+
+  .only-mobile {
+    display: inline-flex;
+  }
+
+  .app-topbar {
+    padding: 10px 14px;
+  }
+
+  .app-content {
+    padding: 20px 14px 96px; /* room for the bottom bar */
+  }
+
+  .testnet-strip {
+    padding: 8px 14px;
+    font-size: 10px;
+  }
+
+  .drawer-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(22, 15, 12, 0.4);
+    z-index: 40;
+  }
+
+  .drawer {
+    width: min(300px, 82vw);
+    height: 100%;
+    padding: 18px 16px;
+    background: var(--paper);
+    overflow-y: auto;
+  }
+
+  .drawer-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 10px;
+    border-radius: var(--radius-input);
+    color: var(--charcoal);
+    text-decoration: none;
+    font-size: 15px;
+  }
+
+  .drawer-item-active {
+    background: var(--bone);
+  }
+
+  /* Frequent destinations sit at the bottom, where the thumb already is. The top of a phone
+     screen is the hardest place to reach and this is the navigation people use most. */
+  .tabbar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--paper);
+    border-top: 1px solid var(--hairline);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 30;
+  }
+
+  .tabbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 9px 4px 7px;
+    /* 48px clears the 44px minimum tap target with room for a mis-tap. */
+    min-height: 48px;
+    color: var(--stone);
+    text-decoration: none;
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+  }
+
+  .tabbar-item-active {
+    color: var(--charcoal);
+  }
+
+  .tabbar-item:focus-visible {
+    outline: 2px solid var(--charcoal);
+    outline-offset: -2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Capacity derivation
+   ==========================================================================
+   A derivation, not a chart. There is no time series in this product and drawing
+   one would be inventing data; what exists is a sequence of reductions, and a
+   sequence reads as steps.
+   ========================================================================== */
+
+.derivation {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.derivation-step-final {
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+.derivation-track {
+  height: 6px;
+  margin: 8px 0 6px;
+  background: var(--mist);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.derivation-fill {
+  height: 100%;
+  background: var(--stone);
+  border-radius: 2px;
+}
+
+/* The result is the only bar in full-strength ink. Every step above it is context. */
+.derivation-step-final .derivation-fill {
+  background: var(--espresso);
+}
+
+.derivation-note {
+  margin: 0;
+  color: var(--graphite);
+  max-width: 62ch;
+}
+
+/* ==========================================================================
+   Status ladder
+   ========================================================================== */
+
+.ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ladder-rung {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 12px;
+  padding-bottom: 16px;
+  position: relative;
+}
+
+/* The connector runs between dots rather than through them, so the sequence reads as ordered
+   without a decorative rail down the side. */
+.ladder-rung:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 20px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--hairline);
+}
+
+.ladder-dot {
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--paper);
+}
+
+.ladder-current .ladder-dot {
+  background: var(--espresso);
+  border-color: var(--espresso);
+}
+
+.ladder-past .ladder-dot {
+  background: var(--stone);
+  border-color: var(--stone);
+}
+
+.ladder-note {
+  margin: 3px 0 0;
+  color: var(--graphite);
+}
+
+/* Rungs the account has not reached are dimmed but never hidden: the point of the ladder is
+   seeing what comes next, so a reader has to be able to read ahead. */
+.ladder-ahead .ladder-note,
+.ladder-ahead span {
+  color: var(--stone);
+}
+
+/* ==========================================================================
+   KPI row
+   ========================================================================== */
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.kpi {
+  padding: 18px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.kpi-value {
+  font-size: 26px;
+  letter-spacing: -0.01em;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--graphite);
+  margin-top: 4px;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dash-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .kpi-value {
+    font-size: 22px;
+  }
+}

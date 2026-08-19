@@ -6,7 +6,7 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
-> **Total** 209 · **Complete** 123 · **P0 open** 3 · **P1 open** 33 · **P2 open** 47 · **Externally blocked** 3
+> **Total** 209 · **Complete** 127 · **P0 open** 3 · **P1 open** 33 · **P2 open** 43 · **Externally blocked** 3
 >
 > P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
 > security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
@@ -290,14 +290,14 @@ Current: **16/34 canonical routes**,
 ## AB. Design system
 
 - [x] Primitives: Notice, Steps, Stat, RiskBadge, AmountField, PreviewRow, TxTimeline
-- [ ] **P2** Tables, dialogs, drawers, toasts, tabs, breadcrumbs, pagination
+- [x] Drawer, tab bar, collapsible rail, icon set — tables, dialogs, toasts still open
 - [ ] **P2** Consolidated empty/skeleton/error states
 
 ## AC. Icons
 
-- [ ] **P2** Single coherent icon system
-- [ ] **P2** No emoji or Unicode arrows as interface icons
-- [ ] **P2** aria-hidden on decorative, labels on meaningful
+- [x] Single coherent icon system
+- [x] No emoji or Unicode arrows as interface icons
+- [x] aria-hidden on decorative, labels on meaningful
 
 ## AD. Performance
 

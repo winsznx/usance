@@ -45,7 +45,9 @@ test.describe("first run", () => {
 
   test("assets are browsable without connecting", async ({ page }) => {
     await page.goto("/app");
-    const browse = page.getByRole("link", { name: /browse supported assets/i });
+    // Named precisely: the shell now also carries an "Assets" rail item, and a loose selector would
+    // pass by matching navigation chrome rather than the escape route out of the wallet gate.
+    const browse = page.getByRole("link", { name: /browse assets without connecting/i });
     await expect(browse).toBeVisible();
     await browse.click();
     await expect(page).toHaveURL(/\/assets/);

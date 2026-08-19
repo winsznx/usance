@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Footer, Logo, Notice } from "@/components/primitives";
+import { Notice } from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { activeChain } from "@/lib/deployments";
 import { connect, detectProvider, WalletError } from "@/lib/wallet";
 
@@ -69,56 +70,15 @@ export function AccountShell({
   }, []);
 
   return (
-    <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <div className="row" style={{ gap: 10 }}>
-            <span className="tag">{chain.name}</span>
-            {address ? (
-              <span className="tag mono" style={{ fontSize: 12 }}>
-                {address.slice(0, 6)}…{address.slice(-4)}
-              </span>
-            ) : null}
-          </div>
-        </div>
-      </header>
-
-      {chain.id !== 196 ? (
-        <div
-          style={{
-            background: "var(--paper)",
-            borderBottom: "1px solid var(--hairline)",
-            padding: "10px 0",
-            textAlign: "center",
-          }}
-        >
-          <span className="caption" style={{ letterSpacing: "0.04em" }}>
-            X LAYER TESTNET · TEST ASSETS HAVE NO REAL VALUE · tUSTB IS NOT FOBXX, OUSG OR ARCOIN
-          </span>
-        </div>
-      ) : null}
-
-      <main className="shell" style={{ padding: "40px 24px 80px", maxWidth: 860 }}>
-        <h1 className="heading-lg" style={{ marginBottom: 10 }}>{title}</h1>
+    <AppShell account={address}>
+      <div className="stack" style={{ gap: 0 }}>
+        <h1 className="heading-lg" style={{ marginBottom: 10, fontSize: 26 }}>{title}</h1>
         <p className="muted" style={{ marginTop: 0, marginBottom: 28 }}>{intro}</p>
-
-        {error ? (
-          <div style={{ marginBottom: 20 }}>
-            <Notice
-              tone={error.code === "REJECTED" ? "warn" : "stop"}
-              title={error.code === "REJECTED" ? "Declined in your wallet" : "Could not connect"}
-              action={<button className="btn btn-ghost" onClick={() => setError(null)}>Dismiss</button>}
-            >
-              {error.message}
-            </Notice>
-          </div>
-        ) : null}
 
         {before ? <div style={{ marginBottom: 20 }}>{before}</div> : null}
 
         {address === null ? (
-          <div className="card stack">
+          <div className="card stack" style={{ maxWidth: 520 }}>
             {!hasProvider ? (
               <Notice title="No wallet detected">
                 Usance works with OKX Wallet and any standard browser wallet. On a phone, open this
@@ -140,8 +100,7 @@ export function AccountShell({
         ) : (
           children(address)
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }
