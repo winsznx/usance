@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Nav } from "@/components/primitives";
-import { Illustration, Lockup } from "@/components/kit-icon";
+import { Lockup } from "@/components/kit-icon";
 
 /**
  * Landing page.
@@ -24,14 +24,14 @@ export default function Landing() {
             reflowed. Decorative: the headline beside it already says what Usance does.
           */}
           <Image
-            src="/assets/illustrations/svg/usance-hero-watercolor-master.svg"
+            src="/images/hero-landscape.webp"
             alt=""
             aria-hidden
             fill
             priority
             fetchPriority="high"
+            sizes="100vw"
             className="hero-art"
-            unoptimized
           />
           <div className="shell hero-inner">
             <span className="hero-pill">Built on X Layer</span>
@@ -194,7 +194,7 @@ export default function Landing() {
           </div>
         </section>
         {/* ---------------------------------------------------------------- features */}
-        <section className="section">
+        <section className="section features-section">
           <div className="shell">
             <h2 className="heading-lg" style={{ margin: "0 0 10px", maxWidth: "18ch" }}>
               What you get, and what it costs you to trust it
@@ -206,38 +206,46 @@ export default function Landing() {
             <div className="feature-grid">
               {[
                 {
-                  art: "evidence-to-passport" as const,
+                  art: "feature-passport",
                   title: "Know exactly what you hold",
                   body: "Every supported asset carries a versioned Passport: legal rights, issuer, custody, redemption window, transfer rules, and how corporate actions are handled. You can read the filing it was built from.",
                 },
                 {
-                  art: "collateral-capacity" as const,
+                  art: "feature-value",
                   title: "Collateral that reflects reality",
                   body: "Market price is not liquidation value. Usance calculates what could actually be recovered under stress and shows you the usable amount. Every haircut is visible and named.",
                 },
                 {
-                  art: "borrow-settlement" as const,
+                  art: "feature-borrow",
                   title: "Borrow against what you already own",
                   body: "Keep the exposure, receive settlement liquidity, repay when you choose. The position stays yours the entire time.",
                 },
                 {
-                  art: "risk-epoch" as const,
+                  art: "feature-monitoring",
                   title: "When the evidence changes, the risk changes",
                   body: "A revised filing or deteriorating liquidity moves the Passport, and your capacity follows automatically. New risk is refused before it is taken, and you are told which bound you hit.",
                 },
                 {
-                  art: "mandate-agent-authority" as const,
+                  art: "feature-agents",
                   title: "Automation you can actually bound",
                   body: "Give an agent a mandate to maintain a buffer or reduce risk, inside limits you sign. It can repay and add collateral. It can never withdraw your collateral, and revoking is immediate and permanent.",
                 },
                 {
-                  art: "proof-receipt-chain" as const,
+                  art: "feature-receipts",
                   title: "Every action is inspectable",
                   body: "From the original document to the final onchain state, each step is recorded. Receipts are public and need no wallet, so a counterparty can check a claim without taking your word for it.",
                 },
               ].map((f) => (
                 <article className="feature-card" key={f.title}>
-                  <Illustration name={f.art} width={280} height={176} />
+                  <Image
+                    src={`/images/${f.art}.webp`}
+                    alt=""
+                    aria-hidden
+                    width={560}
+                    height={315}
+                    sizes="(max-width: 900px) 100vw, 360px"
+                    className="feature-art"
+                  />
                   <h3>{f.title}</h3>
                   <p>{f.body}</p>
                 </article>

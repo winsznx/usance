@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { HeaderIsland } from "@/components/header-island";
 import type { AccountStatus } from "@usance/domain";
 
 /**
@@ -49,48 +51,75 @@ export function Stat({
   );
 }
 
+/**
+ * The Capacity Cut lockup from the kit.
+ *
+ * Both variants render and CSS picks one, because the header inverts on scroll and swapping the
+ * `src` at that moment would blank the mark for a frame while the second file loads. Two 2KB SVGs
+ * cost less than a logo that flickers on every scroll.
+ */
 export function Logo({ light = false }: { light?: boolean }) {
   return (
-    <Link href="/" className="row" style={{ gap: 9, color: light ? "var(--paper)" : undefined }}>
-      <span style={{ fontSize: 19, lineHeight: 1 }}>✳</span>
-      <span style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.02em" }}>USANCE</span>
+    <Link href="/" className={`logo${light ? " logo-light" : ""}`} aria-label="Usance home">
+      <Image
+        src="/assets/brand/svg/usance-lockup-horizontal.svg"
+        alt="Usance"
+        width={116}
+        height={30}
+        className="logo-dark-ink"
+        priority
+        unoptimized
+      />
+      <Image
+        src="/assets/brand/svg/usance-lockup-horizontal-reversed.svg"
+        alt=""
+        aria-hidden
+        width={116}
+        height={30}
+        className="logo-light-ink"
+        unoptimized
+      />
     </Link>
   );
 }
 
+/**
+ * The site header, which condenses into a floating island on scroll.
+ *
+ * At rest it is a full-width bar sitting on the hero. Once the page moves it collapses to a
+ * centred pill in Espresso, so the navigation stays reachable without a solid band cutting across
+ * the artwork for the whole scroll.
+ *
+ * The same element on both widths. On a phone the links drop and the pill keeps the mark and the
+ * action, because four navigation links at 12px are four links nobody can hit — the full set lives
+ * one tap away inside the app rather than crammed into a bar.
+ *
+ * Every transition is width, padding, colour and elevation. Nothing reflows the links relative to
+ * each other, so a target does not move out from under a cursor that is already travelling to it.
+ */
 export function Nav({ cta = true }: { cta?: boolean }) {
   return (
-    <header
-      style={{
-        background: "var(--paper)",
-        borderBottom: "1px solid var(--hairline)",
-      }}
-    >
-      <div
-        className="shell row-between"
-        style={{ height: 68 }}
-      >
-        <Logo />
-        <nav className="row" style={{ gap: 26, fontSize: 14 }}>
-          <Link href="/assets" className="muted">
-            Assets
-          </Link>
-          <Link href="/simulate" className="muted">
-            How it works
-          </Link>
-          <Link href="/status" className="muted">
-            Status
-          </Link>
-        </nav>
-        {cta ? (
-          <Link href="/app/onboarding" className="btn btn-primary">
-            Open Usance
-          </Link>
-        ) : (
-          <span />
-        )}
-      </div>
-    </header>
+    <>
+      <HeaderIsland headerId="site-header" />
+      <header id="site-header" className="site-header" data-condensed="false">
+        <div className="site-header-inner">
+          <Logo />
+          <nav className="site-header-nav" aria-label="Site">
+            <Link href="/assets">Assets</Link>
+            <Link href="/simulate">How it works</Link>
+            <Link href="/security">Security</Link>
+            <Link href="/status">Status</Link>
+          </nav>
+          {cta ? (
+            <Link href="/app/onboarding" className="btn btn-primary site-header-cta">
+              Open Usance
+            </Link>
+          ) : (
+            <span />
+          )}
+        </div>
+      </header>
+    </>
   );
 }
 

@@ -36,6 +36,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        {/*
+          The hero is the largest contentful paint. `priority` on the component emits this too, but
+          only after React resolves the tree — this sits in the static HTML, so the browser starts
+          fetching while the bundle is still parsing.
+        */}
+        <link rel="preload" as="image" href="/images/hero-landscape.webp" type="image/webp" fetchPriority="high" />
+      </head>
       <body>
         <ModeProvider>{children}</ModeProvider>
       </body>

@@ -1535,7 +1535,14 @@ h4 {
 .hero {
   position: relative;
   isolation: isolate;
-  padding: 96px 0 120px;
+  display: flex;
+  align-items: center;
+  /* The hero owns the first screen. `svh` rather than `vh` because mobile browsers report `vh`
+     including the address bar, which pushes the next section into view on load and then hides it
+     again when the bar collapses. Minus the header so the composition is centred in what is
+     actually visible, not in the viewport behind it. */
+  min-height: calc(100svh - 68px);
+  padding: 64px 0 96px;
   overflow: hidden;
 }
 
@@ -1716,4 +1723,187 @@ h4 {
   .footer-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   Site header — condensing island
+   ==========================================================================
+   At rest a full-width bar over the hero; once the page moves, a centred pill.
+   The navigation stays reachable without a solid band cutting across the
+   artwork for the entire scroll.
+
+   Driven by data-condensed, set by an IntersectionObserver on a sentinel rather
+   than by a scroll handler. Only width, padding, colour and elevation animate —
+   nothing reflows the links relative to each other, so a target never moves out
+   from under a cursor already travelling toward it.
+   ========================================================================== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 12px 0;
+  transition: padding 320ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: min(var(--page-max), calc(100% - 48px));
+  margin: 0 auto;
+  padding: 10px 8px 10px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  transition:
+    max-width 320ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 320ms ease,
+    border-color 320ms ease,
+    box-shadow 320ms ease,
+    padding 320ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.site-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.site-header-nav a {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  color: var(--graphite);
+  text-decoration: none;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.site-header-nav a:hover {
+  background: rgba(22, 15, 12, 0.06);
+  color: var(--aubergine-ink);
+}
+
+.site-header-cta {
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- condensed */
+
+.site-header[data-condensed="true"] {
+  padding: 10px 0;
+}
+
+.site-header[data-condensed="true"] .site-header-inner {
+  max-width: 720px;
+  background: rgba(22, 15, 12, 0.94);
+  border-color: rgba(237, 236, 231, 0.12);
+  /* The one shadow on the site. It is here because the pill has to read as floating above the
+     page rather than printed on it, which a hairline alone cannot say. */
+  box-shadow: 0 8px 32px rgba(22, 15, 12, 0.16);
+  backdrop-filter: blur(14px);
+  padding: 8px 8px 8px 18px;
+}
+
+.site-header[data-condensed="true"] .site-header-nav a {
+  color: rgba(237, 236, 231, 0.72);
+}
+
+.site-header[data-condensed="true"] .site-header-nav a:hover {
+  background: rgba(237, 236, 231, 0.1);
+  color: var(--paper);
+}
+
+/* The wordmark inverts with the pill. Without this it disappears into the dark fill. */
+.site-header[data-condensed="true"] .logo,
+.site-header[data-condensed="true"] .logo * {
+  color: var(--bone);
+}
+
+.site-header[data-condensed="true"] .btn-primary {
+  background: var(--bone);
+  color: var(--espresso);
+}
+
+/* ---------------------------------------------------------------- phone */
+
+@media (max-width: 760px) {
+  .site-header-inner {
+    width: calc(100% - 24px);
+    padding: 8px 8px 8px 14px;
+    gap: 12px;
+  }
+
+  /* Four links at a size that fits here are four links nobody can hit. The full set is one tap
+     away inside the app; the header keeps the mark and the action. */
+  .site-header-nav {
+    display: none;
+  }
+
+  .site-header[data-condensed="true"] .site-header-inner {
+    max-width: none;
+  }
+
+  .site-header-cta {
+    margin-left: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header-inner {
+    transition: none;
+  }
+}
+
+/* Both lockup variants ship; CSS chooses. Swapping the src on scroll would blank the mark for a
+   frame while the second file loads, and two 2KB SVGs cost less than a logo that flickers. */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  text-decoration: none;
+}
+
+.logo-light-ink {
+  display: none;
+}
+
+.logo-light .logo-dark-ink,
+.site-header[data-condensed="true"] .logo-dark-ink,
+.rail .logo-dark-ink {
+  display: none;
+}
+
+.logo-light .logo-light-ink,
+.site-header[data-condensed="true"] .logo-light-ink,
+.rail .logo-light-ink {
+  display: block;
+}
+
+/* The second landscape, held well back. It is a ground for the cards, not a picture competing
+   with them — at full strength the artwork wins and the words become decoration. */
+.features-section {
+  position: relative;
+  isolation: isolate;
+}
+
+.features-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to bottom, var(--linen) 0%, rgba(247, 247, 245, 0.55) 22%, rgba(247, 247, 245, 0.55) 78%, var(--linen) 100%),
+    url("/images/features-bg.webp");
+  background-size: cover, cover;
+  background-position: center, center;
+}
+
+.feature-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+  border-radius: var(--radius-input);
 }

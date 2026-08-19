@@ -20,10 +20,18 @@ test.describe("hero", () => {
     expect(heading).not.toMatch(/passport|clearing|epoch|protocol/);
   });
 
-  test("uses the kit's watercolour rather than a generated one", async ({ page }) => {
+  test("carries the landscape, preloaded", async ({ page }) => {
     await page.goto("/");
-    const art = page.locator("img.hero-art");
-    await expect(art).toHaveAttribute("src", /usance-hero-watercolor-master/);
+    // Next rewrites the src through the image pipeline, so the assertion is on the encoded path
+    // rather than a bare filename.
+    await expect(page.locator("img.hero-art")).toHaveAttribute("src", /hero-landscape/);
+
+    // The hero is the largest contentful paint. Next emits its own preloads for priority images,
+    // so this asserts the explicit one in static HTML — the one that starts fetching while the
+    // bundle is still parsing, rather than after React resolves the tree.
+    await expect(
+      page.locator('link[rel="preload"][as="image"][href="/images/hero-landscape.webp"]'),
+    ).toHaveCount(1);
   });
 
   test("offers a way in and a way to look first", async ({ page }) => {
@@ -34,17 +42,27 @@ test.describe("hero", () => {
 });
 
 test.describe("features", () => {
-  test("shows six, each with a kit illustration", async ({ page }) => {
+  test("shows six, each with its own illustration", async ({ page }) => {
     await page.goto("/");
     const cards = page.locator(".feature-grid .feature-card");
     expect(await cards.count()).toBe(6);
 
+    // One image per feature, and each a different one — a grid where two cards share art is a grid
+    // where somebody wired the wrong constant and nothing complained.
     for (const src of [
-      "evidence-to-passport", "collateral-capacity", "borrow-settlement",
-      "risk-epoch", "mandate-agent-authority", "proof-receipt-chain",
+      "feature-passport", "feature-value", "feature-borrow",
+      "feature-monitoring", "feature-agents", "feature-receipts",
     ]) {
       await expect(page.locator(`img[src*="${src}"]`)).toHaveCount(1);
     }
+  });
+
+  test("the hero owns the first screen", async ({ page }) => {
+    await page.goto("/");
+    const hero = await page.locator(".hero").boundingBox();
+    const viewport = page.viewportSize();
+    // Nothing below the hero should be competing for attention on load.
+    expect(hero?.height ?? 0).toBeGreaterThan((viewport?.height ?? 0) * 0.7);
   });
 
   test("states the agent boundary on the landing page, not only inside the app", async ({ page }) => {
@@ -101,5 +119,39 @@ test.describe("mobile", () => {
     const box = await page.getByRole("heading", { level: 1 }).boundingBox();
     const width = page.viewportSize()?.width ?? 0;
     expect(box?.width ?? 0).toBeLessThanOrEqual(width);
+  });
+});
+
+test.describe("the condensing header", () => {
+  test("starts expanded and condenses once the page moves", async ({ page }) => {
+    await page.goto("/");
+    const header = page.locator("#site-header");
+
+    // Ships expanded in the HTML, so with JavaScript off it stays usable in its opening shape.
+    await expect(header).toHaveAttribute("data-condensed", "false");
+
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await expect(header).toHaveAttribute("data-condensed", "true");
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(header).toHaveAttribute("data-condensed", "false");
+  });
+
+  test("navigation stays reachable in both states", async ({ page, isMobile }) => {
+    test.skip(isMobile === true, "the phone header keeps the mark and the action, not the links");
+    await page.goto("/");
+    const nav = page.getByRole("navigation", { name: "Site" });
+
+    await expect(nav.getByRole("link", { name: "Assets" })).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await expect(nav.getByRole("link", { name: "Assets" })).toBeVisible();
+  });
+
+  test("the action survives on a phone", async ({ page, isMobile }) => {
+    test.skip(isMobile !== true, "phone layout only");
+    await page.goto("/");
+    // Four links at a size that fits a phone header are four links nobody can hit, so they drop.
+    // What must never drop is the way in.
+    await expect(page.getByRole("link", { name: /open usance/i })).toBeVisible();
   });
 });
