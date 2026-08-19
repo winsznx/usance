@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+<filter id="blur24"><feGaussianBlur stdDeviation="24"/></filter>
+<filter id="blur50"><feGaussianBlur stdDeviation="50"/></filter>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" stop-color="#f0b1a6"/>
+  <stop offset="45%" stop-color="#f7c7a2"/>
+  <stop offset="100%" stop-color="#f7f7f5"/>
+</linearGradient>
+<linearGradient id="water" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0%" stop-color="#cfa48f" stop-opacity=".35"/>
+  <stop offset="45%" stop-color="#e8c1aa" stop-opacity=".5"/>
+  <stop offset="100%" stop-color="#9c8c74" stop-opacity=".25"/>
+</linearGradient>
+</defs>
+
+
+<rect width="1600" height="900" fill="url(#sky)"/>
+<!-- translucent watercolor cloud washes -->
+<ellipse cx="280" cy="160" rx="360" ry="130" fill="#d98d92" opacity=".18" filter="url(#blur50)"/>
+<ellipse cx="850" cy="120" rx="470" ry="120" fill="#ed9d7f" opacity=".16" filter="url(#blur50)"/>
+<ellipse cx="1320" cy="180" rx="330" ry="150" fill="#ce8791" opacity=".13" filter="url(#blur50)"/>
+<!-- distant mountains -->
+<path d="M0 520L180 400L330 470L480 340L640 455L790 370L930 475L1080 360L1250 460L1410 390L1600 510V650H0Z" fill="#796777" opacity=".30" filter="url(#blur24)"/>
+<path d="M0 560L220 460L390 525L560 430L730 540L880 455L1070 545L1240 445L1450 535L1600 500V660H0Z" fill="#8b7c6c" opacity=".28"/>
+<!-- water -->
+<rect y="575" width="1600" height="180" fill="url(#water)" opacity=".75"/>
+<path d="M0 625C240 590 420 680 700 630S1120 575 1600 650" stroke="#f4ddc6" stroke-width="18" opacity=".24" fill="none" filter="url(#blur24)"/>
+<!-- meadow -->
+<path d="M0 710C260 670 500 770 780 720S1280 680 1600 745V900H0Z" fill="#85816a" opacity=".34"/>
+<path d="M0 760C300 720 530 810 890 770S1350 730 1600 790V900H0Z" fill="#6f7259" opacity=".24"/>
+<!-- paper fade for transition -->
+<rect y="790" width="1600" height="110" fill="#f7f7f5" opacity=".68"/>
+
+</svg>

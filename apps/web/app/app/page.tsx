@@ -7,6 +7,7 @@ import { CapacityDerivation, StatusLadder } from "@/components/capacity";
 import { SafetyBuffer } from "@/components/buffer";
 import { Advanced } from "@/components/mode";
 import { Copyable } from "@/components/copyable";
+import { TransactionHistory, type TxRow } from "@/components/transactions";
 import { Icon } from "@/components/icon";
 import { Notice, RiskBadge } from "@/components/primitives";
 import { activeChain } from "@/lib/deployments";
@@ -49,6 +50,7 @@ export default function AppOverview() {
   const [error, setError] = useState<{ message: string; code: string } | null>(null);
   const [hasProvider, setHasProvider] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [txs, setTxs] = useState<TxRow[]>([]);
 
   useEffect(() => setHasProvider(detectProvider().provider !== null), []);
 
@@ -70,6 +72,20 @@ export default function AppOverview() {
       .then((r) => r.json())
       .then((d) => live && setData(d))
       .catch((e) => live && setData({ outcome: "UNREADABLE", reason: (e as Error).message }));
+    return () => {
+      live = false;
+    };
+  }, [address]);
+
+  // History lives on the overview rather than behind a link. "What has happened to my money" is one
+  // of the four questions this page exists to answer, and sending somebody elsewhere defers it.
+  useEffect(() => {
+    if (!address) return;
+    let live = true;
+    fetch(`/api/activity?account=${address}`)
+      .then((r) => r.json())
+      .then((d) => live && setTxs(d.rows ?? []))
+      .catch(() => live && setTxs([]));
     return () => {
       live = false;
     };
@@ -139,7 +155,7 @@ export default function AppOverview() {
             and no action is needed.
           </Notice>
         ) : (
-          <Dashboard view={data.view} />
+          <Dashboard view={data.view} txs={txs} />
         )}
       </div>
     </AppShell>
@@ -164,7 +180,7 @@ function countAlerts(view: Serialised): number {
   }).length;
 }
 
-function Dashboard({ view }: { view: Serialised }) {
+function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
   const allowed = permittedActions(view.status);
   const totals = view.assets.reduce(
     (acc, a) => ({
@@ -301,6 +317,8 @@ function Dashboard({ view }: { view: Serialised }) {
           </section>
         </div>
       </div>
+
+      <TransactionHistory rows={txs} explorer={activeChain().explorerUrl} />
     </div>
   );
 }

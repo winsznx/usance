@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Notice } from "@/components/primitives";
 import { AppShell } from "@/components/app-shell";
 import { activeChain } from "@/lib/deployments";
-import { connect, detectProvider, WalletError } from "@/lib/wallet";
+import { detectProvider } from "@/lib/wallet";
+import { useRouter } from "next/navigation";
 
 /**
  * The shell every signed-in route shares.
@@ -26,48 +27,51 @@ export function AccountShell({
   title: string;
   intro: string;
   children: (account: `0x${string}`) => React.ReactNode;
-  /**
-   * Rendered whether or not a wallet is connected.
-   *
-   * For content that is most useful *before* connecting — an explanation of what a signature grants
-   * belongs in front of somebody deciding whether to give one, not behind the decision.
-   */
+  /** Rendered whether or not a wallet is connected. */
   before?: React.ReactNode;
 }) {
-  const chain = activeChain();
+  const router = useRouter();
   const [address, setAddress] = useState<`0x${string}` | null>(null);
-  const [error, setError] = useState<{ message: string; code: string } | null>(null);
-  const [hasProvider, setHasProvider] = useState(true);
-  const [connecting, setConnecting] = useState(false);
+  const [checked, setChecked] = useState(false);
 
-  useEffect(() => setHasProvider(detectProvider().provider !== null), []);
+  /**
+   * One place asks for a wallet, and it is not here.
+   *
+   * Every signed-in route used to carry its own connect prompt, so a user could meet the same
+   * question four different ways on four different screens. Now an unauthenticated visit redirects
+   * to onboarding, which owns the whole sequence, and everything past it assumes a session.
+   */
+  useEffect(() => {
+    const { provider } = detectProvider();
+    if (!provider) {
+      setChecked(true);
+      router.replace("/app/onboarding");
+      return;
+    }
+    provider
+      .request({ method: "eth_accounts" })
+      .then((accts) => {
+        const found = (accts as string[])[0] as `0x${string}` | undefined;
+        if (found) setAddress(found);
+        else router.replace("/app/onboarding");
+      })
+      .catch(() => router.replace("/app/onboarding"))
+      .finally(() => setChecked(true));
+  }, [router]);
 
+  // A wallet that switches to a locked or different account must not leave the previous account's
+  // figures on screen.
   useEffect(() => {
     const { provider } = detectProvider();
     if (!provider?.on) return;
-    // A wallet that switches account mid-session must not leave the previous account's balances on
-    // screen. Silently continuing is how somebody acts on somebody else's position.
-    const onAccounts = (accts: string[]) => setAddress((accts[0] as `0x${string}`) ?? null);
+    const onAccounts = (accts: string[]) => {
+      const next = (accts[0] as `0x${string}`) ?? null;
+      setAddress(next);
+      if (!next) router.replace("/app/onboarding");
+    };
     provider.on("accountsChanged", onAccounts);
     return () => provider.removeListener?.("accountsChanged", onAccounts);
-  }, []);
-
-  const doConnect = useCallback(async () => {
-    setError(null);
-    setConnecting(true);
-    try {
-      const r = await connect();
-      setAddress(r.address);
-    } catch (e) {
-      setError(
-        e instanceof WalletError
-          ? { message: e.message, code: e.code }
-          : { message: (e as Error).message, code: "UNKNOWN" },
-      );
-    } finally {
-      setConnecting(false);
-    }
-  }, []);
+  }, [router]);
 
   return (
     <AppShell account={address}>
@@ -77,26 +81,13 @@ export function AccountShell({
 
         {before ? <div style={{ marginBottom: 20 }}>{before}</div> : null}
 
-        {address === null ? (
-          <div className="card stack" style={{ maxWidth: 520 }}>
-            {!hasProvider ? (
-              <Notice title="No wallet detected">
-                Usance works with OKX Wallet and any standard browser wallet. On a phone, open this
-                page inside your wallet&rsquo;s own browser.
-              </Notice>
-            ) : null}
-            <button
-              className="btn btn-primary btn-lg btn-block"
-              onClick={doConnect}
-              disabled={connecting || !hasProvider}
-            >
-              {connecting ? "Waiting for your wallet…" : "Connect wallet"}
-            </button>
-            <p className="caption" style={{ margin: 0, textAlign: "center" }}>
-              Connecting shows Usance your address and nothing else.{" "}
-              <Link href="/assets" style={{ textDecoration: "underline" }}>Browse assets instead</Link>.
-            </p>
-          </div>
+        {!checked ? (
+          <div className="card"><div className="skeleton" style={{ height: 120 }} /></div>
+        ) : address === null ? (
+          /* Momentary: the redirect above is already in flight. Saying so beats a blank frame. */
+          <Notice title="Taking you to sign in">
+            Usance asks for a wallet once, on its own screen, rather than on every page.
+          </Notice>
         ) : (
           children(address)
         )}

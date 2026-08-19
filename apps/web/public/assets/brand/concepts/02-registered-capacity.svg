@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs></defs>
+
+
+<g fill="none" stroke="#1b0624" stroke-width="6" stroke-linejoin="miter">
+  <!-- outer registered asset -->
+  <rect x="9" y="9" width="46" height="46" rx="2"/>
+  <!-- admitted region -->
+  <path d="M22 22H42V42H22Z"/>
+  <!-- registration datum -->
+  <path d="M42 32H57"/>
+</g>
+</svg>

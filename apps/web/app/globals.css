@@ -1209,3 +1209,304 @@ h4 {
 .tabbar-item {
   position: relative;
 }
+
+/* ==========================================================================
+   Onboarding — two panels
+   ==========================================================================
+   The right does the work; the left explains Usance while wallet dialogs are
+   open. Connecting is three wallet round-trips, and somebody waiting through
+   them should be reading rather than watching a spinner.
+   ========================================================================== */
+
+.onboarding {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--linen);
+}
+
+.onboarding-brief {
+  display: flex;
+  flex-direction: column;
+  padding: 40px 56px;
+  background: var(--espresso);
+  color: var(--bone);
+}
+
+.onboarding-lockup {
+  display: inline-block;
+  margin-bottom: auto;
+}
+
+.onboarding-panel {
+  max-width: 460px;
+  padding: 40px 0;
+}
+
+.onboarding-panel-title {
+  margin: 28px 0 12px;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+  color: var(--paper);
+}
+
+.onboarding-panel-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(237, 236, 231, 0.72);
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: auto 0 0;
+  padding: 0;
+}
+
+.onboarding-dot {
+  width: 34px;
+  height: 3px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(237, 236, 231, 0.24);
+  cursor: pointer;
+}
+
+.onboarding-dot-active {
+  background: var(--bone);
+}
+
+.onboarding-dot:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+}
+
+.onboarding-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+}
+
+.onboarding-form {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.onboarding-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 13px;
+  color: var(--stone);
+}
+
+.onboarding-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.onboarding-steps .current {
+  color: var(--charcoal);
+}
+
+.onboarding-steps .done {
+  color: var(--graphite);
+}
+
+.onboarding-step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  flex: none;
+}
+
+.onboarding-steps .current .onboarding-step-index {
+  background: var(--espresso);
+  border-color: var(--espresso);
+  color: var(--paper);
+}
+
+.onboarding-steps .done .onboarding-step-index {
+  background: var(--stone);
+  border-color: var(--stone);
+  color: var(--paper);
+}
+
+.onboarding-title {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+.onboarding-sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--graphite);
+}
+
+.onboarding-testnet {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--stone);
+  text-align: center;
+}
+
+/* On a phone the brief becomes a short header rather than disappearing. Dropping it entirely
+   would mean the only people who never learn what Usance is are the ones on the smallest
+   screens, who have the least context to begin with. */
+@media (max-width: 900px) {
+  .onboarding {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-brief {
+    padding: 20px 18px 24px;
+  }
+
+  .onboarding-lockup {
+    margin-bottom: 20px;
+  }
+
+  .onboarding-panel {
+    padding: 0;
+  }
+
+  .onboarding-panel img {
+    display: none;
+  }
+
+  .onboarding-panel-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .onboarding-panel-body {
+    font-size: 14px;
+  }
+
+  .onboarding-dots {
+    margin: 20px 0 0;
+  }
+
+  .onboarding-action {
+    padding: 28px 18px 48px;
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Transaction history
+   ========================================================================== */
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tx-table th,
+.tx-table td {
+  text-align: left;
+  padding: 11px 10px 11px 0;
+  border-top: 1px solid var(--hairline);
+  font-weight: 400;
+  vertical-align: middle;
+}
+
+.tx-table thead th {
+  border-top: 0;
+  padding-top: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+
+.tx-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--charcoal);
+  text-decoration: none;
+}
+
+.tx-action:hover {
+  text-decoration: underline;
+}
+
+.tx-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  border: 1px solid var(--hairline-strong);
+  color: var(--graphite);
+}
+
+.tx-pill-success {
+  border-color: rgba(47, 93, 63, 0.3);
+  color: var(--risk-healthy);
+}
+
+/* A refusal is an outcome, not an error. Coloured as attention rather than alarm. */
+.tx-pill-reverted {
+  border-color: rgba(122, 90, 30, 0.32);
+  color: var(--risk-attention);
+}
+
+.tx-cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 18px 0 8px;
+}
+
+@media (max-width: 720px) {
+  .tx-table {
+    display: none;
+  }
+
+  .tx-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tx-card {
+    display: block;
+    padding: 13px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-input);
+    text-decoration: none;
+    color: inherit;
+  }
+}

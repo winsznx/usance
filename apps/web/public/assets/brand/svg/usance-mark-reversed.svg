@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs></defs>
+
+
+<g fill="#ffffff">
+  <!-- asset / legal record -->
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <!-- admitted usable capacity, extracted from the record -->
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g>
+</svg>

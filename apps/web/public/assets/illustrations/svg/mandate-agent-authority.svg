@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+<defs></defs>
+
+<circle cx="170" cy="320" r="68" fill="#ffffff" stroke="#1b0624" stroke-width="5"/>
+    <path d="M140 335C170 285 190 365 215 315" stroke="#1b0624" stroke-width="5" fill="none"/>
+    <rect x="310" y="190" width="260" height="260" rx="24" fill="#ffffff" stroke="#1b0624" stroke-width="5"/>
+    <path d="M350 255H530M350 305H500M350 355H480" stroke="#898683" stroke-width="4"/>
+    <rect x="525" y="370" width="24" height="24" rx="3" fill="#1b0624"/>
+    <path d="M238 320L310 320" stroke="#1b0624" stroke-width="4" fill="none"/>
+    <path d="M570 320L665 320" stroke="#1b0624" stroke-width="4" fill="none"/>
+    <circle cx="735" cy="320" r="66" fill="#edece7" stroke="#1b0624" stroke-width="5"/>
+    <g transform="translate(703,288) scale(1)">
+<g fill="#1b0624">
+  <!-- asset / legal record -->
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <!-- admitted usable capacity, extracted from the record -->
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g></g>
+    <path d="M800 320H870" stroke="#1b0624" stroke-width="4"/>
+    <path d="M842 280L882 320L842 360" stroke="#1b0624" stroke-width="4" fill="none"/>
+</svg>

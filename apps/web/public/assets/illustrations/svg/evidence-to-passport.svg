@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+<defs></defs>
+
+<rect x="90" y="130" width="300" height="380" rx="22" fill="#ffffff" stroke="#1b0624" stroke-width="4"/>
+    <path d="M134 200H346M134 250H320M134 300H290" stroke="#898683" stroke-width="4"/><path d="M390 320L530 320" stroke="#1b0624" stroke-width="4" fill="none"/>
+    <rect x="456" y="300" width="28" height="40" rx="5" fill="#1b0624"/>
+    <rect x="570" y="145" width="300" height="350" rx="26" fill="#ffffff" stroke="#1b0624" stroke-width="5"/>
+    <g transform="translate(616,200) scale(1.25)">
+<g fill="#1b0624">
+  <!-- asset / legal record -->
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <!-- admitted usable capacity, extracted from the record -->
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g></g>
+    <path d="M620 345H820M620 390H780" stroke="#898683" stroke-width="4"/>
+    <rect x="620" y="430" width="150" height="28" rx="14" fill="#edece7"/>
+</svg>

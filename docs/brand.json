@@ -1,0 +1,41 @@
+{
+  "brand": "Usance",
+  "version": "3.0.0",
+  "concept": "capacity-cut",
+  "thesis": "asset -> verified admission -> usable capacity",
+  "colors": {
+    "aubergineInk": "#1b0624",
+    "espresso": "#160f0c",
+    "onyx": "#0d0d0d",
+    "smoke": "#1a1816",
+    "charcoal": "#292421",
+    "graphite": "#444444",
+    "warmAsh": "#766a7c",
+    "stone": "#898683",
+    "bone": "#edece7",
+    "mist": "#eeeeee",
+    "linen": "#f7f7f5",
+    "paperWhite": "#ffffff"
+  },
+  "identity": {
+    "mark": "assets/brand/svg/usance-mark-primary.svg",
+    "micro": "assets/brand/svg/usance-micro-mark.svg",
+    "wordmark": "assets/brand/svg/usance-wordmark.svg",
+    "horizontal": "assets/brand/svg/usance-lockup-horizontal.svg",
+    "stacked": "assets/brand/svg/usance-lockup-stacked.svg"
+  },
+  "minSizes": {
+    "microPx": 16,
+    "markPx": 32,
+    "horizontalPx": 104
+  },
+  "clearSpace": "0.5x mark width",
+  "avoid": [
+    "blue/green brand accents",
+    "glow",
+    "3D identity",
+    "generic crypto symbols",
+    "random U monogram",
+    "operational recolouring"
+  ]
+}

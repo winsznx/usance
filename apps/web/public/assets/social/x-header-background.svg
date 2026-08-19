@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500">
+<defs></defs>
+
+
+<rect width="1500" height="500" fill="#f7f7f5"/>
+<g transform="translate(80,90) scale(2.2)">
+<g fill="#1b0624">
+  <!-- asset / legal record -->
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <!-- admitted usable capacity, extracted from the record -->
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g></g>
+<path d="M900 0H1500V120H1350V380H1500V500H900Z" fill="#edece7"/>
+<rect x="1360" y="155" width="100" height="190" rx="16" fill="#ffffff" stroke="#1b0624" stroke-width="4"/>
+
+</svg>

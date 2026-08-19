@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs></defs>
+
+
+<g fill="none" stroke="#1b0624" stroke-width="6" stroke-linejoin="miter">
+  <!-- two obligations / domains -->
+  <path d="M8 14H25V50H8"/>
+  <path d="M56 14H39V50H56"/>
+  <!-- one authoritative clearing register -->
+  <path d="M25 23H39M25 41H39"/>
+</g>
+<rect x="28" y="27" width="8" height="10" fill="#1b0624"/>
+</svg>

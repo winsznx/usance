@@ -6,7 +6,7 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
-> **Total** 225 · **Complete** 138 · **P0 open** 3 · **P1 open** 36 · **P2 open** 45 · **Externally blocked** 3
+> **Total** 233 · **Complete** 143 · **P0 open** 3 · **P1 open** 38 · **P2 open** 46 · **Externally blocked** 3
 >
 > P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
 > security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
@@ -341,6 +341,20 @@ Current: **16/34 canonical routes**,
 ## AK. Audit handoff
 
 - [x] `docs/AUDIT_HANDOFF.md`
+
+## AM. Design kit and onboarding
+
+- [x] `usance-design-assets-v3` installed at `public/assets/` — kit icons, illustrations, brand
+- [x] Capacity Cut lockup and mark used, never redrawn (`BRAND_LOCK.md` copied to `docs/`)
+- [x] Split-screen onboarding: connect on the right, a four-point brief on the left
+- [x] One screen owns the connect question; account routes redirect to it
+- [x] Transaction history on the overview, from real receipts, empty state when there are none
+- [ ] **P1** The security explainer (session vs allowance vs mandate) is now behind the wallet
+      gate. It is reference material that was useful *before* connecting and should move to a
+      public route or into the onboarding brief.
+- [ ] **P1** Landing page rebuild against the kit: hero watercolor with grain, six feature
+      illustrations, kit favicon and OG, footer columns
+- [ ] **P2** Replace remaining inline nav glyphs with the kit's `assets/icons/` set throughout
 
 ## AL. Terminal-grade dashboard (from the second review)
 

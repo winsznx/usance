@@ -94,11 +94,12 @@ test.describe("phone layout", () => {
     await expect(page.getByRole("navigation", { name: "All destinations" })).toBeHidden();
 
     await page.getByRole("button", { name: /open navigation/i }).click();
-    await page.getByRole("navigation", { name: "All destinations" }).getByRole("link", { name: "Alerts", exact: true }).click();
+    await page.getByRole("navigation", { name: "All destinations" }).getByRole("link", { name: "Assets", exact: true }).click();
     // Leaving it open over the destination is the commonest phone navigation bug, and it makes the
-    // app feel like it never registered the tap.
+    // app feel like it never registered the tap. Assets is used rather than an account route,
+    // because those now redirect to onboarding when no wallet is connected.
     await expect(page.getByRole("navigation", { name: "All destinations" })).toBeHidden();
-    await expect(page).toHaveURL(/\/app\/alerts/);
+    await expect(page).toHaveURL(/\/assets/);
   });
 
   test("does not scroll sideways", async ({ page }) => {
@@ -135,23 +136,25 @@ test.describe("detail level", () => {
     await page.getByRole("button", { name: "Advanced" }).click();
     await expect(page.getByRole("button", { name: "Advanced" })).toHaveAttribute("aria-pressed", "true");
 
-    // Switching back on every visit teaches people the toggle does not work.
-    await page.goto("/app/positions");
+    // Switching back on every visit teaches people the toggle does not work. Reloaded rather than
+    // navigated to an account route, which now redirects to onboarding without a wallet.
+    await page.reload();
     await expect(page.getByRole("button", { name: "Advanced" })).toHaveAttribute("aria-pressed", "true");
   });
 
   test("simple mode never hides risk information", async ({ page }) => {
-    await page.goto("/app/settings/security");
+    await page.goto("/app");
     const simple = await page.locator("body").innerText();
 
     await page.getByRole("button", { name: "Advanced" }).click();
     const advanced = await page.locator("body").innerText();
 
     // Advanced adds detail. A mode that could conceal a margin call would get somebody liquidated
-    // for using the default, so simple must be a subset only of provenance, never of risk.
-    for (const phrase of ["Disconnecting does not close anything", "cannot withdraw your collateral"]) {
-      expect(simple.toLowerCase()).toContain(phrase.toLowerCase());
-      expect(advanced.toLowerCase()).toContain(phrase.toLowerCase());
+    // for using the default, so simple may be a subset only of provenance, never of risk. The
+    // testnet warning is the risk statement present on every screen regardless of connection.
+    for (const phrase of ["TEST ASSETS HAVE NO REAL VALUE", "NOT FOBXX"]) {
+      expect(simple.toUpperCase()).toContain(phrase);
+      expect(advanced.toUpperCase()).toContain(phrase);
     }
   });
 });

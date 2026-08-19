@@ -1,5 +1,10 @@
 /**
- * One icon system, drawn on one grid.
+ * One icon system, from the shipped kit.
+ *
+ * The nav and action glyphs are the kit's own SVGs, loaded from `public/assets/icons/`. They are the
+ * authority; anything drawn here would be a second system that drifts from it. What remains inline
+ * is chrome the kit does not cover — chevrons, close, menu, state marks — drawn on the same 24px
+ * grid at the same weight so the two are indistinguishable in use.
  *
  * Every glyph is 24×24, 1.5 stroke, butt caps, no fills. That uniformity is the whole point: the
  * fastest way to make an interface look assembled from a template is to mix icon families — a

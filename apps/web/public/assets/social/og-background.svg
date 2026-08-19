@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs></defs>
+
+
+<rect width="1200" height="630" fill="#f7f7f5"/>
+<g transform="translate(70,70) scale(1.4)">
+<g fill="#1b0624">
+  <!-- asset / legal record -->
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <!-- admitted usable capacity, extracted from the record -->
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g></g>
+<!-- capacity-cut motif enlarged -->
+<path d="M760 90H1120V205H1020V425H1120V540H760Z" fill="#edece7"/>
+<rect x="1060" y="225" width="90" height="180" rx="14" fill="#ffffff" stroke="#1b0624" stroke-width="4"/>
+<path d="M80 480H590" stroke="#edece7" stroke-width="2"/>
+
+</svg>

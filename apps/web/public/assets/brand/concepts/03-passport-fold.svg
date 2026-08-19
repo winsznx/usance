@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs></defs>
+
+
+<g fill="none" stroke="#1b0624" stroke-width="6" stroke-linejoin="miter">
+  <!-- evidence record -->
+  <path d="M10 9H40L54 23V55H10Z"/>
+  <path d="M40 9V23H54"/>
+  <!-- capacity fold -->
+  <path d="M20 37H44"/>
+</g>
+<rect x="39" y="32" width="15" height="10" fill="#1b0624"/>
+</svg>
