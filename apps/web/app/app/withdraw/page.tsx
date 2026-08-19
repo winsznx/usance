@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatUsd, type AccountStatus, type Gate } from "@usance/domain";
 import { ActionShell, AmountField, GateBanners, NotDeployedNotice, PreviewRow, TxTimeline, useAmount } from "@/components/action";
-import { Logo, Notice, RiskBadge } from "@/components/primitives";
+import {Notice, RiskBadge} from "@/components/primitives";
 import { activeChain, loadDeployment, type Deployment } from "@/lib/deployments";
 import type { TxState } from "@/lib/tx";
 
@@ -69,12 +69,6 @@ export default function WithdrawPage() {
 
   return (
     <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <span className="tag">{chain.name}</span>
-        </div>
-      </header>
 
       <ActionShell title="Withdraw collateral" intro="Take your assets back out. What you can withdraw depends on what you still owe.">
         <div className="stack" style={{ gap: 22 }}>

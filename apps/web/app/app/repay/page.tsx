@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatUsd, type AccountStatus } from "@usance/domain";
 import { ActionShell, AmountField, NotDeployedNotice, PreviewRow, TxTimeline, useAmount } from "@/components/action";
-import { Logo, Notice, RiskBadge } from "@/components/primitives";
+import {Notice, RiskBadge} from "@/components/primitives";
 import { activeChain, loadDeployment, type Deployment } from "@/lib/deployments";
 import type { TxState } from "@/lib/tx";
 
@@ -65,12 +65,6 @@ export default function RepayPage() {
 
   return (
     <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <span className="tag">{chain.name}</span>
-        </div>
-      </header>
 
       <ActionShell title="Repay" intro="Pay down what you owe. This always works, whatever state your account is in.">
         <div className="stack" style={{ gap: 22 }}>

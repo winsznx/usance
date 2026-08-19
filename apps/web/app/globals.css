@@ -602,11 +602,21 @@ h4 {
    number in a framework somebody wrote.
    ========================================================================== */
 
+/*
+ * Two floating panels on a canvas, not two regions butted against each other.
+ *
+ * Everything inside the app already sits in a rounded surface — the metric cards, the derivation,
+ * the ladder. The rail and the content column were the two things still running edge to edge, which
+ * made them read as chrome bolted around the product rather than part of it.
+ */
 .app-frame {
   --rail-w: 216px;
+  --frame-gap: 12px;
   display: grid;
-  grid-template-columns: var(--rail-w) 1fr;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  gap: var(--frame-gap);
   min-height: 100vh;
+  padding: var(--frame-gap);
   background: var(--linen);
 }
 
@@ -618,16 +628,16 @@ h4 {
 
 .rail {
   position: sticky;
-  top: 0;
+  top: var(--frame-gap);
   align-self: start;
-  height: 100vh;
+  height: calc(100vh - var(--frame-gap) * 2);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 20px 12px;
+  padding: 22px 12px;
   background: var(--espresso);
   color: var(--bone);
-  overflow: hidden;
+  border-radius: var(--radius-card);
   /* Width animates; nothing else does. A rail that fades and slides on every toggle draws
      attention to itself, and this is chrome. */
   transition: width 160ms ease;
@@ -724,6 +734,9 @@ h4 {
   display: flex;
   flex-direction: column;
   min-width: 0; /* lets long hashes wrap instead of widening the grid track */
+  background: var(--paper);
+  border-radius: var(--radius-card);
+  overflow: hidden; /* so the top bar and the strip inherit the corner */
 }
 
 .app-topbar {
@@ -733,6 +746,7 @@ h4 {
   padding: 14px 24px;
   background: var(--paper);
   border-bottom: 1px solid var(--hairline);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
 }
 
 .topbar-right {
@@ -754,8 +768,9 @@ h4 {
 
 .app-content {
   padding: 28px 24px 40px;
-  max-width: 1180px;
   width: 100%;
+  background: var(--linen);
+  flex: 1;
 }
 
 .icon-button {
@@ -791,6 +806,17 @@ h4 {
   .app-frame,
   .app-frame-collapsed {
     grid-template-columns: 1fr;
+    padding: 0;
+    gap: 0;
+  }
+
+  /* On a phone the panel inset costs horizontal room the content needs more. */
+  .app-main {
+    border-radius: 0;
+  }
+
+  .app-topbar {
+    border-radius: 0;
   }
 
   .rail {
@@ -2213,4 +2239,74 @@ main > section:first-child:not(.hero) {
   background: var(--bone);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
+}
+
+/* ==========================================================================
+   Action panel
+   ==========================================================================
+   Tabs that swap the panel in place. Navigating away to a small form on an
+   otherwise empty screen loses the position you were looking at in order to
+   act on it.
+   ========================================================================== */
+
+.action-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 5px;
+  background: var(--linen);
+  border-radius: var(--radius-pill);
+  margin-bottom: 20px;
+}
+
+.action-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--graphite);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.action-tab:hover {
+  background: rgba(22, 15, 12, 0.05);
+  color: var(--aubergine-ink);
+}
+
+.action-tab-active,
+.action-tab-active:hover {
+  background: var(--paper);
+  color: var(--aubergine-ink);
+  box-shadow: 0 1px 2px rgba(22, 15, 12, 0.06);
+}
+
+/* Dimmed but present, with the warning glyph carrying the state so it does not rest on colour. */
+.action-tab-blocked {
+  color: var(--stone);
+}
+
+.action-tab:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 1px;
+}
+
+.action-body {
+  min-height: 120px;
+}
+
+@media (max-width: 560px) {
+  .action-tabs {
+    border-radius: var(--radius-card);
+  }
+  .action-tab {
+    flex: 1 1 calc(50% - 3px);
+    justify-content: center;
+    padding: 10px 12px;
+  }
 }

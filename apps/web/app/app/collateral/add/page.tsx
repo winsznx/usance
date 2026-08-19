@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatUsd, type AccountStatus } from "@usance/domain";
 import { ActionShell, AmountField, NotDeployedNotice, PreviewRow, TxTimeline, useAmount } from "@/components/action";
-import { Logo, Notice } from "@/components/primitives";
+import {Notice} from "@/components/primitives";
 import { activeChain, loadDeployment, type Deployment } from "@/lib/deployments";
 import type { TxState } from "@/lib/tx";
 
@@ -78,12 +78,6 @@ export default function AddCollateralPage() {
 
   return (
     <>
-      <header style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)" }}>
-        <div className="shell row-between" style={{ height: 68 }}>
-          <Logo />
-          <span className="tag">{chain.name}</span>
-        </div>
-      </header>
 
       <ActionShell
         title="Add collateral"

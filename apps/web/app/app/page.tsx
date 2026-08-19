@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { CapacityDerivation, StatusLadder } from "@/components/capacity";
 import { SafetyBuffer } from "@/components/buffer";
 import { Holdings } from "@/components/holdings";
+import { ActionPanel } from "@/components/action-panel";
 import { Advanced } from "@/components/mode";
 import { Copyable } from "@/components/copyable";
 import { TransactionHistory, type TxRow } from "@/components/transactions";
@@ -234,19 +235,7 @@ function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
             maintenanceLimit={BigInt(view.maintenanceLimit)}
           />
 
-          <section className="card">
-            <h2 className="heading" style={{ fontSize: 17, margin: "0 0 4px" }}>What you can do now</h2>
-            <p className="caption" style={{ margin: "0 0 14px", color: "var(--graphite)" }}>
-              Derived from your account status, so nothing here is offered that the protocol would
-              refuse.
-            </p>
-            <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
-              <ActionLink href="/app/collateral/add" icon="collateral" label="Add collateral" allowed={allowed.addCollateral} />
-              <ActionLink href="/app/borrow" icon="borrow" label="Borrow" allowed={allowed.borrow} />
-              <ActionLink href="/app/repay" icon="repay" label="Repay" allowed={allowed.repay} />
-              <ActionLink href="/app/withdraw" icon="withdraw" label="Withdraw" allowed={allowed.withdraw} />
-            </div>
-          </section>
+          <ActionPanel status={view.status} />
         </div>
 
         <div className="stack" style={{ gap: 18 }}>

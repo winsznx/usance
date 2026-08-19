@@ -327,3 +327,61 @@ test.describe("every account route keeps the frame", () => {
     }
   });
 });
+
+test.describe("actions happen in place", () => {
+  test.beforeEach(async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+    await expect(page.getByRole("tablist", { name: "Actions" })).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("the four actions are tabs, not a row of links away", async ({ page }) => {
+    const tabs = page.getByRole("tablist", { name: "Actions" });
+    for (const label of ["Add collateral", "Borrow", "Repay", "Withdraw"]) {
+      await expect(tabs.getByRole("tab", { name: new RegExp(label, "i") })).toBeVisible();
+    }
+  });
+
+  test("switching a tab changes the panel without leaving the page", async ({ page }) => {
+    const before = page.url();
+    await page.getByRole("tab", { name: /repay/i }).click();
+
+    await expect(page.getByRole("tab", { name: /repay/i })).toHaveAttribute("aria-selected", "true");
+    // The numbers you are deciding about stay on screen. Navigating away to a small form on an
+    // empty page loses the position in order to act on it.
+    expect(page.url()).toBe(before);
+    await expect(page.getByText("Recognised collateral")).toBeVisible();
+  });
+
+  test("a refused action explains itself rather than disappearing", async ({ page }) => {
+    // Every tab is present whatever the status. One that vanishes leaves somebody unable to tell
+    // whether the action is gone or the interface is broken.
+    const tabs = await page.getByRole("tablist", { name: "Actions" }).getByRole("tab").all();
+    expect(tabs.length).toBe(4);
+
+    for (const tab of tabs) {
+      await tab.click();
+      const panel = page.getByRole("tabpanel");
+      // Either it offers the action, or it says why it cannot.
+      const text = (await panel.innerText()).toLowerCase();
+      expect(text.length, "an action panel rendered empty").toBeGreaterThan(30);
+    }
+  });
+});
+
+test.describe("the frame is panelled", () => {
+  test.skip(({ isMobile }) => isMobile === true, "the phone drops the inset for horizontal room");
+
+  test("the rail and the content sit on rounded surfaces", async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+
+    // Everything inside the app already sits in a rounded surface. The rail and the content column
+    // running edge to edge made them read as chrome bolted around the product.
+    const railRadius = await page.locator(".rail").evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
+    expect(parseFloat(railRadius)).toBeGreaterThan(8);
+
+    const mainRadius = await page.locator(".app-main").evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
+    expect(parseFloat(mainRadius)).toBeGreaterThan(8);
+  });
+});
