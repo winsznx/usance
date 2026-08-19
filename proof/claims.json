@@ -335,6 +335,16 @@
         "spec/invariants.md"
       ],
       "detail": "BORROW is in the mandate vocabulary and the registry checks its debt ceiling correctly, but ClearingHouse refuses to delegate it with ActionNotDelegable. Enabling it requires every bound wired end to end; shipping it half-checked to look complete is the failure this layer exists to prevent."
+    },
+    {
+      "claim": "Revocation ends a delegated agent's authority, and the refusal is mined onchain.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0xf1d66d69e7d395d04db0d07194fbf91e979171ae9f69b61124d7bd0a3f35434e",
+        "proof/live-delegated.json",
+        "contracts/test/DelegatedAuthority.t.sol"
+      ],
+      "detail": "Mined on X Layer testnet. Owner 0xBA813263 signed a REPAY-only mandate to agent 0xCe805513, a distinct address; the agent repaid, the owner revoked, and the same agent's identical next attempt reverted in a block. isLive read true before the revocation and false after. The retry was submitted with an explicit gas limit so the refusal was mined rather than caught at estimation \u2014 a revert nobody can look up is not proof the protocol refused anything. The refused attempt did not reduce the debt; the only movement between the two blocks was accrued interest."
     }
   ]
 }

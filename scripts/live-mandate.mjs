@@ -188,6 +188,54 @@ try {
   console.log(`    OK   refused before submission: ${decoded}`);
 }
 
+// ---------------------------------------------------------------- 5. revoke, then try again
+//
+// The half that proves delegation can be taken back. Everything above shows an agent acting inside
+// limits; without this it shows a grant with no exit, which is the version of delegated authority
+// nobody should accept.
+console.log("\n5. Owner revokes the mandate, and the same agent tries the same permitted action");
+
+const liveBefore = await pub.readContract({ address: C.mandateRegistry, abi: MR, functionName: "isLive", args: [mandateId] });
+console.log(`    mandate live before revocation: ${liveBefore}`);
+
+const revokeReceipt = await send(
+  "revokeMandate", C.mandateRegistry, MR, "revokeMandate",
+  [mandateId, keccak256(stringToBytes("owner ended the delegation"))],
+);
+
+const liveAfter = await readAt(revokeReceipt.blockNumber, C.mandateRegistry, MR, "isLive", [mandateId]);
+console.log(`    mandate live after revocation:  ${liveAfter}`);
+
+const debtBeforeRetry = await readAt(revokeReceipt.blockNumber, C.clearingHouse, CH, "debtOf", [owner.address]);
+
+let postRevocation = null;
+try {
+  const hash = await agentWallet.writeContract({
+    address: C.delegationGateway, abi: GW, functionName: "execute",
+    args: [owner.address, mandateId, 1, ASSET, 10n * 10n ** 18n, NO_VENUE, [], []],
+    account: agent, chain,
+    // Explicit, so the refusal is mined rather than caught at estimation. A revert nobody can look
+    // up is not proof that the protocol refused anything.
+    gas: 900_000n,
+  });
+  const r = await pub.waitForTransactionReceipt({ hash, timeout: 180_000 });
+  postRevocation = { hash, blockNumber: Number(r.blockNumber), status: r.status };
+  console.log(`    ${r.status === "reverted" ? "OK  " : "UNEXPECTED"} refused onchain  ${hash}  block ${r.blockNumber}`);
+  txs.push({ label: "agent retries after revocation", hash, blockNumber: Number(r.blockNumber), status: r.status, from: agent.address });
+} catch (e) {
+  const data = e?.cause?.data ?? e?.data;
+  let decoded = "reverted";
+  try { const x = decodeErrorResult({ abi: GW, data }); decoded = `${x.errorName}(${(x.args ?? []).join(", ")})`; } catch {}
+  postRevocation = { hash: null, decoded, submitted: false };
+  console.log(`    refused before submission: ${decoded}`);
+}
+
+const debtAfterRetry = postRevocation?.blockNumber
+  ? await readAt(BigInt(postRevocation.blockNumber), C.clearingHouse, CH, "debtOf", [owner.address])
+  : debtBeforeRetry;
+console.log(`    debt after the refused attempt: ${usd(debtBeforeRetry)} -> ${usd(debtAfterRetry)}`);
+console.log(`    difference is accrued interest only: ${debtAfterRetry - debtBeforeRetry} wei`);
+
 const results = {
   kind: "LIVE_DELEGATED_AUTHORITY",
   chainId: 1952,
@@ -203,6 +251,17 @@ const results = {
   debtAfter: debtAfter.toString(),
   mandate: { actions: ["REPAY"], expiresInSeconds: 86_400 },
   withdrawalRefusal: refusal,
+  revocation: {
+    liveBefore,
+    liveAfter,
+    revokeTx: revokeReceipt.transactionHash ?? null,
+    postRevocationAttempt: postRevocation,
+    debtBeforeRetry: debtBeforeRetry.toString(),
+    debtAfterRetry: debtAfterRetry.toString(),
+    note:
+      "Revocation is terminal: MandateRegistry has no un-revoke function on any path. The retry "
+      + "was submitted with an explicit gas limit so the refusal was mined rather than estimated.",
+  },
   transactions: txs,
 };
 
@@ -213,6 +272,23 @@ writeArtifact("proof/live-delegated.json", results, {
 });
 
 // Both halves, and the refusal has to have been mined rather than merely estimated.
-const ok = debtAfter < debtBefore && refusal !== null && refusal.status === "reverted";
-console.log(`\n${ok ? "PROVEN: a delegated agent reduced risk and could not take collateral." : "NOT PROVEN"}`);
+const checks = [
+  ["a delegated agent reduced the owner's debt", debtAfter < debtBefore],
+  ["the same agent could not take collateral", refusal?.status === "reverted"],
+  ["the mandate was live before revocation", liveBefore === true],
+  ["the mandate is not live after revocation", liveAfter === false],
+  ["the revoked agent's retry was refused onchain", postRevocation?.status === "reverted"],
+  // Not equality. Sixty-five blocks pass between the revocation and the retry, and interest
+  // accrues over them — asserting the debt is unchanged asserts that interest does not exist. What
+  // a refused repayment must not do is REDUCE the debt, and the residual must be dust rather than a
+  // partially-applied payment.
+  ["the refused retry did not reduce the debt", debtAfterRetry >= debtBeforeRetry],
+  ["the refused retry moved only accrued interest", debtAfterRetry - debtBeforeRetry < 10n ** 15n],
+];
+console.log("");
+let bad = 0;
+for (const [name, pass] of checks) { console.log(`  ${pass ? "OK  " : "FAIL"} ${name}`); if (!pass) bad++; }
+
+const ok = bad === 0;
+console.log(`\n${ok ? "PROVEN: an owner delegated, the agent acted within limits, the owner revoked, and the agent's authority ended." : `NOT PROVEN — ${bad} check(s) failed`}`);
 process.exit(ok ? 0 : 1);

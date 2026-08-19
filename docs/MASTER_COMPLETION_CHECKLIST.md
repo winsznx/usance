@@ -6,7 +6,7 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
-> **Total** 209 · **Complete** 122 · **P0 open** 4 · **P1 open** 33 · **P2 open** 47 · **Externally blocked** 3
+> **Total** 209 · **Complete** 123 · **P0 open** 3 · **P1 open** 33 · **P2 open** 47 · **Externally blocked** 3
 >
 > P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
 > security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
@@ -116,7 +116,7 @@ Current: **16/34 canonical routes**,
 - [x] `/app/mandates`, `/app/mandates/new`
 - [x] `/app/mandates/[mandateId]`
 - [~] Signing wired to the deployed registry from the browser — typed-data signer, draft builder and write ABI done and pinned to the contract typehash; submit flow not wired
-- [ ] **P0** Live revocation proof
+- [x] Live revocation proof
 - [ ] **P0** Pause/resume from the UI
 
 ## I. Intent engine
