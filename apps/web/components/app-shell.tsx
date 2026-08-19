@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icon, Mark, type IconName } from "@/components/icon";
+import { Icon } from "@/components/icon";
+import { KitIcon, Lockup, MarkOnly, type KitIconName } from "@/components/kit-icon";
 import { activeChain } from "@/lib/deployments";
 import { ModeToggle } from "@/components/mode";
 
@@ -25,18 +26,19 @@ import { ModeToggle } from "@/components/mode";
 interface NavItem {
   href: string;
   label: string;
-  icon: IconName;
+  /** From the shipped kit. BRAND_LOCK.md forbids redrawing these. */
+  icon: KitIconName;
   /** Shown in the phone's bottom bar. Everything else lives in the drawer. */
   primary?: boolean;
 }
 
 const NAV: NavItem[] = [
-  { href: "/app", label: "Overview", icon: "home", primary: true },
-  { href: "/app/positions", label: "Position", icon: "position", primary: true },
+  { href: "/app", label: "Overview", icon: "status", primary: true },
+  { href: "/app/positions", label: "Position", icon: "collateral", primary: true },
   { href: "/app/activity", label: "Activity", icon: "activity", primary: true },
   { href: "/app/alerts", label: "Alerts", icon: "alerts", primary: true },
-  { href: "/assets", label: "Assets", icon: "assets" },
-  { href: "/app/mandates", label: "Mandates", icon: "mandates" },
+  { href: "/assets", label: "Assets", icon: "passport" },
+  { href: "/app/mandates", label: "Mandates", icon: "mandate" },
   { href: "/earn", label: "Earn", icon: "earn" },
   { href: "/app/settings", label: "Settings", icon: "settings" },
 ];
@@ -162,8 +164,7 @@ export function AppShell({
       <nav className="rail" aria-label="Main">
         <div className="rail-head">
           <Link href="/" className="rail-mark" aria-label="Usance home">
-            <Mark size={18} />
-            <span className="rail-wordmark">USANCE</span>
+            {collapsed ? <MarkOnly size={22} reversed /> : <Lockup width={118} reversed />}
           </Link>
         </div>
 
@@ -177,7 +178,7 @@ export function AppShell({
                 // The label is the accessible name when the rail is collapsed to icons.
                 title={collapsed ? item.label : undefined}
               >
-                <Icon name={item.icon} size={20} />
+                <KitIcon name={item.icon} size={20} className="rail-glyph" />
                 <span className="rail-label">{item.label}</span>
                 {item.href === "/app/alerts" && alertCount > 0 ? (
                   <span className="rail-badge" aria-label={`${alertCount} needing attention`}>{alertCount}</span>
@@ -201,7 +202,7 @@ export function AppShell({
           </button>
 
           <Link href="/" className="topbar-mark only-mobile" aria-label="Usance home">
-            <Mark size={16} />
+            <MarkOnly size={22} />
           </Link>
 
           <div className="topbar-right">
@@ -239,10 +240,7 @@ export function AppShell({
         <div className="drawer-scrim" onClick={() => setDrawer(false)} role="presentation">
           <nav className="drawer" aria-label="All destinations" onClick={(e) => e.stopPropagation()}>
             <div className="row-between" style={{ marginBottom: 20 }}>
-              <span className="row" style={{ gap: 8 }}>
-                <Mark size={16} />
-                <strong style={{ fontWeight: 500, letterSpacing: "0.06em" }}>USANCE</strong>
-              </span>
+              <Lockup width={112} />
               <button className="icon-button" onClick={() => setDrawer(false)} aria-label="Close navigation">
                 <Icon name="close" size={18} />
               </button>
@@ -251,7 +249,7 @@ export function AppShell({
               {NAV.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className={`drawer-item${isActive(item.href) ? " drawer-item-active" : ""}`}>
-                    <Icon name={item.icon} size={20} />
+                    <KitIcon name={item.icon} size={20} />
                     {item.label}
                   </Link>
                 </li>
@@ -270,7 +268,7 @@ export function AppShell({
             className={`tabbar-item${isActive(item.href) ? " tabbar-item-active" : ""}`}
             aria-current={isActive(item.href) ? "page" : undefined}
           >
-            <Icon name={item.icon} size={22} />
+            <KitIcon name={item.icon} size={22} />
             <span>{item.label}</span>
             {item.href === "/app/alerts" && alertCount > 0 ? (
               <span className="tabbar-badge" aria-label={`${alertCount} needing attention`}>{alertCount}</span>

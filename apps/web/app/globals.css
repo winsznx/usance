@@ -1510,3 +1510,16 @@ h4 {
     color: inherit;
   }
 }
+
+/* The kit's icons are drawn in ink and the rail is dark, so they are inverted there rather than
+   recoloured. currentColor does not reach an <img>, and redrawing them to accept a fill would be
+   regenerating assets BRAND_LOCK.md fixes. */
+.rail-glyph {
+  filter: invert(1);
+  opacity: 0.78;
+}
+
+.rail-item-active .rail-glyph,
+.rail-item:hover .rail-glyph {
+  opacity: 1;
+}

@@ -28,8 +28,9 @@ test.describe("first run", () => {
     await expect(page.getByRole("link", { name: /assets|proof|walkthrough/i }).first()).toBeVisible();
   });
 
-  test("/app asks to connect before anything else", async ({ page }) => {
+  test("/app sends an unconnected visitor to the one screen that asks", async ({ page }) => {
     await page.goto("/app");
+    await expect(page).toHaveURL(/\/app\/onboarding/, { timeout: 10_000 });
     await expect(page.getByRole("button", { name: /connect/i }).first()).toBeVisible();
 
     // Two properties, phrased as meaning rather than as an exact string. The copy moved away from
@@ -44,10 +45,11 @@ test.describe("first run", () => {
   });
 
   test("assets are browsable without connecting", async ({ page }) => {
-    await page.goto("/app");
+    // /app now redirects to onboarding, which carries the escape route.
+    await page.goto("/app/onboarding");
     // Named precisely: the shell now also carries an "Assets" rail item, and a loose selector would
     // pass by matching navigation chrome rather than the escape route out of the wallet gate.
-    const browse = page.getByRole("link", { name: /browse assets without connecting/i });
+    const browse = page.getByRole("link", { name: /look around without connecting/i });
     await expect(browse).toBeVisible();
     await browse.click();
     await expect(page).toHaveURL(/\/assets/);

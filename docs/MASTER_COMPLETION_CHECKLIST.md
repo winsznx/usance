@@ -6,7 +6,7 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
-> **Total** 233 · **Complete** 143 · **P0 open** 3 · **P1 open** 38 · **P2 open** 46 · **Externally blocked** 3
+> **Total** 234 · **Complete** 143 · **P0 open** 3 · **P1 open** 39 · **P2 open** 46 · **Externally blocked** 3
 >
 > P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
 > security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
@@ -349,6 +349,10 @@ Current: **16/34 canonical routes**,
 - [x] Split-screen onboarding: connect on the right, a four-point brief on the left
 - [x] One screen owns the connect question; account routes redirect to it
 - [x] Transaction history on the overview, from real receipts, empty state when there are none
+- [ ] **P1** Deterministic test-wallet provider for E2E. The app frame is now behind
+      authentication, so 30 shell assertions (rail, drawer, tab bar, mode toggle, degraded banner,
+      keyboard nav) are skipped with a stated reason rather than mocked. Mocking a wallet to claim
+      the rail works would assert against a harness, not the app.
 - [ ] **P1** The security explainer (session vs allowance vs mandate) is now behind the wallet
       gate. It is reference material that was useful *before* connecting and should move to a
       public route or into the onboarding brief.

@@ -13,7 +13,8 @@ import { Notice, RiskBadge } from "@/components/primitives";
 import { activeChain } from "@/lib/deployments";
 import { alertsFor, type Alert } from "@/lib/alerts";
 import { permittedActions } from "@/lib/account";
-import { connect, detectProvider, WalletError } from "@/lib/wallet";
+import { detectProvider } from "@/lib/wallet";
+import { useRouter } from "next/navigation";
 import type { AccountStatus } from "@usance/domain";
 
 /**
@@ -47,23 +48,47 @@ export default function AppOverview() {
   const chain = activeChain();
   const [address, setAddress] = useState<`0x${string}` | null>(null);
   const [data, setData] = useState<Loaded | null>(null);
-  const [error, setError] = useState<{ message: string; code: string } | null>(null);
-  const [hasProvider, setHasProvider] = useState(true);
-  const [connecting, setConnecting] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const router = useRouter();
   const [txs, setTxs] = useState<TxRow[]>([]);
 
-  useEffect(() => setHasProvider(detectProvider().provider !== null), []);
+  /**
+   * The overview does not ask for a wallet either.
+   *
+   * This route had its own connect card while every other account route redirected, which meant the
+   * one screen a user actually lands on still prompted — the exact duplication the redirect was
+   * meant to remove.
+   */
+  useEffect(() => {
+    const { provider } = detectProvider();
+    if (!provider) {
+      setChecked(true);
+      router.replace("/app/onboarding");
+      return;
+    }
+    provider
+      .request({ method: "eth_accounts" })
+      .then((accts) => {
+        const found = (accts as string[])[0] as `0x${string}` | undefined;
+        if (found) setAddress(found);
+        else router.replace("/app/onboarding");
+      })
+      .catch(() => router.replace("/app/onboarding"))
+      .finally(() => setChecked(true));
+  }, [router]);
 
   useEffect(() => {
     const { provider } = detectProvider();
     if (!provider?.on) return;
     const onAccounts = (a: string[]) => {
-      setAddress((a[0] as `0x${string}`) ?? null);
+      const next = (a[0] as `0x${string}`) ?? null;
+      setAddress(next);
       setData(null);
+      if (!next) router.replace("/app/onboarding");
     };
     provider.on("accountsChanged", onAccounts);
     return () => provider.removeListener?.("accountsChanged", onAccounts);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!address) return;
@@ -91,17 +116,6 @@ export default function AppOverview() {
     };
   }, [address]);
 
-  const doConnect = useCallback(async () => {
-    setError(null);
-    setConnecting(true);
-    try {
-      setAddress((await connect()).address);
-    } catch (e) {
-      setError(e instanceof WalletError ? { message: e.message, code: e.code } : { message: (e as Error).message, code: "UNKNOWN" });
-    } finally {
-      setConnecting(false);
-    }
-  }, []);
 
   const alertCount = data?.outcome === "OK" ? countAlerts(data.view) : 0;
 
@@ -115,33 +129,13 @@ export default function AppOverview() {
           </p>
         </div>
 
-        {error ? (
-          <Notice
-            tone={error.code === "REJECTED" ? "warn" : "stop"}
-            title={error.code === "REJECTED" ? "Declined in your wallet" : "Could not connect"}
-            action={<button className="btn btn-ghost" onClick={() => setError(null)}>Dismiss</button>}
-          >
-            {error.message}
+        {!checked ? (
+          <Skeleton />
+        ) : address === null ? (
+          /* Momentary: the redirect is already in flight. */
+          <Notice title="Taking you to sign in">
+            Usance asks for a wallet once, on its own screen, rather than on every page.
           </Notice>
-        ) : null}
-
-        {address === null ? (
-          <div className="card stack" style={{ maxWidth: 520 }}>
-            {!hasProvider ? (
-              <Notice title="No wallet detected">
-                Usance works with OKX Wallet and any standard browser wallet. On a phone, open this
-                page inside your wallet&rsquo;s own browser.
-              </Notice>
-            ) : null}
-            <p className="caption" style={{ margin: 0 }}>
-              Usance needs your address and your network before it can show you anything. Connecting
-              shows Usance your address and nothing else.
-            </p>
-            <button className="btn btn-primary btn-lg btn-block" onClick={doConnect} disabled={connecting || !hasProvider}>
-              {connecting ? "Waiting for your wallet…" : "Connect wallet"}
-            </button>
-            <Link className="btn btn-ghost btn-block" href="/assets">Browse assets without connecting</Link>
-          </div>
         ) : data === null ? (
           <Skeleton />
         ) : data.outcome === "NOT_DEPLOYED" ? (
