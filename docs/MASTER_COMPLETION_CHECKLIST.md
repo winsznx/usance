@@ -6,6 +6,12 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
+> **Total** 210 · **Complete** 119 · **P0 open** 8 · **P1 open** 33 · **P2 open** 47 · **Externally blocked** 3
+>
+> P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
+> security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
+> is never used for work that is merely hard.
+
 Current: **16/34 canonical routes**,
 39 proof claims (1 EXTERNAL_INTEGRATION, 4 INTEGRATION_TESTED, 18 LIVE_TESTNET, 7 NOT_YET_PROVEN, 9 UNIT_TESTED).
 
@@ -30,8 +36,8 @@ Current: **16/34 canonical routes**,
 - [x] DelegationGateway, conjunctive authority
 - [x] EmergencyController
 - [x] EIP-170 size guard asserted in CI
-- [ ] RemoteCollateralAdapter (LayerZero) — see L
-- [ ] InsurancePool / backstop capital as a distinct contract
+- [ ] **P1** RemoteCollateralAdapter (LayerZero) — see L
+- [ ] **P2** InsurancePool / backstop capital as a distinct contract
 
 ## B. Accounting
 
@@ -41,8 +47,8 @@ Current: **16/34 canonical routes**,
 - [x] Liquidation settlement conservation equation
 - [x] repairPerDollar identity documented
 - [x] usd18 never enters a token-denominated book
-- [ ] Origination fee wired into borrow (FeeController exposes it; ClearingHouse ignores it)
-- [ ] Interest split verified end-to-end against vault NAV in a property test
+- [ ] **P1** Origination fee wired into borrow (FeeController exposes it; ClearingHouse ignores it)
+- [ ] **P2** Interest split verified end-to-end against vault NAV in a property test
 
 ## C. Risk
 
@@ -52,8 +58,8 @@ Current: **16/34 canonical routes**,
 - [x] Oracle freshness measured, fail-closed when unconfigured
 - [x] Sequencer uptime gate
 - [x] Epoch-stamped quotes
-- [ ] Concentration limits per asset/issuer
-- [ ] Correlation/portfolio-level haircut
+- [ ] **P2** Concentration limits per asset/issuer
+- [ ] **P2** Correlation/portfolio-level haircut
 
 ## D. Liquidation
 
@@ -63,8 +69,8 @@ Current: **16/34 canonical routes**,
 - [x] Keeper incentive + protocol fee split, value conserved
 - [x] Bad debt explicit
 - [x] Live testnet proof, third-party keeper
-- [ ] Multi-asset liquidation selection (single asset today)
-- [ ] Keeper bot / automation reference implementation
+- [ ] **P2** Multi-asset liquidation selection (single asset today)
+- [ ] **P2** Keeper bot / automation reference implementation
 
 ## E. Liquidity providers
 
@@ -72,9 +78,9 @@ Current: **16/34 canonical routes**,
 - [x] Withdrawal queue, FIFO, partial funding
 - [x] Bad-debt waterfall spends reserves first
 - [x] `/earn`, `/earn/positions`
-- [ ] `/earn/[vaultId]`
-- [ ] LP deposit/withdraw wired to wallet (read-only today)
-- [ ] Live LP deposit + queued withdrawal proof
+- [ ] **P1** `/earn/[vaultId]`
+- [ ] **P0** LP deposit/withdraw wired to wallet (read-only today)
+- [ ] **P2** Live LP deposit + queued withdrawal proof
 
 ## F. Evidence / Passport
 
@@ -85,7 +91,7 @@ Current: **16/34 canonical routes**,
 - [x] Durable workflow, 29 states, reconciliation
 - [x] Franklin 2024/2025/2026 semantic diff with honest coverage
 - [x] Live Passport commit on X Layer
-- [ ] Passport supersession / re-read triggered by a news-class source
+- [ ] **P2** Passport supersession / re-read triggered by a news-class source
 
 ## G. ChainGPT
 
@@ -93,10 +99,10 @@ Current: **16/34 canonical routes**,
 - [x] Quote verification against canonical text
 - [x] Prompt-injection fixture, live model, no risk fields
 - [x] Auditor with vulnerable positive control
-- [ ] Semantic field-group extraction (IDENTITY / LEGAL_RIGHTS / BACKING_AND_CUSTODY /
+- [ ] **P1** Semantic field-group extraction (IDENTITY / LEGAL_RIGHTS / BACKING_AND_CUSTODY /
       REDEMPTION / TRANSFER_AND_ELIGIBILITY / CORPORATE_ACTIONS)
-- [ ] Provider-run cache keyed by content+group+schema+prompt+model
-- [ ] Bounded live re-run reporting calls/claims/abstentions/conflicts
+- [ ] **P1** Provider-run cache keyed by content+group+schema+prompt+model
+- [ ] **P2** Bounded live re-run reporting calls/claims/abstentions/conflicts
 
 ## H. Mandate authorization
 
@@ -109,9 +115,9 @@ Current: **16/34 canonical routes**,
 - [x] Live unauthorized outflow mined and reverted
 - [x] `/app/mandates`, `/app/mandates/new`
 - [x] `/app/mandates/[mandateId]`
-- [ ] Signing wired to the deployed registry from the browser
-- [ ] Live revocation proof
-- [ ] Pause/resume from the UI
+- [ ] **P0** Signing wired to the deployed registry from the browser
+- [ ] **P0** Live revocation proof
+- [ ] **P0** Pause/resume from the UI
 
 ## I. Intent engine
 
@@ -119,18 +125,18 @@ Current: **16/34 canonical routes**,
 - [x] Reservation wired to ClearingHouse capacity
 - [x] Partial fills consume proportionally
 - [x] EXECUTION_UNKNOWN releases nothing
-- [ ] `/app/intent/new`
-- [ ] `/app/intents/[intentId]`
-- [ ] Plan compiler (goal -> strict schema -> deterministic risk check)
-- [ ] Reservation surfaced in account/activity/proof
-- [ ] Live intent reservation proof
+- [ ] **P1** `/app/intent/new`
+- [ ] **P1** `/app/intents/[intentId]`
+- [ ] **P1** Plan compiler (goal -> strict schema -> deterministic risk check)
+- [ ] **P1** Reservation surfaced in account/activity/proof
+- [ ] **P2** Live intent reservation proof
 
 ## J. Venue adapters
 
 - [x] ILiquidationRoute (quote/execute) with expected-recovery decomposition
-- [ ] IExecutionVenue (quote/reserve/submit/query/cancel/reconcile)
-- [ ] Deterministic labelled test venue
-- [ ] Venue-unavailable product state
+- [ ] **P1** IExecutionVenue (quote/reserve/submit/query/cancel/reconcile)
+- [ ] **P1** Deterministic labelled test venue
+- [ ] **P1** Venue-unavailable product state
 
 ## K. OKX integrations
 
@@ -141,89 +147,89 @@ Current: **16/34 canonical routes**,
 
 ## L. LayerZero / cross-chain
 
-- [ ] RemoteCollateralAdapter, lock-on-source, non-transferable credit on X Layer
-- [ ] Lifecycle REMOTE_DEPOSIT_INITIATED..CREDIT_ACTIVE and the exit path
-- [ ] Duplicate/out-of-order/replay/reorg tests
+- [ ] **P1** RemoteCollateralAdapter, lock-on-source, non-transferable credit on X Layer
+- [ ] **P1** Lifecycle REMOTE_DEPOSIT_INITIATED..CREDIT_ACTIVE and the exit path
+- [ ] **P2** Duplicate/out-of-order/replay/reorg tests
 - [ ] BLOCKED for live proof: needs a funded source-chain endpoint and DVN config
 
 ## M. Indexer
 
-- [ ] Event ingestion for all 16 deployed contracts
-- [ ] Projections: mandates and account activity done; assets, vaults, intents, liquidations open
+- [ ] **P2** Event ingestion for all 16 deployed contracts
+- [ ] **P2** Projections: mandates and account activity done; assets, vaults, intents, liquidations open
 - [x] Cursor/checkpoint persistence
 - [x] Idempotent replay, duplicate-event handling
 - [x] Restart recovery
 - [x] Reorg handling appropriate to X Layer finality
-- [ ] Backfill from deployment block
+- [ ] **P2** Backfill from deployment block
 - [x] Startup refuses a retired deployment (chainId + manifest digest + bytecode)
 - [x] `make test-indexer`
 
 ## N. Backend / API
 
 - [x] `/api/earn/position`
-- [ ] assets, passports, evidence, accounts, risk, vaults, mandates, intents, activity, proof, status
-- [ ] Auth scoping: read without a wallet, writes scoped
-- [ ] No SSRF-capable evidence fetch endpoint
-- [ ] `/api/health`, `/api/ready` with real dependency checks
+- [ ] **P1** assets, passports, evidence, accounts, risk, vaults, mandates, intents, activity, proof, status
+- [ ] **P2** Auth scoping: read without a wallet, writes scoped
+- [ ] **P2** No SSRF-capable evidence fetch endpoint
+- [x] `/api/health`, `/api/ready` with real dependency checks
 
 ## O. Frontend public
 
 - [x] `/`, `/assets`, `/assets/[assetId]`, `/status`, `/proof/[receiptId]`, `/simulate`
-- [ ] `/developers` landing
+- [ ] **P1** `/developers` landing
 
 ## P. Frontend capital user
 
 - [x] `/app`
-- [ ] `/app/onboarding`
-- [ ] `/app/assets/[assetId]`
+- [ ] **P0** `/app/onboarding`
+- [ ] **P0** `/app/assets/[assetId]`
 - [x] `/app/collateral/add`
 - [x] `/app/borrow`
 - [x] `/app/repay`
 - [x] `/app/withdraw`
-- [ ] `/app/intent/new`
-- [ ] `/app/intents/[intentId]`
-- [ ] `/app/positions`
+- [ ] **P1** `/app/intent/new`
+- [ ] **P1** `/app/intents/[intentId]`
+- [x] `/app/positions`
 - [x] `/app/mandates`
 - [x] `/app/mandates/new`
 - [x] `/app/mandates/[mandateId]`
 - [x] `/app/activity`
-- [ ] `/app/activity/[receiptId]`
-- [ ] `/app/alerts`
-- [ ] `/app/settings`
-- [ ] `/app/settings/security`
+- [ ] **P0** `/app/activity/[receiptId]`
+- [x] `/app/alerts`
+- [x] `/app/settings`
+- [x] `/app/settings/security`
 
 ## Q. LP product
 
 - [x] `/earn`
-- [ ] `/earn/[vaultId]`
+- [ ] **P1** `/earn/[vaultId]`
 - [x] `/earn/positions`
 
 ## R. Issuer product
 
-- [ ] `/institutional/assets`
-- [ ] `/institutional/assets/new`
-- [ ] `/institutional/assets/[applicationId]`
+- [ ] **P1** `/institutional/assets`
+- [ ] **P1** `/institutional/assets/new`
+- [ ] **P1** `/institutional/assets/[applicationId]`
 
-- [ ] Application lifecycle with visible statuses
+- [ ] **P2** Application lifecycle with visible statuses
 
 ## S. Developer product
 
-- [ ] `/developers`
-- [ ] `/developers/keys`
-- [ ] `/developers/webhooks`
-- [ ] `/developers/activity`
+- [ ] **P1** `/developers`
+- [ ] **P1** `/developers/keys`
+- [ ] **P1** `/developers/webhooks`
+- [ ] **P1** `/developers/activity`
 
-- [ ] Scoped API keys, secret shown once, rotate, revoke
-- [ ] Webhooks: create, test, delivery history, retry, signatures, disable
-- [ ] Idempotent delivery
+- [ ] **P1** Scoped API keys, secret shown once, rotate, revoke
+- [ ] **P1** Webhooks: create, test, delivery history, retry, signatures, disable
+- [ ] **P1** Idempotent delivery
 
 ## T. Wallet / session
 
 - [x] Connect, wrong network, add/switch chain, session signature, read-only fallback
 - [x] Account/chain change invalidates the session
-- [ ] Session expiry surfaced
-- [ ] Wallet locked / reconnect / disconnect states
-- [ ] Insufficient gas state
+- [ ] **P2** Session expiry surfaced
+- [ ] **P2** Wallet locked / reconnect / disconnect states
+- [ ] **P2** Insufficient gas state
 
 ## U. Receipts / proof
 
@@ -231,15 +237,15 @@ Current: **16/34 canonical routes**,
 - [x] Public `/proof/[receiptId]`, no wallet
 - [x] Superseded records archived, never rewritten
 - [x] Artifact provenance and freshness gate
-- [ ] `/app/activity/[receiptId]`
-- [ ] Mandate and intent receipts in the same family
+- [ ] **P0** `/app/activity/[receiptId]`
+- [ ] **P2** Mandate and intent receipts in the same family
 
 ## V. Observability
 
-- [ ] Structured logs with request/workflow ids
-- [ ] Metrics: latency, error rate, RPC failures, indexer lag, stuck workflows,
+- [ ] **P1** Structured logs with request/workflow ids
+- [ ] **P1** Metrics: latency, error rate, RPC failures, indexer lag, stuck workflows,
       confirmation-unknown count, provider failures, webhook delivery failure
-- [ ] `/api/health`, `/api/ready`
+- [ ] **P2** `/api/health`, `/api/ready`
 
 ## W. Operational tooling
 
@@ -254,50 +260,50 @@ Current: **16/34 canonical routes**,
 - [x] ChainGPT auditor strict, vulnerable positive control
 - [x] 48+ mutations verified across accounting, authority, vault, liquidation
 - [x] Fuzz and invariant runs
-- [ ] Dependency audit in CI
-- [ ] Manual review pass over indexer/webhook/SSRF once those exist
+- [ ] **P2** Dependency audit in CI
+- [ ] **P2** Manual review pass over indexer/webhook/SSRF once those exist
 
 ## Y. Tests
 
 - [x] 231 Forge, 272 TypeScript, 102 Rust, 126 Playwright
 - [x] Differential conformance
 - [x] Clean-room reproduction
-- [ ] Indexer tests
-- [ ] Webhook delivery tests
-- [ ] Cross-chain tests
+- [ ] **P2** Indexer tests
+- [ ] **P2** Webhook delivery tests
+- [ ] **P2** Cross-chain tests
 
 ## Z. Accessibility
 
 - [x] Mobile viewport checks, no hover-only critical info
-- [ ] Keyboard navigation audit across all routes
-- [ ] Focus visibility and dialog focus management
-- [ ] Form label/error association
-- [ ] Contrast audit
-- [ ] Automated a11y checks in Playwright
+- [ ] **P2** Keyboard navigation audit across all routes
+- [ ] **P2** Focus visibility and dialog focus management
+- [ ] **P2** Form label/error association
+- [ ] **P2** Contrast audit
+- [ ] **P2** Automated a11y checks in Playwright
 
 ## AA. Responsive
 
 - [x] Pixel-class viewport on public, earn, mandate routes
-- [ ] Every remaining route
-- [ ] Responsive table behaviour
+- [ ] **P2** Every remaining route
+- [ ] **P2** Responsive table behaviour
 
 ## AB. Design system
 
 - [x] Primitives: Notice, Steps, Stat, RiskBadge, AmountField, PreviewRow, TxTimeline
-- [ ] Tables, dialogs, drawers, toasts, tabs, breadcrumbs, pagination
-- [ ] Consolidated empty/skeleton/error states
+- [ ] **P2** Tables, dialogs, drawers, toasts, tabs, breadcrumbs, pagination
+- [ ] **P2** Consolidated empty/skeleton/error states
 
 ## AC. Icons
 
-- [ ] Single coherent icon system
-- [ ] No emoji or Unicode arrows as interface icons
-- [ ] aria-hidden on decorative, labels on meaningful
+- [ ] **P2** Single coherent icon system
+- [ ] **P2** No emoji or Unicode arrows as interface icons
+- [ ] **P2** aria-hidden on decorative, labels on meaningful
 
 ## AD. Performance
 
-- [ ] Bundle audit
-- [ ] Server/client boundary audit
-- [ ] RPC fanout and duplicate query audit
+- [ ] **P2** Bundle audit
+- [ ] **P2** Server/client boundary audit
+- [ ] **P2** RPC fanout and duplicate query audit
 
 ## AE. Deployment
 
@@ -308,9 +314,9 @@ Current: **16/34 canonical routes**,
 
 ## AF. Explorer verification
 
-- [ ] Standard-JSON verification for the current deployment
-- [ ] `verified: true` only after explorer read-back
-- [ ] `make verify-explorer`
+- [ ] **P1** Standard-JSON verification for the current deployment
+- [ ] **P1** `verified: true` only after explorer read-back
+- [ ] **P2** `make verify-explorer`
 
 ## AG. Clean room
 
@@ -321,16 +327,16 @@ Current: **16/34 canonical routes**,
 
 - [x] README, ARCHITECTURE, SECURITY, SETUP, LIMITATIONS, DECISIONS
 - [x] IMPLEMENTATION_STATUS, INTEGRATIONS
-- [ ] CONTRIBUTIONS.md
-- [ ] Docs reconciled against the post-DelegationGateway architecture
+- [ ] **P2** CONTRIBUTIONS.md
+- [ ] **P2** Docs reconciled against the post-DelegationGateway architecture
 
 ## AI. Judge demo
 
-- [ ] `docs/demo-script.md`, 2-3 minutes, no terminal rescue
+- [ ] **P2** `docs/demo-script.md`, 2-3 minutes, no terminal rescue
 
 ## AJ. Submission
 
-- [ ] Every submission claim maps to `proof/claims.json`
+- [ ] **P2** Every submission claim maps to `proof/claims.json`
 
 ## AK. Audit handoff
 
