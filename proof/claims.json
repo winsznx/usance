@@ -63,7 +63,7 @@
       "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xa9551f7b376eeaefe01c632ae5adc0f05878118654a32a4928be5be1647bf2b7",
+        "0x726dbb3f48cd579adaaa331dd3cb09cc86280d210a4ab76a2da7346238335107",
         "proof/live-risk-scenario.json"
       ],
       "detail": "1000 tUSTB at $1 recognised as $980.13 \u2014 fixture S02, reproduced by a fourth independent deployment."
@@ -80,7 +80,7 @@
       "claim": "After a material risk deterioration, new borrowing is rejected by the contract.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "0xcb16984f9e2a8c9de179dd79ba7b80772b1a54134db142678802b3bc1e881447",
+        "0x4aa84966684a48c07b432687cc66e0a4efa95a7175cea70d8ad87382d25b60eb",
         "proof/live-risk-scenario.json"
       ],
       "detail": "Recognised value fell $980.13 to $490.07 and the account entered NO_NEW_RISK. A $10 borrow submitted with an explicit gas limit mined at block 38596307, burned 243878 gas, emitted no logs and reverted with AccountNotHealthy(1) \u2014 status 1 is NO_NEW_RISK."
