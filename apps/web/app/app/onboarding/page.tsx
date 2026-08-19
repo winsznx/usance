@@ -228,6 +228,9 @@ function Panel({
             {phase === "CONNECTING" ? "Waiting for your wallet…" : "Connect wallet"}
           </button>
           <Link className="btn btn-ghost btn-block" href="/assets">Look around without connecting</Link>
+          <Link href="/security" className="caption" style={{ textAlign: "center", textDecoration: "underline" }}>
+            What does signing in actually grant?
+          </Link>
         </>
       );
 

@@ -79,6 +79,7 @@ export default function SecurityPage() {
             <div className="row" style={{ gap: 10, flexWrap: "wrap", marginTop: 12 }}>
               <Link className="btn btn-ghost" href="/app/mandates">Review your mandates</Link>
               <Link className="btn btn-ghost" href="/app/positions">See what you owe</Link>
+              <Link className="btn btn-ghost" href="/security">The full security model</Link>
             </div>
           </div>
         </div>

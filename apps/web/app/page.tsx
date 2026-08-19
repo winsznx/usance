@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Footer, Nav } from "@/components/primitives";
+import Image from "next/image";
+import { Nav } from "@/components/primitives";
+import { Illustration, Lockup } from "@/components/kit-icon";
 
 /**
  * Landing page.
@@ -15,46 +17,37 @@ export default function Landing() {
 
       <main>
         {/* ---------------------------------------------------------------- hero */}
-        <section
-          style={{
-            background: "var(--paper)",
-            borderBottom: "1px solid var(--hairline)",
-            padding: "clamp(64px, 11vw, 128px) 0 clamp(56px, 8vw, 96px)",
-          }}
-        >
-          <div className="shell" style={{ maxWidth: 880, textAlign: "center" }}>
-            <span className="tag tag-dark">Built on X Layer</span>
-
-            <h1 className="display" style={{ margin: "26px 0 0" }}>
-              Make your tokenized
-              <br />
-              assets usable as capital
-            </h1>
-
-            <p
-              className="body-lg muted"
-              style={{ maxWidth: 610, margin: "26px auto 0" }}
-            >
-              Usance works out what a tokenized asset actually is, how much of it could really be
-              recovered, and how much you can safely borrow against it. Then it lets you borrow
-              without selling.
+        <section className="hero">
+          {/*
+            The one saturated moment on the site. Priority-loaded because it is the largest
+            contentful paint and a hero that arrives after the headline makes the page look like it
+            reflowed. Decorative: the headline beside it already says what Usance does.
+          */}
+          <Image
+            src="/assets/illustrations/svg/usance-hero-watercolor-master.svg"
+            alt=""
+            aria-hidden
+            fill
+            priority
+            fetchPriority="high"
+            className="hero-art"
+            unoptimized
+          />
+          <div className="shell hero-inner">
+            <span className="hero-pill">Built on X Layer</span>
+            <h1 className="hero-headline">Make your tokenized assets usable as capital.</h1>
+            <p className="hero-sub">
+              Tokenization tells the chain an asset exists. Usance tells it what that asset is
+              actually worth as collateral, how much could be recovered under stress, and what you
+              can safely do with it.
             </p>
-
-            <div
-              className="row"
-              style={{ justifyContent: "center", marginTop: 38, flexWrap: "wrap" }}
-            >
-              <Link href="/app" className="btn btn-primary btn-lg">
-                Open Usance
-              </Link>
-              <Link href="/assets" className="btn btn-ghost btn-lg">
-                Explore supported assets
-              </Link>
+            <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
+              <Link className="btn btn-primary btn-lg" href="/app">Launch Usance</Link>
+              <Link className="btn btn-ghost btn-lg" href="/assets">Explore supported assets</Link>
             </div>
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------- three steps */}
         <section className="section">
           <div className="shell">
             <div className="grid-3">
@@ -200,9 +193,150 @@ export default function Landing() {
             </p>
           </div>
         </section>
+        {/* ---------------------------------------------------------------- features */}
+        <section className="section">
+          <div className="shell">
+            <h2 className="heading-lg" style={{ margin: "0 0 10px", maxWidth: "18ch" }}>
+              What you get, and what it costs you to trust it
+            </h2>
+            <p className="muted" style={{ margin: "0 0 36px", maxWidth: "58ch" }}>
+              Each of these is a thing you can check rather than a thing you have to believe.
+            </p>
+
+            <div className="feature-grid">
+              {[
+                {
+                  art: "evidence-to-passport" as const,
+                  title: "Know exactly what you hold",
+                  body: "Every supported asset carries a versioned Passport: legal rights, issuer, custody, redemption window, transfer rules, and how corporate actions are handled. You can read the filing it was built from.",
+                },
+                {
+                  art: "collateral-capacity" as const,
+                  title: "Collateral that reflects reality",
+                  body: "Market price is not liquidation value. Usance calculates what could actually be recovered under stress and shows you the usable amount. Every haircut is visible and named.",
+                },
+                {
+                  art: "borrow-settlement" as const,
+                  title: "Borrow against what you already own",
+                  body: "Keep the exposure, receive settlement liquidity, repay when you choose. The position stays yours the entire time.",
+                },
+                {
+                  art: "risk-epoch" as const,
+                  title: "When the evidence changes, the risk changes",
+                  body: "A revised filing or deteriorating liquidity moves the Passport, and your capacity follows automatically. New risk is refused before it is taken, and you are told which bound you hit.",
+                },
+                {
+                  art: "mandate-agent-authority" as const,
+                  title: "Automation you can actually bound",
+                  body: "Give an agent a mandate to maintain a buffer or reduce risk, inside limits you sign. It can repay and add collateral. It can never withdraw your collateral, and revoking is immediate and permanent.",
+                },
+                {
+                  art: "proof-receipt-chain" as const,
+                  title: "Every action is inspectable",
+                  body: "From the original document to the final onchain state, each step is recorded. Receipts are public and need no wallet, so a counterparty can check a claim without taking your word for it.",
+                },
+              ].map((f) => (
+                <article className="feature-card" key={f.title}>
+                  <Illustration name={f.art} width={280} height={176} />
+                  <h3>{f.title}</h3>
+                  <p>{f.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- audience */}
+        <section className="section">
+          <div className="shell">
+            <h2 className="heading-lg" style={{ margin: "0 0 32px" }}>Who this is for</h2>
+            <div className="audience-grid">
+              {[
+                {
+                  who: "If you already hold tokenized assets",
+                  body: "Treasuries, tokenized stocks, funds. Usance lets you use them without selling, and tells you exactly how much is usable rather than how much they are quoted at.",
+                },
+                {
+                  who: "If you trade",
+                  body: "Portfolio margin against admitted collateral, an exit path that is priced rather than assumed, and restrictions that arrive before a liquidation rather than during one.",
+                },
+                {
+                  who: "If you build agents",
+                  body: "One interface to ask whether an asset is admissible, what it is recognised at, and what changed since the last risk epoch. Bounded authority, revocable in one transaction.",
+                },
+              ].map((a) => (
+                <article className="feature-card" key={a.who}>
+                  <h3>{a.who}</h3>
+                  <p>{a.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
       </main>
 
-      <Footer />
+      {/* ---------------------------------------------------------------- footer */}
+      <footer className="site-footer">
+        <div className="shell">
+          <div className="footer-grid">
+            <div>
+              <Lockup width={128} />
+              <p className="caption" style={{ margin: "14px 0 0", maxWidth: "34ch" }}>
+                Make tokenized assets usable as capital.
+              </p>
+              {/*
+                No handler, because there is nothing to submit to. The controls are disabled rather
+                than accepting an address that would be silently discarded — a form that swallows
+                input is worse than one that admits it is not wired.
+              */}
+              <div className="footer-subscribe">
+                <label className="sr-only" htmlFor="subscribe">Email address</label>
+                <input id="subscribe" type="email" placeholder="you@example.com" disabled />
+                <button className="btn btn-primary" type="button" disabled>Subscribe</button>
+              </div>
+              <p className="caption" style={{ margin: "8px 0 0", color: "var(--stone)" }}>
+                Not wired to a mailing list yet, so the field is disabled rather than accepting an
+                address nothing would do anything with.
+              </p>
+            </div>
+
+            <div className="footer-col">
+              <h4>Product</h4>
+              <ul>
+                <li><Link href="/assets">Assets</Link></li>
+                <li><Link href="/earn">Earn</Link></li>
+                <li><Link href="/app">Launch Usance</Link></li>
+                <li><Link href="/simulate">Walkthrough</Link></li>
+              </ul>
+            </div>
+
+            <div className="footer-col">
+              <h4>Verify</h4>
+              <ul>
+                <li><Link href="/status">Integration status</Link></li>
+                <li><Link href="/assets/franklin-fobxx">A live Passport</Link></li>
+                <li><Link href="/security">Security model</Link></li>
+              </ul>
+            </div>
+
+            <div className="footer-col">
+              <h4>Network</h4>
+              <ul>
+                <li><a href="https://www.okx.com/web3/explorer/xlayer-test" target="_blank" rel="noreferrer">X Layer explorer</a></li>
+                <li><a href="https://web3.okx.com/xlayer" target="_blank" rel="noreferrer">About X Layer</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="row-between" style={{ paddingTop: 22, borderTop: "1px solid var(--hairline)", flexWrap: "wrap", gap: 10 }}>
+            <span className="caption">© 2026 Usance. Built on X Layer.</span>
+            <span className="caption" style={{ color: "var(--stone)" }}>
+              Testnet deployment. Test assets have no real value.
+            </span>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
