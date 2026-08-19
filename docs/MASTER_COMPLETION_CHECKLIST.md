@@ -6,7 +6,7 @@ Code existing is not completion.
 
 `BLOCKED` marks a genuine external dependency, named exactly. It is not a synonym for "hard".
 
-> **Total** 210 · **Complete** 119 · **P0 open** 8 · **P1 open** 33 · **P2 open** 47 · **Externally blocked** 3
+> **Total** 210 · **Complete** 122 · **P0 open** 5 · **P1 open** 33 · **P2 open** 47 · **Externally blocked** 3
 >
 > P0 blocks a fresh user or operator from completing a core lifecycle. P1 is required for product,
 > security or operational completeness. P2 is polish. BLOCKED names a real external dependency and
@@ -180,7 +180,7 @@ Current: **16/34 canonical routes**,
 ## P. Frontend capital user
 
 - [x] `/app`
-- [ ] **P0** `/app/onboarding`
+- [x] `/app/onboarding`
 - [ ] **P0** `/app/assets/[assetId]`
 - [x] `/app/collateral/add`
 - [x] `/app/borrow`
@@ -193,7 +193,7 @@ Current: **16/34 canonical routes**,
 - [x] `/app/mandates/new`
 - [x] `/app/mandates/[mandateId]`
 - [x] `/app/activity`
-- [ ] **P0** `/app/activity/[receiptId]`
+- [x] `/app/activity/[receiptId]`
 - [x] `/app/alerts`
 - [x] `/app/settings`
 - [x] `/app/settings/security`
@@ -237,7 +237,7 @@ Current: **16/34 canonical routes**,
 - [x] Public `/proof/[receiptId]`, no wallet
 - [x] Superseded records archived, never rewritten
 - [x] Artifact provenance and freshness gate
-- [ ] **P0** `/app/activity/[receiptId]`
+- [x] `/app/activity/[receiptId]`
 - [ ] **P2** Mandate and intent receipts in the same family
 
 ## V. Observability
