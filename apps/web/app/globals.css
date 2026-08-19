@@ -734,18 +734,19 @@ h4 {
   display: flex;
   flex-direction: column;
   min-width: 0; /* lets long hashes wrap instead of widening the grid track */
-  background: var(--paper);
+  /* The same ground as the content it holds. Paper here and linen inside left a seam wherever the
+     content stopped — visible as a pale strip down the right on any display wider than the cap. */
+  background: var(--linen);
   border-radius: var(--radius-card);
-  overflow: hidden; /* so the top bar and the strip inherit the corner */
+  overflow: hidden;
 }
 
 .app-topbar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 24px;
-  background: var(--paper);
-  border-bottom: 1px solid var(--hairline);
+  padding: 16px 24px 12px;
+  background: transparent;
   border-radius: var(--radius-card) var(--radius-card) 0 0;
 }
 
@@ -756,10 +757,13 @@ h4 {
   gap: 10px;
 }
 
+/* A rounded banner inset from the panel edge, not a rule drawn across it. The warning matters
+   enough to stay on every screen and not enough to cut the layout in half. */
 .testnet-strip {
-  padding: 9px 24px;
+  margin: 0 24px 4px;
+  padding: 9px 18px;
   background: var(--bone);
-  border-bottom: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
   font-size: 11px;
   letter-spacing: 0.05em;
   color: var(--graphite);
@@ -828,7 +832,12 @@ h4 {
   }
 
   .app-topbar {
-    padding: 10px 14px;
+    padding: 12px 14px 8px;
+  }
+
+  .testnet-strip {
+    margin: 0 14px 4px;
+    padding: 8px 14px;
   }
 
   .app-content {
@@ -1083,11 +1092,9 @@ h4 {
   align-items: start;
 }
 
-/* The frame stops the content stretching to a width nothing is designed for, and centres it so a
-   very wide display does not leave everything hugging the rail. */
-.app-content {
-  max-width: 1440px;
-}
+/* No inner cap. The panel is the bound, and a max-width inside it left the remainder showing a
+   different colour — which is the pale band that appeared down the right edge of every page. If a
+   very wide display ever needs a reading measure, it belongs on the text column, not on the frame. */
 
 @media (max-width: 1080px) {
   .kpi-row {
@@ -1209,15 +1216,18 @@ h4 {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 11px 24px;
+  margin: 0 24px 4px;
+  padding: 11px 18px;
   background: var(--risk-attention-bg);
-  border-bottom: 1px solid rgba(122, 90, 30, 0.28);
+  border: 1px solid rgba(122, 90, 30, 0.28);
+  border-radius: var(--radius-input);
   color: var(--risk-attention);
   font-size: 13px;
 }
 
 @media (max-width: 900px) {
   .degraded {
+    margin: 0 14px 4px;
     padding: 10px 14px;
   }
 }

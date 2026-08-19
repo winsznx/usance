@@ -385,3 +385,44 @@ test.describe("the frame is panelled", () => {
     expect(parseFloat(mainRadius)).toBeGreaterThan(8);
   });
 });
+
+test.describe("the frame has no seams", () => {
+  test.skip(({ isMobile }) => isMobile === true, "the phone drops the panel inset");
+
+  test("the content and its panel share one ground colour", async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+
+    // Paper behind linen content left a pale strip wherever the content stopped, which on a wide
+    // display ran the full height of the right edge on every page.
+    const panel = await page.locator(".app-main").evaluate((el) => getComputedStyle(el).backgroundColor);
+    const content = await page.locator(".app-content").evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(panel).toBe(content);
+  });
+
+  test("nothing inside the panel is capped narrower than the panel", async ({ page }) => {
+    await page.setViewportSize({ width: 1800, height: 1000 });
+    await signedIn(page);
+    await page.goto("/app");
+
+    const panel = await page.locator(".app-main").boundingBox();
+    const content = await page.locator(".app-content").boundingBox();
+    // A cap inside the panel leaves the remainder showing a different surface. If a reading measure
+    // is ever needed it belongs on the text column, not on the frame.
+    expect(Math.abs((panel?.width ?? 0) - (content?.width ?? 0))).toBeLessThan(2);
+  });
+
+  test("the testnet notice is a rounded banner, not a rule across the page", async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+
+    const strip = page.locator(".testnet-strip");
+    const radius = await strip.evaluate((el) => getComputedStyle(el).borderTopLeftRadius);
+    expect(parseFloat(radius)).toBeGreaterThan(8);
+
+    // Inset from the panel edge rather than bleeding to it.
+    const strip_box = await strip.boundingBox();
+    const panel = await page.locator(".app-main").boundingBox();
+    expect((strip_box?.x ?? 0) - (panel?.x ?? 0)).toBeGreaterThan(8);
+  });
+});
