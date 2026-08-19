@@ -1,18 +1,13 @@
 import { test, expect } from "@playwright/test";
+import { signedIn } from "./wallet-harness";
 
 /**
  * The application frame, on both widths.
  *
- * SKIPPED, and honestly rather than deleted.
- *
- * The frame is now behind authentication: an unconnected visitor to any account route is redirected
- * to onboarding, which is the correct product behaviour and the whole point of the change. It also
- * means these assertions cannot run without a funded browser wallet, which this suite does not have
- * — and mocking one to claim the rail works would be asserting against a harness rather than the
- * app.
- *
- * Tracked as P1 in the master checklist: a deterministic test-wallet provider for E2E. Until that
- * exists, these describe what must hold and do not pretend to have verified it.
+ * The frame is behind authentication, so these run against a deterministic provider that answers
+ * `eth_accounts`, `eth_chainId` and signatures from fixed values and **refuses everything that moves
+ * value**. That refusal is what keeps these honest: they assert the chrome renders and navigates,
+ * never that a transaction succeeded.
  *
  * One component produces the desktop rail and the phone layout, so these describe what must hold of
  * both: the same destinations, the same active state, and no route reachable on a desktop and
@@ -22,7 +17,7 @@ import { test, expect } from "@playwright/test";
 const NAV_LABELS = ["Overview", "Position", "Activity", "Alerts", "Assets", "Mandates", "Earn", "Settings"];
 
 test.describe("desktop rail", () => {
-  test.skip(true, "needs a browser wallet harness; the frame is behind authentication");
+  test.beforeEach(async ({ page }) => signedIn(page));
   // Keyed on the device capability rather than forced with a viewport override. The mobile project
   // is a Pixel 7 descriptor, and widening its viewport produces a phone that is not a phone: the
   // rail would then be under test in a configuration no real user is ever in.
@@ -66,7 +61,7 @@ test.describe("desktop rail", () => {
 });
 
 test.describe("phone layout", () => {
-  test.skip(true, "needs a browser wallet harness; the frame is behind authentication");
+  test.beforeEach(async ({ page }) => signedIn(page));
   test.skip(({ isMobile }) => isMobile !== true, "phone layout only");
 
   test("puts frequent destinations under the thumb", async ({ page }) => {
@@ -125,7 +120,7 @@ test.describe("phone layout", () => {
 });
 
 test.describe("the overview invents no data", () => {
-  test.skip(true, "needs a browser wallet harness; the overview is behind authentication");
+  test.beforeEach(async ({ page }) => signedIn(page));
   test("draws no time series", async ({ page }) => {
     await page.goto("/app");
     const body = (await page.locator("body").innerText()).toLowerCase();
@@ -143,7 +138,7 @@ test.describe("the overview invents no data", () => {
 });
 
 test.describe("detail level", () => {
-  test.skip(true, "needs a browser wallet harness; the toggle lives in the authenticated frame");
+  test.beforeEach(async ({ page }) => signedIn(page));
   test("defaults to simple and remembers advanced", async ({ page }) => {
     await page.goto("/app");
     await expect(page.getByRole("button", { name: "Simple" })).toHaveAttribute("aria-pressed", "true");
@@ -175,7 +170,7 @@ test.describe("detail level", () => {
 });
 
 test.describe("degraded state", () => {
-  test.skip(true, "needs a browser wallet harness; the banner lives in the authenticated frame");
+  test.beforeEach(async ({ page }) => signedIn(page));
   test("says so when readiness reports a blocker", async ({ page }) => {
     // Forced rather than waited for. A degraded banner nobody can trigger is a banner nobody has
     // seen render, and this is the state a user most needs to be told about.
@@ -200,7 +195,7 @@ test.describe("degraded state", () => {
 });
 
 test.describe("keyboard navigation", () => {
-  test.skip(true, "needs a browser wallet harness; shortcuts live in the authenticated frame");
+  test.beforeEach(async ({ page }) => signedIn(page));
   test.skip(({ isMobile }) => isMobile === true, "pointer-free navigation is a desktop affordance");
 
   test("g then a letter moves between sections", async ({ page }) => {
@@ -217,5 +212,84 @@ test.describe("keyboard navigation", () => {
     await page.keyboard.press("p");
     // The sequence expires, so the next keystroke is not silently turned into navigation.
     await expect(page).toHaveURL(/\/app$/);
+  });
+});
+
+test.describe("the connected overview", () => {
+  test.beforeEach(async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+    // The account read is asynchronous. Asserting straight after navigation tests the skeleton,
+    // which is why this failed on the slower device profile and not the faster one.
+    await expect(page.getByText("Recognised collateral")).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("answers the four questions without scrolling past them", async ({ page }) => {
+    const body = await page.locator("body").innerText();
+
+    // What do I own, what is it worth here, what do I owe, what may I do. Anything else on this
+    // page is context for one of those four.
+    for (const label of ["Recognised collateral", "Debt outstanding", "Available to borrow", "Reserved for execution"]) {
+      expect(body, `the overview omits "${label}"`).toContain(label);
+    }
+  });
+
+  test("shows the derivation, or explains why there is none", async ({ page }) => {
+    const body = (await page.locator("body").innerText()).toLowerCase();
+
+    // The harness account holds nothing, so the derivation correctly does not render — a
+    // derivation of zero would be four empty bars pretending to explain something. What must hold
+    // either way is that the page says which of the two it is.
+    expect(body).toMatch(/how your capacity is derived|hold no collateral usance recognises/);
+
+    // And in neither case is there an invented history.
+    expect(body).not.toMatch(/last 7 days|vs prior week/);
+  });
+
+  test("shows the ladder, the buffer and the history", async ({ page }) => {
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    expect(body).toContain("where your account stands");
+    expect(body).toContain("safety buffer");
+    expect(body).toContain("transaction history");
+  });
+
+  test("an account with no history says so instead of inventing rows", async ({ page }) => {
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    // The harness account has done nothing. An empty table is a true statement; invented rows
+    // would be a false one.
+    expect(body).toMatch(/nothing has happened on this account yet|transaction history/);
+  });
+
+  test("does not offer actions the protocol would refuse", async ({ page }) => {
+    // Derived from account status, so a disabled control carries a stated reason rather than
+    // vanishing. A user whose options silently shrink cannot tell broken from blocked.
+    const unavailable = page.getByText(/· unavailable/i);
+    for (const el of await unavailable.all()) {
+      await expect(el).toBeVisible();
+    }
+  });
+});
+
+test.describe("the harness refuses to move value", () => {
+  test("a request that would spend is rejected, not faked", async ({ page }) => {
+    await signedIn(page);
+    await page.goto("/app");
+
+    const outcome = await page.evaluate(async () => {
+      try {
+        await (window as unknown as { ethereum: { request: (a: unknown) => Promise<unknown> } }).ethereum.request({
+          method: "eth_sendTransaction",
+          params: [{}],
+        });
+        return "accepted";
+      } catch (e) {
+        return (e as Error).message;
+      }
+    });
+
+    // If this ever returns a hash, every "the borrow succeeded" assertion in this suite becomes
+    // a claim about a mock rather than about the protocol.
+    expect(outcome).not.toBe("accepted");
+    expect(outcome).toContain("refuses eth_sendTransaction");
   });
 });
