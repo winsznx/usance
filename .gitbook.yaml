@@ -1,0 +1,10 @@
+# GitBook Git Sync configuration.
+#
+# Connect the Usance GitBook space to this repository and it will sync the docs-site/ folder only —
+# never the internal engineering notes under docs/ (SENTINELS_*, checklists, decisions). Keeping the
+# public documentation in its own tree is what lets those two evolve without leaking into each other.
+root: ./docs-site/
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md
