@@ -123,3 +123,34 @@ owed.
 all refused at the ClearingHouse boundary. The mandate vocabulary contains them and the registry
 checks their caps correctly, but no venue execution path is wired, so granting them would authorise
 an act with nowhere to go. `ActionNotDelegable` is the honest answer until that changes.
+
+---
+
+## Sentinels — autonomy plane (I-60…I-74)
+
+Introduced with the Sentinels integration (`docs/SENTINELS_ARCHITECTURE.md`,
+`docs/SENTINELS_SECURITY.md`), continuing the ledger after the delegated-authority set. Proofs are
+Forge tests in `contracts/test/Sentinel.t.sol` and Vitest in `services/sentinel/test/*` and
+`packages/schemas/test/sentinel-*.test.ts`.
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-60 | A Sentinel cannot expand a mandate; widening needs a fresh owner signature. | ENFORCED | By construction (registries hold no MandateRegistry role) + `Sentinel.t.sol:test_registriesHoldNoRoleOverMoney` |
+| I-61 | A template authorizes no money; neither registry holds a role over, or calls, a money contract. | ENFORCED | By construction (each imports only `Authority`) + `test_registriesHoldNoRoleOverMoney` |
+| I-62 | A template update cannot alter an existing instance; versions are immutable, instances pin version + manifest hash. | ENFORCED | `test_versionsAreSequentialAndImmutable`, `test_newVersionDoesNotMutateEarlierVersionOrItsInstances`, `test_registrationPinsManifestAndRefusesMissingOrDisabled` |
+| I-63 | Duplicate trigger delivery cannot duplicate financial effect; runId is derived and consumed once. | ENFORCED | `run-store.test` (openRun idempotent), `engine.test` (duplicate → one effect) |
+| I-64 | EXECUTION_UNKNOWN releases nothing — no reservation, no budget. | ENFORCED | `sentinel-budget.test`, `engine.test` (unknown retains the reservation) |
+| I-65 | A stale snapshot cannot execute; the live epoch is re-read at authorization. | ENFORCED | `engine.test` (epoch race → BLOCKED_BY_RISK_EPOCH) |
+| I-66 | An AI-only / weak-authority observation cannot increase risk. | ENFORCED | `validate.test` (weak trigger + risk-increasing → CONFIRM) + trigger-injection cases |
+| I-67 | Two Sentinels cannot reserve the same unit of capacity; onchain reservation is the only capacity truth. | ENFORCED | Existing reservation tests (I-19/I-23) re-cited; runtime ordering `supervisor.test` |
+| I-68 | A SECURITY_DISABLED template starts no new runs and accepts no new instances. | ENFORCED | `test_registrationPinsManifestAndRefusesMissingOrDisabled` (TemplateDisabled) |
+| I-69 | A budget cannot be overspent by concurrency or retry; consumption is idempotent per runId. | ENFORCED | `sentinel-budget.test`, `engine.test` |
+| I-70 | A never-executed run pays no success fee; a retry cannot pay twice. | ENFORCED | `sentinel-budget.test` (fees accrue only on CONFIRMED) |
+| I-71 | An external yield adapter cannot send funds to an arbitrary recipient. | SPECIFIED | Plan schema carries no recipient field; no venue adapter wired yet |
+| I-72 | A public basket cannot activate without PUBLIC_ISSUANCE; a personal basket cannot silently become transferable. | PLANNED | Basket products not built |
+| I-73 | A revoked or expired mandate blocks every run at authorization, whatever state it reached. | ENFORCED | `engine.test` (revoked → BLOCKED_BY_MANDATE), `receipt.test` (REJECTED_BY_POLICY, no tx) |
+| I-74 | Low-authority evidence cannot increase collateral capability (restates I-18 over the Sentinel surface). | ENFORCED | `sentinel-observation` schema (authority capped at EVIDENCE_BOUND) + `validate.test` |
+
+I-71 and I-72 are named now and refused by absence: no venue adapter and no basket issuance path
+exists, so neither capability can be exercised at all. They move to ENFORCED when those features
+ship with their own tests, not before.

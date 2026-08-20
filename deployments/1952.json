@@ -20,7 +20,9 @@
     "feeController": "0x44fe9a83186c4c9fc20f14342b10b59861ad1961",
     "mandateRegistry": "0x71dd68dfc114be35d5fdb524aa21b9d699e9cf5b",
     "delegationGateway": "0x1fe2f202d0ce10d20f3a8470c4cab51d45993659",
-    "intentBook": "0x35eaa2f92045eb6ced6817a296a7ddf701854442"
+    "intentBook": "0x35eaa2f92045eb6ced6817a296a7ddf701854442",
+    "sentinelTemplateRegistry": "0xd8e1c67cf2b3ae98e414d937653a51556432c275",
+    "sentinelInstanceRegistry": "0x882c941a94cab3d1c40ec5ac5d1d7d3499436d08"
   },
   "deploymentTx": {
     "authority": "0xd1989eade9cbec5e41bfbcad9bdfbc6f05e9bdb6ef080bc3d36e9b18d3bd5565",
@@ -36,7 +38,9 @@
     "feeController": "0xe8e2d6f6c5c2a6ae6006203606e58fa7733e164c49479fb85031cc4d3eed9c23",
     "mandateRegistry": "0x459ac79372bcbaca1dc26c62258bdfd00e060a77ae87f44a54185dd894989efc",
     "delegationGateway": "0xf1b8d3e4fd8575b17131f06ebfa137df186ac8267c9416fc6030c0a814fea9ca",
-    "intentBook": "0x6a6aebbd2b62db308c66e28a1039da0663d3c4cfddc96540f7975ac3a566cb8a"
+    "intentBook": "0x6a6aebbd2b62db308c66e28a1039da0663d3c4cfddc96540f7975ac3a566cb8a",
+    "sentinelTemplateRegistry": "0x1e5788489bbf546428dff458c9c8c550d6d1beb19efc383694be9a17cf146609",
+    "sentinelInstanceRegistry": "0x5d57685a12d4dd2e0434bf2042e52ae479edfe0d23abd0d91c70bb174ae7795f"
   },
   "testnetFixtures": {
     "note": "TEST ASSETS — NO REAL VALUE. Not FOBXX, OUSG, ARCOIN or any issuer token.",

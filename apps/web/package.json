@@ -22,7 +22,8 @@
     "@usance/xlayer": "workspace:*",
     "@usance/schemas": "workspace:*",
     "@usance/chaingpt": "workspace:*",
-    "@usance/evidence": "workspace:*"
+    "@usance/evidence": "workspace:*",
+    "@usance/sentinel": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable claim ledger. A claim may only carry a proof level its evidence supports. LIVE_TESTNET requires a transaction hash a reader can check independently.",
-  "updatedAt": "2026-08-18",
+  "updatedAt": "2026-08-20",
   "proofLevels": [
     "SPECIFIED",
     "UNIT_TESTED",
@@ -345,6 +345,57 @@
         "contracts/test/DelegatedAuthority.t.sol"
       ],
       "detail": "Mined on X Layer testnet. Owner 0xBA813263 signed a REPAY-only mandate to agent 0xCe805513, a distinct address; the agent repaid, the owner revoked, and the same agent's identical next attempt reverted in a block. isLive read true before the revocation and false after. The retry was submitted with an explicit gas limit so the refusal was mined rather than caught at estimation \u2014 a revert nobody can look up is not proof the protocol refused anything. The refused attempt did not reduce the debt; the only movement between the two blocks was accrued interest."
+    },
+    {
+      "claim": "The Usance Sentinel registries are deployed on X Layer testnet, additively beside the core.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0x1e5788489bbf546428dff458c9c8c550d6d1beb19efc383694be9a17cf146609",
+        "0x5d57685a12d4dd2e0434bf2042e52ae479edfe0d23abd0d91c70bb174ae7795f",
+        "deployments/1952.json",
+        "docs/SENTINELS_DEMO.md"
+      ],
+      "detail": "SentinelTemplateRegistry at 0xd8e1c67c and SentinelInstanceRegistry at 0x882c941a, deployed against the existing Authority. No core contract was redeployed; the registries hold no role over any money contract."
+    },
+    {
+      "claim": "A Sentinel template is committed with immutable versioning and an instance pins it, onchain.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0xa096089b032ad571e3c2988429bc57b959d73c3e9f908cb768682eec55fe9b73",
+        "0x203c2288c4c36cc013199cae226b2283d47d9e1c5ad5a28c6f27b8fda4f047e3",
+        "docs/SENTINELS_DEMO.md"
+      ],
+      "detail": "T1 Safety Buffer committed as templateId 0x0dbe0105 v1 (RISK_REDUCING_ONLY). An instance registered as 0xb7124e96, pinning templateId, version and manifest hash. The InstanceRegistered event carries the pin."
+    },
+    {
+      "claim": "A Sentinel instance cannot bind a template whose committed manifest it does not match \u2014 the refusal is mined onchain.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0x97a68428aa879197c5cda8b363a4a8c45683edea6babebca3f6aa4bf2a11ba4d",
+        "docs/SENTINELS_DEMO.md"
+      ],
+      "detail": "A registerInstance carrying a mismatched manifest hash was submitted with an explicit gas limit and reverted in a block with ManifestMismatch (selector 0xe07a5886), status 0. This is the onchain half of I-62: an instance's pin is verified, not assumed."
+    },
+    {
+      "claim": "Every Sentinel financial action requires both protocol and mandate authorization, and the autonomy plane cannot widen its own bounds.",
+      "proofLevel": "UNIT_TESTED",
+      "evidence": [
+        "services/sentinel/test/engine.test.ts",
+        "services/sentinel/test/validate.test.ts",
+        "contracts/test/Sentinel.t.sol",
+        "spec/invariants.md"
+      ],
+      "detail": "Invariants I-60..I-74. The engine end-to-end proves duplicate triggers produce one effect (I-63), execution-unknown releases nothing (I-64), a moved epoch blocks (I-65), a weak/AI trigger cannot increase risk (I-66), and a revoked mandate blocks (I-73); the contract tests prove immutable versions, pin integrity (I-62) and no money role (I-61). Mutation guards recorded in docs/SENTINELS_SECURITY.md \u00a74."
+    },
+    {
+      "claim": "A Sentinel autonomously repaid debt on X Layer without a user initiating the transaction.",
+      "proofLevel": "LIVE_TESTNET",
+      "evidence": [
+        "0xb037f143ffe9b39f23b348e23f079518d40a9d74394aa008e25d740a1831df61",
+        "proof/live-sentinel.json",
+        "services/sentinel/test/engine.test.ts"
+      ],
+      "detail": "Mined on X Layer testnet at block 38767411. The Sentinel engine observed the account through live viem adapters, compiled a risk-reducing REPAY, checked ProtocolAllows \u2227 MandateAllows against the live epoch and mandate state, and the bounded agent executor 0xCe805513 \u2014 distinct from the owner 0xBA813263 \u2014 submitted the repayment through DelegationGateway. The owner's debt fell 0.02913 -> 0.01913 tUSD and no human sent the transaction (run 0xc29b11e6, instance 0xb7124e96). New borrowing was separately refused with AccountNotHealthy because the testnet mock feeds are stale, which is why a standing debt was reduced rather than freshly created: REPAY is risk-reducing and remains available while new risk is gated. The loop is also proven offline in engine.test.ts."
     }
   ]
 }

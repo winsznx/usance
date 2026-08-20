@@ -38,6 +38,9 @@ importers:
       '@usance/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
+      '@usance/sentinel':
+        specifier: workspace:*
+        version: link:../../services/sentinel
       '@usance/xlayer':
         specifier: workspace:*
         version: link:../../packages/xlayer
@@ -162,6 +165,34 @@ importers:
       '@usance/xlayer':
         specifier: workspace:*
         version: link:../../packages/xlayer
+      viem:
+        specifier: ^2.21.55
+        version: 2.55.16(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vite-node:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)
+
+  services/sentinel:
+    dependencies:
+      '@usance/evidence':
+        specifier: workspace:*
+        version: link:../evidence
+      '@usance/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       viem:
         specifier: ^2.21.55
         version: 2.55.16(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)

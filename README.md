@@ -18,6 +18,12 @@ the contract enforces and capacity that moves on its own when the evidence chang
 > loan-to-value ratio, move collateral, create debt, or approve a withdrawal — not because it is
 > asked not to, but because no such function is reachable from anything it produces.
 
+**Usance Sentinels** extend that principle to autonomy. A Sentinel watches your account and acts on
+its own — repaying to hold a safety buffer, say — but only through a bounded mandate you sign. It
+observes, plans and asks; deterministic policy and your mandate decide. It cannot widen its own
+permissions, cannot withdraw collateral, and cannot let an AI-only reading raise your risk. See
+`docs/SENTINELS_ARCHITECTURE.md` and invariants I-60…I-74 in `spec/invariants.md`.
+
 ---
 
 ## Try it in two minutes

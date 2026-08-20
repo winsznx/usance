@@ -1,0 +1,50 @@
+{
+  "kind": "LIVE_SENTINEL_AUTONOMOUS_RUN",
+  "chainId": 1952,
+  "network": "X Layer Testnet",
+  "owner": "0xBA8132637cbFCE8d76991E1D681aa2e29f204b05",
+  "agent": "0xCe80551383e738705eDB9844f604Bf9138Dc01E8",
+  "delegationGateway": "0x1fe2f202d0ce10d20f3a8470c4cab51d45993659",
+  "sentinelTemplateRegistry": "0xd8e1c67cf2b3ae98e414d937653a51556432c275",
+  "sentinelInstanceRegistry": "0x882c941a94cab3d1c40ec5ac5d1d7d3499436d08",
+  "instanceId": "0xb7124e9653e1372ae726976086d2dd6213140014a13d122d622b4a85194961c1",
+  "runId": "0xc29b11e6a87dd3de63dc5fa7f21545f2acd6b766a17dcdad5c02fbb8e3d1731c",
+  "runState": "COMPLETE",
+  "trigger": {
+    "class": "RISK_STATE",
+    "authority": "DETERMINISTIC_ONCHAIN"
+  },
+  "plan": {
+    "action": "REPAY",
+    "amountUsd18": "10000000000000000",
+    "repayAll": false,
+    "riskDirection": "REDUCING"
+  },
+  "mandateId": "0x69572a90434a450b220680d6eacf1d2a7687656fb6f7eb656f09d7af4484c696",
+  "repayTx": "0xb037f143ffe9b39f23b348e23f079518d40a9d74394aa008e25d740a1831df61",
+  "debtBefore": "29134861569144257",
+  "debtAfter": "19134873758267947",
+  "receiptStatus": "CONFIRMED",
+  "receiptKind": "SENTINEL_RUN_EXECUTED",
+  "identityWarning": "tUSTB/tUSD are labelled testnet stand-ins, not any issuer token. This proves autonomy mechanics.",
+  "transactions": [
+    {
+      "label": "registerMandate",
+      "hash": "0x891b29afe391847f5346e9cd8ceccb8ad56a9840cb9645098b2ffc51456b48c7",
+      "block": 38767400,
+      "status": "success"
+    },
+    {
+      "label": "agent approves ClearingHouse",
+      "hash": "0xc1701805278d8b0b7b802493e87d593ebf06144842992ff02464aebc498507ef",
+      "block": 38767404,
+      "status": "success"
+    },
+    {
+      "label": "sentinel autonomous REPAY",
+      "hash": "0xb037f143ffe9b39f23b348e23f079518d40a9d74394aa008e25d740a1831df61",
+      "block": 38767411,
+      "status": "success"
+    }
+  ]
+}

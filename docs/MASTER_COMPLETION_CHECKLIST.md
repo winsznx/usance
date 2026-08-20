@@ -238,7 +238,7 @@ Current: **16/34 canonical routes**,
 - [x] Superseded records archived, never rewritten
 - [x] Artifact provenance and freshness gate
 - [x] `/app/activity/[receiptId]`
-- [ ] **P2** Mandate and intent receipts in the same family
+- [~] **P2** Mandate and intent receipts in the same family — the live delegated-authority run projects to a `MANDATE_DELEGATED` receipt on public `/proof` (repaid within scope, refused reaching outside it, refused after revocation; `apps/web/test/receipts.test.ts`); intent receipts still pending
 
 ## V. Observability
 
@@ -378,6 +378,32 @@ Current: **16/34 canonical routes**,
 - [ ] **P1** Dark theme
 - [ ] **P2** Virtualised activity list
 - [ ] **P2** Pin / hide on metric cards
+
+## AN. Sentinels — bounded autonomous agents + marketplace
+
+Full granular ledger: `docs/SENTINELS_TASKS.md` (the authoritative census; these are its
+rollups). Architecture: `docs/SENTINELS_ARCHITECTURE.md`. Security: `docs/SENTINELS_SECURITY.md`.
+
+- [x] **P0** Sentinel domain schemas (`packages/schemas/src/sentinel-*.ts`): template, instance, TriggerSpec union, snapshot, plan, run, budget, draft, observation, market-session, mandate-action vocabulary — all strict, all tested (124 unit tests, typecheck clean)
+- [x] **P0** `SentinelTemplateRegistry.sol` — immutable sequential versions, bounded fees, restrict-only status ladder (GOVERNANCE lifts), risk-reducing action guard; 12 Forge tests
+- [x] **P0** `SentinelInstanceRegistry.sol` — template pin + manifest-hash integrity, mandate binding, guardian/owner pause asymmetry, terminal revoke
+- [x] **P0** Size-guard extended (both registries ~4.5KB, asserted in `Deployment.t.sol` + `Sentinel.t.sol`); no Sentinel logic in ClearingHouse; no role over money contracts (I-61); full Forge suite 244 passing
+- [x] **P0** Runtime `services/sentinel`: run state machine, durable store, trigger ingestion + dedup, snapshot, plan compile/validate, authorization preview, budgets, execution, reconciliation, **ReceiptWriter, supervisor** — all built and tested end to end (**31 tests**); P1 tails remain (IntentBook venue path, preemption, template-disable runtime re-check, expiry horizon, metrics)
+- [x] **P0** Weak-trigger asymmetry enforced (AI-only observation cannot increase risk) — I-66 (plan validator, unit-tested)
+- [x] **P0** Safety Buffer template: deterministic compiler + end-to-end runtime tests incl. negatives (revoked mandate, budget exhausted, duplicate-trigger single-effect, epoch race, crash-resume)
+- [x] **P0** Natural-language creation: draft → strict schema → typed config → template-bounded permission preview **built and tested (10 tests, injection corpus)**; the permission-preview → sign-mandate → ARMED step is wired in `/app/sentinels/new` (below)
+- [x] **P0** Web surfaces: public `/sentinels` + `/sentinels/[templateId]` + run-proof timeline; **auth-gated `/app/sentinels` list + `[instanceId]` detail with wired pause/resume/revoke (the app's first real contract writes) + `/app/sentinels/new` creation flow (permission preview → sign mandate → registerMandate → registerInstance → ARMED)**; `/developers/sentinels` publisher pages; the live autonomous run surfaced on the public `/proof` explorer as a first-class `SENTINEL_RUN_EXECUTED` receipt (`apps/web/test/receipts.test.ts`); `e2e/sentinels.spec.ts` (18 tests). Whole-workspace typecheck clean + **production `next build` passes**; e2e written and discovered but not executed here (needs a running server; the wallet harness refuses `eth_sendTransaction` by design).
+- [x] **P0** Live on X Layer testnet (1952): registries deployed additively, T1 committed, instance pinned, a mined `ManifestMismatch` revert (I-62), **AND an autonomous agent-executed REPAY** — the engine observed, dual-authorized against live state, and the bounded agent reduced the owner's debt 0.02913→0.01913 tUSD through DelegationGateway with no human sending it (tx `0xb037f143…`, `proof/live-sentinel.json`, `proof/claims.json` LIVE_TESTNET)
+- [ ] **P1** Event Guard + Treasury Recycle templates
+- [x] **P1** SignerProvider boundary (LocalTestSigner / EnvKeySigner / KMS shape with ACCESS_REQUIRED)
+- [ ] **P1** External-venue verification pass (Aave on X Layer, xStocks addresses, OKX venue identities) — findings recorded, nothing faked
+- [ ] **P1** Publisher flow `/developers/sentinels/**`
+- [ ] **P1** Playwright coverage (desktop + Pixel 7) for marketplace, creation, lifecycle, run detail
+- [x] **P1** Mutation guards (hand-written, per the repo convention) kill the applicable §4 mutations — mapped in `SENTINELS_SECURITY §4`; trigger-injection corpus added (contract template-mutation guard, AI authority-clamp, parked-plan tests). Automated Vertigo/Stryker tooling not yet in CI.
+- [~] **P1** Invariants I-60…I-74 folded into `spec/invariants.md` with test citations; `DECISIONS.md` D-020 + README pointer added. Runbooks (17 scenarios) and AUDIT_HANDOFF/IMPLEMENTATION_STATUS touch-ups remain.
+- [ ] **P2** Basket Rebalancer + Personal Basket; Public Basket issuance gate (`PUBLIC_ISSUANCE`) — spec-first
+- [ ] **P2** IssuanceReadinessReport (issuer acceleration)
+- [ ] **P2** Postgres store adapters; observability metrics dashboard
 
 ### Rejected, with reasons rather than silence
 

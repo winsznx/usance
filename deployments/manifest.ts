@@ -54,7 +54,9 @@ export const deployments: Record<number, DeploymentManifest> = {
       "feeController": "0x44fe9a83186c4c9fc20f14342b10b59861ad1961",
       "mandateRegistry": "0x71dd68dfc114be35d5fdb524aa21b9d699e9cf5b",
       "delegationGateway": "0x1fe2f202d0ce10d20f3a8470c4cab51d45993659",
-      "intentBook": "0x35eaa2f92045eb6ced6817a296a7ddf701854442"
+      "intentBook": "0x35eaa2f92045eb6ced6817a296a7ddf701854442",
+      "sentinelTemplateRegistry": "0xd8e1c67cf2b3ae98e414d937653a51556432c275",
+      "sentinelInstanceRegistry": "0x882c941a94cab3d1c40ec5ac5d1d7d3499436d08"
     },
     "assets": [
       {

@@ -39,6 +39,7 @@ const NAV: NavItem[] = [
   { href: "/app/alerts", label: "Alerts", icon: "alerts", primary: true },
   { href: "/assets", label: "Assets", icon: "passport" },
   { href: "/app/mandates", label: "Mandates", icon: "mandate" },
+  { href: "/app/sentinels", label: "Sentinels", icon: "intent" },
   { href: "/earn", label: "Earn", icon: "earn" },
   { href: "/app/settings", label: "Settings", icon: "settings" },
 ];

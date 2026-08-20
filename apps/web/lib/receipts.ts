@@ -31,6 +31,14 @@ export function loadReceipts(): UsanceReceipt[] {
       out.push(riskScenarioReceipt(raw));
       continue;
     }
+    if (raw["kind"] === "LIVE_SENTINEL_AUTONOMOUS_RUN") {
+      out.push(sentinelRunReceipt(raw));
+      continue;
+    }
+    if (raw["kind"] === "LIVE_DELEGATED_AUTHORITY") {
+      out.push(delegatedAuthorityReceipt(raw));
+      continue;
+    }
     if (raw["kind"] !== "PASSPORT_COMMITTED") continue;
 
     const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
@@ -249,6 +257,221 @@ function riskScenarioReceipt(raw: Record<string, unknown>): UsanceReceipt {
 
 export function loadReceipt(id: string): UsanceReceipt | null {
   return loadReceipts().find((r) => r.receiptId === id) ?? null;
+}
+
+/**
+ * The live autonomous-run receipt.
+ *
+ * The same `UsanceReceipt` family a Sentinel run projects to (`services/sentinel/src/receipt.ts`),
+ * rebuilt here from the record the live-run script wrote to disk. Nothing is synthesised: the
+ * transaction hashes, blocks and the debt delta are the ones the chain confirmed. An executed run
+ * cites its repay and is CONFIRMED; a run refused before submission would carry REJECTED_BY_POLICY
+ * with no confirmed repay — the receipt schema will not let "it executed" be asserted without a
+ * successful transaction.
+ */
+function sentinelRunReceipt(raw: Record<string, unknown>): UsanceReceipt {
+  const chainId = Number(raw["chainId"] ?? 1952);
+  const repayTx = String(raw["repayTx"] ?? "");
+  const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
+  const executed =
+    FULL_TX_HASH.test(repayTx) &&
+    txs.some((t) => String(t["hash"]) === repayTx && String(t["status"] ?? "success") !== "reverted");
+  const kind = executed ? "SENTINEL_RUN_EXECUTED" : "SENTINEL_RUN_BLOCKED";
+  const status = executed ? "CONFIRMED" : "REJECTED_BY_POLICY";
+
+  return {
+    receiptId: receiptIdFor(kind, chainId, executed ? repayTx : String(raw["runId"] ?? "0x0")),
+    kind,
+    status,
+    chainId,
+    accountId: String(raw["owner"] ?? ""),
+    // Labelled test tokens. This receipt asserts nothing about any issuer's filing.
+    evidenceAssetId: null,
+    financialAssetId: null,
+    // The run id is the workflow that produced this. The state machine it passed through lives on
+    // the run record, not here — this receipt only asserts what the chain confirmed.
+    workflowId: raw["runId"] ? String(raw["runId"]) : null,
+    intentId: null,
+    passportVersion: null,
+    evidenceRoot: null,
+    claimsRoot: null,
+    singleSource: null,
+    riskPolicyVersion: null,
+    riskEpoch: null,
+    transactions: txs
+      .filter((t) => FULL_TX_HASH.test(String(t["hash"])))
+      .sort((a, b) => Number(a["block"] ?? a["blockNumber"] ?? 0) - Number(b["block"] ?? b["blockNumber"] ?? 0))
+      .map((t) => ({
+        chainId,
+        contract: sentinelContractFor(String(t["label"])),
+        txHash: String(t["hash"]) as `0x${string}`,
+        blockNumber: Number(t["block"] ?? t["blockNumber"] ?? 0) || null,
+        action: String(t["label"]),
+        status: (String(t["status"] ?? "success") === "reverted" ? "reverted" : "success") as "reverted" | "success",
+        revertReason: null,
+        builderAttribution: null,
+      })),
+    stateTransitions: [],
+    createdAt: 0,
+    completedAt: 0,
+  };
+}
+
+/** Which contract each recorded live-run transaction actually touched — for the receipt's tx table. */
+function sentinelContractFor(label: string): string {
+  const l = label.toLowerCase();
+  if (l.includes("registermandate")) return "MandateRegistry";
+  if (l.includes("approve")) return "repay asset (ERC-20)";
+  return "DelegationGateway";
+}
+
+/** The observe→plan→authorize→execute facts and debt delta the proof page's Sentinel explainer cites. */
+export interface SentinelRunProofView {
+  executed: boolean;
+  agent: string;
+  action: string;
+  amountUsd18: string | null;
+  riskDirection: string;
+  triggerClass: string;
+  triggerAuthority: string;
+  debtBefore: string | null;
+  debtAfter: string | null;
+  identityWarning: string;
+}
+
+export function sentinelRunFor(receiptId: string): SentinelRunProofView | null {
+  if (!existsSync(PROOF_DIR)) return null;
+  for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
+    const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+    if (raw["kind"] !== "LIVE_SENTINEL_AUTONOMOUS_RUN") continue;
+    // Reuse the builder's id derivation so the match can never drift from the receipt it describes.
+    if (sentinelRunReceipt(raw).receiptId !== receiptId) continue;
+
+    const plan = (raw["plan"] as Record<string, unknown>) ?? {};
+    const trigger = (raw["trigger"] as Record<string, unknown>) ?? {};
+    const repayTx = String(raw["repayTx"] ?? "");
+    const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
+    return {
+      executed:
+        FULL_TX_HASH.test(repayTx) &&
+        txs.some((t) => String(t["hash"]) === repayTx && String(t["status"] ?? "success") !== "reverted"),
+      agent: String(raw["agent"] ?? ""),
+      action: String(plan["action"] ?? "UNKNOWN"),
+      amountUsd18: plan["amountUsd18"] ? String(plan["amountUsd18"]) : null,
+      riskDirection: String(plan["riskDirection"] ?? "REDUCING"),
+      triggerClass: String(trigger["class"] ?? ""),
+      triggerAuthority: String(trigger["authority"] ?? ""),
+      debtBefore: raw["debtBefore"] ? String(raw["debtBefore"]) : null,
+      debtAfter: raw["debtAfter"] ? String(raw["debtAfter"]) : null,
+      identityWarning: String(raw["identityWarning"] ?? ""),
+    };
+  }
+  return null;
+}
+
+/**
+ * The live delegated-authority receipt.
+ *
+ * The flagship proof of the mandate mechanics, rebuilt from the record `scripts/live-mandate.mjs`
+ * wrote. Its point is not that a repay happened — plain repays are unremarkable — but that a bounded
+ * delegated key acted *within* its mandate, was refused *outside* it, and that revocation was
+ * terminal. All three claims are cited by mined transactions: the successful delegated repay, the
+ * reverted collateral-outflow attempt, and the reverted post-revocation retry. CONFIRMED because it
+ * cites successful transactions; the refusals ride alongside as reverted rows.
+ */
+function delegatedAuthorityReceipt(raw: Record<string, unknown>): UsanceReceipt {
+  const chainId = Number(raw["chainId"] ?? 1952);
+  const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
+  const repay = txs.find((t) => /gateway\.execute|repay/i.test(String(t["label"])));
+  const revocation = (raw["revocation"] as Record<string, unknown>) ?? {};
+  const primary = String(repay?.["hash"] ?? revocation["revokeTx"] ?? raw["owner"] ?? "0x0");
+
+  return {
+    receiptId: receiptIdFor("MANDATE_DELEGATED", chainId, primary),
+    kind: "MANDATE_DELEGATED",
+    status: "CONFIRMED",
+    chainId,
+    accountId: String(raw["owner"] ?? ""),
+    // Labelled test tokens. This receipt asserts nothing about any issuer's filing — it proves the
+    // authority mechanics; the Franklin Passport proves the evidence mechanics.
+    evidenceAssetId: null,
+    financialAssetId: null,
+    workflowId: null,
+    intentId: null,
+    passportVersion: null,
+    evidenceRoot: null,
+    claimsRoot: null,
+    singleSource: null,
+    riskPolicyVersion: null,
+    riskEpoch: null,
+    transactions: txs
+      .filter((t) => FULL_TX_HASH.test(String(t["hash"])))
+      .sort((a, b) => Number(a["blockNumber"] ?? a["block"] ?? 0) - Number(b["blockNumber"] ?? b["block"] ?? 0))
+      .map((t) => ({
+        chainId,
+        contract: delegatedContractFor(String(t["label"])),
+        txHash: String(t["hash"]) as `0x${string}`,
+        blockNumber: Number(t["blockNumber"] ?? t["block"] ?? 0) || null,
+        action: String(t["label"]),
+        status: (String(t["status"] ?? "success") === "reverted" ? "reverted" : "success") as "reverted" | "success",
+        revertReason: null,
+        builderAttribution: null,
+      })),
+    stateTransitions: [],
+    createdAt: 0,
+    completedAt: 0,
+  };
+}
+
+/** Which contract each recorded delegated-authority transaction touched — for the receipt's tx table. */
+function delegatedContractFor(label: string): string {
+  const l = label.toLowerCase();
+  if (l.includes("registermandate") || l.includes("revokemandate")) return "MandateRegistry";
+  if (l.includes("addcollateral")) return "CollateralVault";
+  if (l.includes("mint") || l.includes("approve")) return "ERC-20";
+  return "DelegationGateway";
+}
+
+/** The bounded-authority facts the proof page's delegated-mandate explainer cites. */
+export interface DelegatedProofView {
+  agent: string;
+  mandateActions: string[];
+  mandateExpiresInSeconds: number | null;
+  repayDebtBefore: string | null;
+  repayDebtAfter: string | null;
+  withdrawalRefused: boolean;
+  revoked: boolean;
+  postRevocationRefused: boolean;
+  revocationNote: string;
+  identityWarning: string;
+}
+
+export function delegatedFor(receiptId: string): DelegatedProofView | null {
+  if (!existsSync(PROOF_DIR)) return null;
+  for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
+    const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+    if (raw["kind"] !== "LIVE_DELEGATED_AUTHORITY") continue;
+    // Reuse the builder's id derivation so the match can never drift from the receipt it describes.
+    if (delegatedAuthorityReceipt(raw).receiptId !== receiptId) continue;
+
+    const mandate = (raw["mandate"] as Record<string, unknown>) ?? {};
+    const withdrawal = (raw["withdrawalRefusal"] as Record<string, unknown>) ?? {};
+    const revocation = (raw["revocation"] as Record<string, unknown>) ?? {};
+    const post = (revocation["postRevocationAttempt"] as Record<string, unknown>) ?? {};
+    return {
+      agent: String(raw["agent"] ?? ""),
+      mandateActions: Array.isArray(mandate["actions"]) ? (mandate["actions"] as string[]) : [],
+      mandateExpiresInSeconds: mandate["expiresInSeconds"] != null ? Number(mandate["expiresInSeconds"]) : null,
+      repayDebtBefore: raw["debtBefore"] ? String(raw["debtBefore"]) : null,
+      repayDebtAfter: raw["debtAfter"] ? String(raw["debtAfter"]) : null,
+      withdrawalRefused: String(withdrawal["status"] ?? "") === "reverted",
+      revoked: revocation["liveAfter"] === false && revocation["liveBefore"] === true,
+      postRevocationRefused: String(post["status"] ?? "") === "reverted",
+      revocationNote: String(revocation["note"] ?? ""),
+      identityWarning: String(raw["identityWarning"] ?? ""),
+    };
+  }
+  return null;
 }
 
 /** The source metadata a Passport receipt cites, kept alongside the receipt on disk. */

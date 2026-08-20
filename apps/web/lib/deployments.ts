@@ -34,6 +34,8 @@ export interface Deployment {
     mandateRegistry?: `0x${string}`;
     intentBook?: `0x${string}`;
     delegationGateway?: `0x${string}`;
+    sentinelTemplateRegistry?: `0x${string}`;
+    sentinelInstanceRegistry?: `0x${string}`;
   };
   assets: Array<{
     assetId: `0x${string}`;

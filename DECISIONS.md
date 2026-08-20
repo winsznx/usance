@@ -9,6 +9,34 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-020 — A Sentinel is an autonomy plane over the money engines, never a fourth authority
+
+**Decision.** Autonomous agents ("Usance Sentinels") are added as a plane that observes, plans and
+requests authorization — not as a new financial authority. The constitutional equation is unchanged:
+`AllowedAction = ProtocolAllows ∧ MandateAllows`. A Sentinel executes only through the existing
+boundaries (MandateRegistry, DelegationGateway, reservations, ClearingHouse policy), and the two new
+contracts — `SentinelTemplateRegistry`, `SentinelInstanceRegistry` — hold **no role over any money
+contract and call none** (I-61). Templates are declarative, versioned, immutable specifications plus
+schema hashes; they never carry executable code the protocol runs with a user's authority.
+
+**What it displaced.** The build prompt's framing of an "AI agent" that acts. Making AI a fourth
+authority beside TRUTH / RISK / CAPITAL would have put a model on the money path. Instead the model
+may only produce a `SentinelDraft` (strict-parsed, reject-don't-repair) and a plan proposal;
+deterministic policy and the signed mandate decide.
+
+**Evidence.** `contracts/test/Sentinel.t.sol` (13 tests, both registries ~4.5KB, no money role),
+`services/sentinel` (33 tests: idempotent runs I-63, unknown-releases-nothing I-64, epoch-race I-65,
+weak-trigger asymmetry I-66, revoked-mandate I-73), `packages/schemas` sentinel schemas (strict).
+Invariants I-60…I-74 in `spec/invariants.md`.
+
+**Consequence.** ClearingHouse does not grow (a size guard covers both registries). New autonomous
+capability arrives as separate registries and an offchain runtime, not as authority added to the
+core. Agent keys are a bounded delegated identity behind a `SignerProvider` boundary; a compromised
+key is still confined by its mandate. Live testnet proof and the authenticated creation write-flow
+are the honest remaining gaps, tracked in `docs/SENTINELS_TASKS.md`.
+
+---
+
 ## D-016 — A generated artifact that records external reality is committed; run output is not
 
 **Decision.** `artifacts/` is ignored by default, with `artifacts/oracles/**` and
