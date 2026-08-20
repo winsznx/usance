@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, type ComponentType } from "react";
 import { Icon } from "@/components/icon";
 import { KitIcon, type KitIconName } from "@/components/kit-icon";
 import { Notice } from "@/components/primitives";
+import { AddCollateralForm, BorrowForm, RepayForm, WithdrawForm } from "@/components/action-forms";
 import type { AccountStatus } from "@usance/domain";
 import { permittedActions } from "@/lib/account";
 
@@ -82,6 +82,14 @@ const ACTIONS: ActionDef[] = [
   },
 ];
 
+/** The inline form for each action — the same components the standalone routes render. */
+const FORMS: Record<ActionKey, ComponentType> = {
+  add: AddCollateralForm,
+  borrow: BorrowForm,
+  repay: RepayForm,
+  withdraw: WithdrawForm,
+};
+
 export function ActionPanel({ status }: { status: AccountStatus }) {
   const allowed = permittedActions(status);
   // Opens on the first thing this account can actually do, rather than always on the same tab and
@@ -91,6 +99,7 @@ export function ActionPanel({ status }: { status: AccountStatus }) {
 
   const current = ACTIONS.find((a) => a.key === active)!;
   const blocked = current.blockedBecause(status);
+  const ActiveForm = FORMS[active];
 
   const permitted: Record<ActionKey, boolean> = {
     add: allowed.addCollateral,
@@ -145,13 +154,11 @@ export function ActionPanel({ status }: { status: AccountStatus }) {
               {current.blurb}
             </p>
             {/*
-              The form itself lives on its own route, which is what makes it deep-linkable and what
-              lets a quote carry a risk epoch through a page load. The panel is the decision; the
-              route is the transaction.
+              The form is rendered here, in place, not behind a link — acting on a position should
+              not cost you the view of it. The same form still lives on its own route (current.href)
+              for deep links; this is that component, mounted inline.
             */}
-            <Link className="btn btn-primary btn-lg" href={current.href}>
-              {current.label}
-            </Link>
+            <ActiveForm />
           </>
         )}
       </div>
