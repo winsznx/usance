@@ -144,6 +144,76 @@ h4 {
   color: var(--warm-ash);
 }
 
+/*
+ * Reduce motion — a real preference, set in Settings and stored per browser.
+ *
+ * Honoured over and above the OS setting: somebody who wants motion killed in this app can have it
+ * without changing a system-wide switch. Near-zero rather than zero so any JS waiting on
+ * transitionend still fires.
+ */
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+/* Keyboard-key chip, used in Settings to document the g-then-letter shortcuts. */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 2px 7px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-small);
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--charcoal);
+}
+
+/* Storage notice, pinned bottom-right; full-width on a phone. */
+.cookie-consent {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: var(--paper);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 40px rgba(27, 6, 36, 0.16);
+}
+
+.cookie-consent-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--graphite);
+}
+
+.cookie-consent-text a {
+  color: var(--aubergine-ink);
+  text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .cookie-consent {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+}
+
 .shell {
   max-width: var(--page-max);
   margin: 0 auto;
@@ -1657,6 +1727,7 @@ h4 {
 .hero-inner {
   position: relative;
   max-width: 860px;
+  text-align: center;
 }
 
 .hero-pill {
@@ -1670,21 +1741,22 @@ h4 {
 }
 
 .hero-headline {
-  margin: 22px 0 20px;
-  font-size: clamp(40px, 7vw, 76px);
+  margin: 22px auto 20px;
+  font-size: clamp(44px, 7.4vw, 84px);
   line-height: 1.02;
   /* Negative tracking at display sizes. Type set for body copy looks loose when scaled up. */
   letter-spacing: -0.035em;
-  font-weight: 400;
-  max-width: 15ch;
+  font-weight: 500;
+  max-width: 16ch;
 }
 
 .hero-sub {
-  margin: 0 0 32px;
+  margin: 0 auto 32px;
   font-size: clamp(16px, 1.5vw, 19px);
   line-height: 1.55;
-  color: var(--graphite);
-  max-width: 56ch;
+  color: var(--charcoal);
+  font-weight: 500;
+  max-width: 52ch;
 }
 
 .feature-grid {
@@ -1795,13 +1867,38 @@ h4 {
 }
 
 .site-footer {
-  padding: 64px 0 36px;
-  background: var(--paper);
+  position: relative;
+  padding: 88px 0 48px;
+  background: var(--espresso);
+  color: var(--bone);
+  overflow: hidden;
+}
+
+/*
+ * Ordered dot screen over the dark ground — the footer's echo of the hero's dither. Light dots at
+ * low opacity on a 4px grid, offset in a second pass so it reads as ink texture rather than a mesh.
+ * Inline CSS, so it cannot fail to load and adds no request.
+ */
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(237, 236, 231, 0.07) 0.7px, transparent 0.8px),
+    radial-gradient(rgba(237, 236, 231, 0.045) 0.7px, transparent 0.8px);
+  background-size: 4px 4px, 4px 4px;
+  background-position: 0 0, 2px 2px;
+}
+
+.site-footer > .shell {
+  position: relative;
+  z-index: 1;
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 0.8fr)) minmax(0, 1.3fr);
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 0.8fr)) minmax(0, 1.2fr);
   gap: 40px;
   margin-bottom: 48px;
 }
@@ -1825,13 +1922,13 @@ h4 {
 }
 
 .footer-col a {
-  color: var(--charcoal);
+  color: var(--mist);
   text-decoration: none;
   font-size: 15px;
 }
 
 .footer-col a:hover {
-  color: var(--aubergine-ink);
+  color: var(--paper);
   text-decoration: underline;
 }
 
@@ -1871,7 +1968,47 @@ h4 {
   gap: 12px;
   flex-wrap: wrap;
   padding-top: 24px;
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid rgba(237, 236, 231, 0.14);
+}
+
+/* The footer is dark, so muted text and the subscribe input are lifted off the near-black ground. */
+.site-footer .caption {
+  color: var(--stone);
+}
+.site-footer .footer-note {
+  color: var(--warm-ash);
+}
+.site-footer .footer-subscribe {
+  border-color: rgba(237, 236, 231, 0.24);
+}
+.site-footer .footer-subscribe input {
+  color: var(--bone);
+}
+.site-footer .footer-subscribe input::placeholder {
+  color: var(--warm-ash);
+}
+.site-footer .btn-primary {
+  background: var(--bone);
+  color: var(--espresso);
+}
+
+.footer-subscribe:focus-within {
+  border-color: var(--bone);
+}
+
+.subscribe-msg {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  max-width: 34ch;
+  line-height: 1.5;
+}
+
+.subscribe-ok {
+  color: var(--bone);
+}
+
+.subscribe-error {
+  color: #e6a99b;
 }
 
 @media (max-width: 900px) {
@@ -1958,11 +2095,13 @@ h4 {
 /*
  * Pages without a hero need the space the fixed header no longer occupies.
  *
- * Scoped to the first section so it cannot double up on a page that already offsets itself, and
- * excluded on the hero, which is the one section meant to run underneath.
+ * Excluded on the hero, which is the one section meant to run underneath. `!important` because
+ * every content page sets an inline `padding` shorthand on this section, and an inline shorthand's
+ * padding-top beats a normal rule — which left the content tucked right under the fixed header on
+ * /status, /security and the rest. Header clearance is a layout invariant, so it wins.
  */
 main > section:first-child:not(.hero) {
-  padding-top: 96px;
+  padding-top: 96px !important;
 }
 
 .site-header-inner {
