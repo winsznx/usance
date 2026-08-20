@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HeaderIsland } from "@/components/header-island";
+import { Lockup } from "@/components/kit-icon";
+import { SubscribeForm } from "@/components/subscribe-form";
 import type { AccountStatus } from "@usance/domain";
 
 /**
@@ -123,29 +125,84 @@ export function Nav({ cta = true }: { cta?: boolean }) {
   );
 }
 
+/**
+ * The site footer.
+ *
+ * One footer for every public page. It used to be a slim strip here and a rich four-column block
+ * hand-written on the landing page, so the two drifted; this is the landing block, promoted to the
+ * shared component so nothing can diverge again.
+ */
 export function Footer() {
   return (
-    <footer style={{ borderTop: "1px solid var(--hairline)", padding: "40px 0 56px" }}>
-      <div className="shell stack" style={{ gap: 20 }}>
-        <div className="row-between" style={{ flexWrap: "wrap" }}>
-          <Logo />
-          <div className="row" style={{ gap: 22, fontSize: 14, flexWrap: "wrap" }}>
-            <Link href="/assets" className="muted">
-              Supported assets
-            </Link>
-            <Link href="/status" className="muted">
-              Integration status
-            </Link>
-            <Link href="/simulate" className="muted">
-              Walkthrough
-            </Link>
+    <footer className="site-footer">
+      <div className="shell">
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <Lockup width={132} reversed />
+            <p className="caption" style={{ margin: "16px 0 0", maxWidth: "30ch" }}>
+              Make tokenized assets usable as capital.
+            </p>
+          </div>
+
+          <div className="footer-col">
+            <h4>Product</h4>
+            <ul>
+              <li><Link href="/assets">Assets</Link></li>
+              <li><Link href="/earn">Earn</Link></li>
+              <li><Link href="/simulate">Walkthrough</Link></li>
+              <li><Link href="/app/onboarding">Launch Usance</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4>Verify</h4>
+            <ul>
+              <li><Link href="/status">Integration status</Link></li>
+              <li><Link href="/assets/franklin-fobxx">A live Passport</Link></li>
+              <li><Link href="/security">Security model</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4>Legal</h4>
+            <ul>
+              <li><Link href="/terms">Terms of Service</Link></li>
+              <li><Link href="/privacy">Privacy Policy</Link></li>
+              <li><a href="https://x.com/usance_fi" target="_blank" rel="noreferrer">X (@usance_fi)</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-col footer-join">
+            <h4>Network</h4>
+            <ul>
+              <li>
+                <a href="https://www.okx.com/web3/explorer/xlayer-test" target="_blank" rel="noreferrer">
+                  X Layer explorer
+                </a>
+              </li>
+              <li>
+                <a href="https://web3.okx.com/xlayer" target="_blank" rel="noreferrer">About X Layer</a>
+              </li>
+            </ul>
+
+            {/*
+              Wired for real: posts to /api/subscribe, which stores the address in Supabase. Its
+              own states report success, already-subscribed, or the reason it could not — no fake
+              confirmation.
+            */}
+            <p className="caption" style={{ margin: "0 0 12px", maxWidth: "32ch" }}>
+              Get an email when Usance goes live on X Layer mainnet.
+            </p>
+            <SubscribeForm />
           </div>
         </div>
-        <p className="caption" style={{ maxWidth: 620, margin: 0 }}>
-          Usance settles on X Layer. Borrowing against a tokenized asset carries risk, including
-          liquidation. Recognised collateral value is deliberately lower than market value and can
-          fall when the evidence behind an asset changes.
-        </p>
+
+        <div className="footer-base">
+          <span className="caption">© 2026 Usance. Built on X Layer.</span>
+          <span className="caption" style={{ color: "var(--stone)" }}>
+            Testnet deployment. Test assets have no real value.
+          </span>
+        </div>
       </div>
     </footer>
   );

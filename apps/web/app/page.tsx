@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Nav } from "@/components/primitives";
-import { Lockup } from "@/components/kit-icon";
+import { Nav, Footer } from "@/components/primitives";
 
 /**
  * Landing page.
@@ -41,7 +40,7 @@ export default function Landing() {
               actually worth as collateral, how much could be recovered under stress, and what you
               can safely do with it.
             </p>
-            <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
+            <div className="row" style={{ gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
               <Link className="btn btn-primary btn-lg" href="/app/onboarding">Launch Usance</Link>
               <Link className="btn btn-ghost btn-lg" href="/assets">Explore supported assets</Link>
             </div>
@@ -247,69 +246,7 @@ export default function Landing() {
       </section>
 
       {/* ---------------------------------------------------------------- footer */}
-      <footer className="site-footer">
-        <div className="shell">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <Lockup width={132} />
-              <p className="caption" style={{ margin: "16px 0 0", maxWidth: "30ch" }}>
-                Make tokenized assets usable as capital.
-              </p>
-            </div>
-
-            <div className="footer-col">
-              <h4>Product</h4>
-              <ul>
-                <li><Link href="/assets">Assets</Link></li>
-                <li><Link href="/earn">Earn</Link></li>
-                <li><Link href="/simulate">Walkthrough</Link></li>
-                <li><Link href="/app/onboarding">Launch Usance</Link></li>
-              </ul>
-            </div>
-
-            <div className="footer-col">
-              <h4>Verify</h4>
-              <ul>
-                <li><Link href="/status">Integration status</Link></li>
-                <li><Link href="/assets/franklin-fobxx">A live Passport</Link></li>
-                <li><Link href="/security">Security model</Link></li>
-              </ul>
-            </div>
-
-            <div className="footer-col footer-join">
-              <h4>Network</h4>
-              <ul>
-                <li>
-                  <a href="https://www.okx.com/web3/explorer/xlayer-test" target="_blank" rel="noreferrer">
-                    X Layer explorer
-                  </a>
-                </li>
-                <li>
-                  <a href="https://web3.okx.com/xlayer" target="_blank" rel="noreferrer">About X Layer</a>
-                </li>
-              </ul>
-
-              {/*
-                Disabled, and it says so. A field that swallows an address is worse than one that
-                admits it is not connected to anything yet.
-              */}
-              <div className="footer-subscribe">
-                <label className="sr-only" htmlFor="subscribe">Email address</label>
-                <input id="subscribe" type="email" placeholder="Enter your email" disabled />
-                <button className="btn btn-primary" type="button" disabled>Subscribe</button>
-              </div>
-              <p className="caption footer-note">Not wired to a mailing list yet.</p>
-            </div>
-          </div>
-
-          <div className="footer-base">
-            <span className="caption">© 2026 Usance. Built on X Layer.</span>
-            <span className="caption" style={{ color: "var(--stone)" }}>
-              Testnet deployment. Test assets have no real value.
-            </span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
