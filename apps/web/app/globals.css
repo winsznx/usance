@@ -1898,7 +1898,7 @@ h4 {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 0.8fr)) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 0.8fr)) minmax(0, 1.6fr);
   gap: 40px;
   margin-bottom: 48px;
 }
@@ -1932,15 +1932,29 @@ h4 {
   text-decoration: underline;
 }
 
+/* Visually hidden, still read by screen readers — input labels the design shows via placeholder. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .footer-subscribe {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 24px;
-  padding: 5px 5px 5px 8px;
+  padding: 6px 6px 6px 14px;
   border: 1px solid var(--hairline-strong);
   border-radius: var(--radius-pill);
-  max-width: 320px;
+  width: 100%;
+  max-width: 400px;
 }
 
 .footer-subscribe input {
