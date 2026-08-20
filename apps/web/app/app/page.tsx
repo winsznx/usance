@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { CapacityDerivation, StatusLadder } from "@/components/capacity";
@@ -14,6 +14,7 @@ import { Icon } from "@/components/icon";
 import { Notice, RiskBadge } from "@/components/primitives";
 import { activeChain } from "@/lib/deployments";
 import { alertsFor, type Alert } from "@/lib/alerts";
+import { usePreferences } from "@/lib/preferences";
 import { permittedActions } from "@/lib/account";
 import { detectProvider } from "@/lib/wallet";
 import { readSession, clearSession } from "@/lib/session";
@@ -201,6 +202,24 @@ function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
     mandates: [],
     now: Math.floor(Date.now() / 1000),
   });
+
+  /**
+   * Desktop notifications, fired from the same alerts the page shows — never a separate feed that
+   * could disagree. Additive only: this raises an OS notification, it does not decide what the user
+   * sees in-app. Gated on the browser grant and the per-severity preference, and deduplicated by
+   * alert id so a re-render does not re-notify.
+   */
+  const { prefs } = usePreferences();
+  const notified = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!prefs.browserNotifications) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    for (const a of alerts) {
+      if (!prefs.notify[a.severity] || notified.current.has(a.id)) continue;
+      notified.current.add(a.id);
+      new Notification(`Usance — ${a.title}`, { body: a.what, tag: a.id });
+    }
+  }, [alerts, prefs]);
 
   return (
     <div className="stack" style={{ gap: 18 }}>
