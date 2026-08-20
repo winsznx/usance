@@ -6,6 +6,8 @@ import {Deploy} from "../script/Deploy.s.sol";
 import {Authority} from "../src/core/Authority.sol";
 import {ClearingHouse} from "../src/core/ClearingHouse.sol";
 import {FeeController} from "../src/core/FeeController.sol";
+import {SentinelTemplateRegistry} from "../src/core/SentinelTemplateRegistry.sol";
+import {SentinelInstanceRegistry} from "../src/core/SentinelInstanceRegistry.sol";
 
 /**
  * Regressions in the deployment itself.
@@ -225,5 +227,17 @@ contract DeploymentTest is Test {
             }
             assertLe(size, 24_576, string.concat(names[i], " is above the EIP-170 code size limit"));
         }
+    }
+
+    /// The two additive Sentinel registries also fit under EIP-170. They deploy beside the core,
+    /// never inside ClearingHouse, so they have their own headroom — but a registry that grew past
+    /// the limit would fail on chain the same expensive way ClearingHouse once did, so it is
+    /// asserted here alongside the core rather than assumed.
+    function test_sentinelRegistriesFitUnderTheCodeSizeLimit() public {
+        Authority a = new Authority(address(this));
+        SentinelTemplateRegistry templates = new SentinelTemplateRegistry(a);
+        SentinelInstanceRegistry instances = new SentinelInstanceRegistry(a, templates);
+        assertLe(address(templates).code.length, 24_576, "SentinelTemplateRegistry over EIP-170");
+        assertLe(address(instances).code.length, 24_576, "SentinelInstanceRegistry over EIP-170");
     }
 }
