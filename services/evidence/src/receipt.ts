@@ -24,6 +24,15 @@ export const receiptKindSchema = z.enum([
   "COLLATERAL_WITHDRAWN",
   "ACCOUNT_RESTRICTED",
   "LIQUIDATED",
+  // A delegated mandate exercised and bounded: an agent acted within the mandate, was refused
+  // outside it, and the revocation held. The same family so /proof can show the authority mechanics
+  // beside the evidence and liquidation mechanics.
+  "MANDATE_DELEGATED",
+  // Sentinel run receipts — the same family, so the public proof page and the run-detail surface
+  // never disagree about what an autonomous agent did.
+  "SENTINEL_RUN_EXECUTED",
+  "SENTINEL_RUN_BLOCKED",
+  "SENTINEL_RUN_NO_ACTION",
 ]);
 export type ReceiptKind = z.infer<typeof receiptKindSchema>;
 
