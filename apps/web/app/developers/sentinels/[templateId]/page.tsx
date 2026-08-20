@@ -35,7 +35,7 @@ export default async function DeveloperTemplateDetail({ params }: { params: Prom
     <>
       <Nav />
       <main>
-        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "48px 0" }}>
+        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "56px 0" }}>
           <div className="shell" style={{ maxWidth: 860 }}>
             <div className="micro">
               <Link href="/developers/sentinels" className="muted">Publish a Sentinel</Link> · v{t.version}

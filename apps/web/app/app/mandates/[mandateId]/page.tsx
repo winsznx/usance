@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Footer, Nav, Notice } from "@/components/primitives";
+import { Notice } from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { activeChain, loadDeployment } from "@/lib/deployments";
 import { MANDATE_ACTIONS, WITHDRAWAL_IS_NOT_DELEGABLE } from "@/lib/mandate";
 import { loadMandate, type MandateDetail } from "@/lib/mandate-read";
@@ -31,9 +32,8 @@ export default async function MandateDetailPage({ params }: { params: Promise<{ 
   const lookup = await loadMandate(mandateId);
 
   return (
-    <>
-      <Nav />
-      <main className="shell" style={{ padding: "40px 24px 80px", maxWidth: 820 }}>
+    <AppShell>
+      <div style={{ maxWidth: 820, margin: "0 auto" }}>
         <Link href="/app/mandates" className="caption" style={{ textDecoration: "underline" }}>
           ← All mandates
         </Link>
@@ -64,9 +64,8 @@ export default async function MandateDetailPage({ params }: { params: Promise<{ 
         ) : (
           <Detail mandate={lookup.mandate} explorer={chain.explorerUrl} />
         )}
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }
 

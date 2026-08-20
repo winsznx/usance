@@ -72,7 +72,7 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
     <>
       <Nav />
       <main>
-        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "48px 0" }}>
+        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "56px 0" }}>
           <div className="shell" style={{ maxWidth: 860 }}>
             <div className="micro">Public proof · no wallet required · testnet fixture</div>
             <h1 className="heading-lg" style={{ margin: "18px 0 14px" }}>

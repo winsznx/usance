@@ -36,7 +36,7 @@ export function Holdings({ assets }: { assets: Holding[] }) {
           Nothing deposited yet. Once you add an admitted asset this becomes the full breakdown:
           what it is marked at, what each haircut takes, and what survives as capacity.
         </p>
-        <Link className="btn btn-ghost" href="/assets">See what Usance admits</Link>
+        <Link className="btn btn-ghost" href="/assets" target="_blank" rel="noreferrer">See what Usance admits</Link>
       </section>
     );
   }

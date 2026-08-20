@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Nav, Notice } from "@/components/primitives";
+import { Nav, Notice, Footer } from "@/components/primitives";
 import { Illustration } from "@/components/kit-icon";
 import { WITHDRAWAL_IS_NOT_DELEGABLE } from "@/lib/mandate";
 
@@ -104,6 +104,7 @@ export default function SecurityPage() {
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

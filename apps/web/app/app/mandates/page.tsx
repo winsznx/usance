@@ -122,8 +122,8 @@ export default async function MandatesPage() {
                 </div>
 
                 <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-                  <Link className="btn btn-primary btn-lg" href="/app/mandates/new">Create a mandate</Link>
-                  <Link className="btn btn-ghost btn-lg" href="/app">Back to your portfolio</Link>
+                  <Link className="btn btn-primary" href="/app/mandates/new">Create a mandate</Link>
+                  <Link className="btn btn-ghost" href="/app">Back to your portfolio</Link>
                 </div>
               </div>
         )}

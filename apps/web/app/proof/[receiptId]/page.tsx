@@ -95,7 +95,7 @@ export default async function ProofPage({ params }: { params: Promise<{ receiptI
     <>
       <Nav />
       <main>
-        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "48px 0" }}>
+        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "56px 0" }}>
           <div className="shell" style={{ maxWidth: 860 }}>
             <div className="micro">Public proof · no wallet required</div>
             <h1 className="heading-lg" style={{ margin: "18px 0 14px" }}>{copy.verdict}</h1>

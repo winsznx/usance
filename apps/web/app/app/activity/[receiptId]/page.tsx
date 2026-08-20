@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Footer, Nav, Notice } from "@/components/primitives";
+import { Notice } from "@/components/primitives";
+import { AppShell } from "@/components/app-shell";
 import { loadReceipt, loadReceipts } from "@/lib/receipts";
 import { chainById } from "@usance/xlayer";
 
@@ -31,9 +32,8 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
   const reverted = r.transactions.filter((t) => t.status === "reverted");
 
   return (
-    <>
-      <Nav />
-      <main className="shell" style={{ padding: "40px 24px 80px", maxWidth: 820 }}>
+    <AppShell>
+      <div style={{ maxWidth: 820, margin: "0 auto" }}>
         <Link href="/app/activity" className="caption" style={{ textDecoration: "underline" }}>
           ← All activity
         </Link>
@@ -105,7 +105,7 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
           </div>
 
           <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-            <Link className="btn btn-ghost" href={`/proof/${r.receiptId}`}>
+            <Link className="btn btn-ghost" href={`/proof/${r.receiptId}`} target="_blank" rel="noreferrer">
               Public proof for this receipt
             </Link>
             <Link className="btn btn-ghost" href="/app/positions">Your position now</Link>
@@ -116,9 +116,8 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
             without a wallet.
           </p>
         </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   );
 }
 

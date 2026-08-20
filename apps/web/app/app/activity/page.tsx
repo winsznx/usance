@@ -35,7 +35,7 @@ export default function ActivityPage() {
   return (
     <AppShell>
 
-      <div style={{ maxWidth: 900 }}>
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <h1 className="heading" style={{ margin: "0 0 8px" }}>
           Activity
         </h1>
@@ -67,7 +67,7 @@ export default function ActivityPage() {
               return (
                 <Link
                   key={r.receiptId}
-                  href={`/proof/${r.receiptId}`}
+                  href={`/app/activity/${r.receiptId}`}
                   className="card"
                   style={{ display: "block" }}
                 >
@@ -104,7 +104,7 @@ export default function ActivityPage() {
 
         <p className="caption" style={{ marginTop: 28 }}>
           Looking for a specific asset?{" "}
-          <Link href="/assets" style={{ textDecoration: "underline" }}>
+          <Link href="/assets" target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>
             Browse admitted assets
           </Link>
           .

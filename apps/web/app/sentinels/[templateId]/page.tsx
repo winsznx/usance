@@ -39,7 +39,7 @@ export default async function TemplateDetail({ params }: { params: Promise<{ tem
     <>
       <Nav />
       <main>
-        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "48px 0" }}>
+        <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "56px 0" }}>
           <div className="shell" style={{ maxWidth: 860 }}>
             <div className="micro">
               <Link href="/sentinels" className="muted">Sentinel Library</Link> · v{t.version}

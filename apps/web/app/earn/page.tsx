@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {Notice} from "@/components/primitives";
 import { AppShell } from "@/components/app-shell";
+import { TokenBadge } from "@/components/token-badge";
 import { activeChain } from "@/lib/deployments";
 import { loadVault, type VaultView } from "@/lib/vault";
 
@@ -25,36 +26,32 @@ export default async function EarnPage() {
 
   return (
     <AppShell>
-      <div>
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <h1 className="heading-lg" style={{ margin: "0 0 8px", fontSize: 26 }}>
-              Lend against admitted collateral
-            </h1>
+          Lend against admitted collateral
+        </h1>
         <p className="muted" style={{ margin: "0 0 28px", maxWidth: "62ch" }}>
-              Borrowers post assets Usance has read and priced. You supply the settlement asset they
-              draw against, and earn the financing they pay. Your capital is lent out, so redemption
-              is not always instant.
-            </p>
+          Borrowers post assets Usance has read and priced. You supply the settlement asset they
+          draw against, and earn the financing they pay. Your capital is lent out, so redemption
+          is not always instant.
+        </p>
 
-        <section className="section">
-          <div className="shell" style={{ maxWidth: 900 }}>
-            {vault === null ? (
-              <Notice
-                tone="stop"
-                title={`Usance is not deployed on ${chain.name}`}
-                action={
-                  <Link className="btn btn-ghost" href="/status">
-                    Integration status
-                  </Link>
-                }
-              >
-                There is no vault to read, so there are no figures to show. Rendering an empty vault
-                here would look like one nobody has supplied to yet, which is a different claim.
-              </Notice>
-            ) : (
-              <VaultCard vault={vault} />
-            )}
-          </div>
-        </section>
+        {vault === null ? (
+          <Notice
+            tone="stop"
+            title={`Usance is not deployed on ${chain.name}`}
+            action={
+              <Link className="btn btn-ghost" href="/status">
+                Integration status
+              </Link>
+            }
+          >
+            There is no vault to read, so there are no figures to show. Rendering an empty vault
+            here would look like one nobody has supplied to yet, which is a different claim.
+          </Notice>
+        ) : (
+          <VaultCard vault={vault} />
+        )}
       </div>
     </AppShell>
   );
@@ -78,7 +75,10 @@ function VaultCard({ vault }: { vault: VaultView }) {
         <div className="row-between" style={{ alignItems: "flex-start", marginBottom: 18 }}>
           <div>
             <div className="micro">Settlement asset</div>
-            <div style={{ fontSize: 22, marginTop: 6 }}>{sym}</div>
+            <div className="row" style={{ gap: 10, alignItems: "center", marginTop: 8 }}>
+              <TokenBadge symbol={sym} size={32} />
+              <span style={{ fontSize: 22 }}>{sym}</span>
+            </div>
           </div>
           <span className="tag mono" style={{ fontSize: 11 }}>
             {vault.address.slice(0, 8)}…{vault.address.slice(-6)}
@@ -157,7 +157,7 @@ function VaultCard({ vault }: { vault: VaultView }) {
         <Link className="btn btn-primary btn-lg" href="/earn/positions">
           Your position
         </Link>
-        <Link className="btn btn-ghost btn-lg" href="/assets">
+        <Link className="btn btn-ghost btn-lg" href="/assets" target="_blank" rel="noreferrer">
           What backs these loans
         </Link>
       </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Footer, Nav } from "@/components/primitives";
+import { TokenBadge } from "@/components/token-badge";
 import { loadAssets } from "@/lib/passport-data";
 
 export const metadata = {
@@ -68,10 +69,15 @@ export default async function AssetsPage() {
                     return (
                       <tr key={a.slug}>
                         <td>
-                          <Link href={`/assets/${a.slug}`} style={{ fontWeight: 500 }}>
-                            {a.symbol}
-                          </Link>
-                          <div className="caption">{a.name}</div>
+                          <div className="row" style={{ gap: 10, alignItems: "center" }}>
+                            <TokenBadge symbol={a.symbol} size={30} />
+                            <span className="stack" style={{ gap: 2 }}>
+                              <Link href={`/assets/${a.slug}`} style={{ fontWeight: 500 }}>
+                                {a.symbol}
+                              </Link>
+                              <span className="caption">{a.name}</span>
+                            </span>
+                          </div>
                         </td>
                         <td className="muted">{a.issuer}</td>
                         <td>
