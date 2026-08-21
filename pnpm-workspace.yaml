@@ -13,3 +13,4 @@ allowBuilds:
   keccak: false # wagmi pulls it in; the pure-JS fallback is fine and avoids a native build
   bufferutil: false # optional ws speedup, not required
   utf-8-validate: false # optional ws speedup, not required
+  workerd: true # Cloudflare Workers runtime — wrangler/OpenNext build + deploy. Local tooling, not request-time.

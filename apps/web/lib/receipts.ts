@@ -1,28 +1,38 @@
-import { readFileSync, existsSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
 import { receiptIdFor, type UsanceReceipt } from "@usance/evidence";
+import liveLiquidation from "../../../proof/live-liquidation.json";
+import liveRiskScenario from "../../../proof/live-risk-scenario.json";
+import liveSentinel from "../../../proof/live-sentinel.json";
+import liveDelegated from "../../../proof/live-delegated.json";
+import passportFranklin from "../../../proof/passport-franklin-fobxx-2026-v1.json";
 
 /**
  * Receipts backing the public proof explorer.
  *
- * Loaded from `proof/`, which holds records written by the scripts that actually submitted the
- * transactions. Nothing here is synthesised: if a receipt is not on disk with a transaction hash
- * in it, the route 404s rather than rendering a plausible-looking proof of something that did not
- * happen.
+ * Records written by the scripts that actually submitted the transactions. Nothing here is
+ * synthesised: if a record has no transaction hash in it, the route 404s rather than rendering a
+ * plausible-looking proof of something that did not happen.
  */
 
-const PROOF_DIR = resolve(process.cwd(), "../../proof");
+/**
+ * The proof records, bundled at build time.
+ *
+ * These were read from `proof/*.json` with `fs` until the app had to run on a Cloudflare Worker,
+ * which has no filesystem. Importing them statically bundles the same records into the output, so
+ * the loader behaves identically at build (the SSG proof pages) and at runtime (the `/api/activity`
+ * route). A new proof file has to be added to this list — the cost of losing the directory scan.
+ */
+const PROOF_RECORDS: ReadonlyArray<Record<string, unknown>> = [
+  liveLiquidation, liveRiskScenario, liveSentinel, liveDelegated, passportFranklin,
+] as unknown as Array<Record<string, unknown>>;
 
 let cache: UsanceReceipt[] | null = null;
 
 export function loadReceipts(): UsanceReceipt[] {
   if (cache) return cache;
-  if (!existsSync(PROOF_DIR)) return (cache = []);
 
   const out: UsanceReceipt[] = [];
 
-  for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
-    const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+  for (const raw of PROOF_RECORDS) {
     if (raw["kind"] === "LIVE_LIQUIDATION") {
       out.push(liquidationReceipt(raw));
       continue;
@@ -340,9 +350,7 @@ export interface SentinelRunProofView {
 }
 
 export function sentinelRunFor(receiptId: string): SentinelRunProofView | null {
-  if (!existsSync(PROOF_DIR)) return null;
-  for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
-    const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+  for (const raw of PROOF_RECORDS) {
     if (raw["kind"] !== "LIVE_SENTINEL_AUTONOMOUS_RUN") continue;
     // Reuse the builder's id derivation so the match can never drift from the receipt it describes.
     if (sentinelRunReceipt(raw).receiptId !== receiptId) continue;
@@ -447,9 +455,7 @@ export interface DelegatedProofView {
 }
 
 export function delegatedFor(receiptId: string): DelegatedProofView | null {
-  if (!existsSync(PROOF_DIR)) return null;
-  for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
-    const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+  for (const raw of PROOF_RECORDS) {
     if (raw["kind"] !== "LIVE_DELEGATED_AUTHORITY") continue;
     // Reuse the builder's id derivation so the match can never drift from the receipt it describes.
     if (delegatedAuthorityReceipt(raw).receiptId !== receiptId) continue;
@@ -476,9 +482,7 @@ export function delegatedFor(receiptId: string): DelegatedProofView | null {
 
 /** The source metadata a Passport receipt cites, kept alongside the receipt on disk. */
 export function evidenceFor(receiptId: string): Record<string, string> | null {
-  if (!existsSync(PROOF_DIR)) return null;
-  for (const file of readdirSync(PROOF_DIR).filter((f) => f.endsWith(".json"))) {
-    const raw = JSON.parse(readFileSync(resolve(PROOF_DIR, file), "utf8")) as Record<string, unknown>;
+  for (const raw of PROOF_RECORDS) {
     const txs = (raw["transactions"] as Array<Record<string, unknown>>) ?? [];
     const match = txs.some(
       (t) =>

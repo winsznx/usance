@@ -9,23 +9,27 @@
     "start": "next start",
     "passports": "vite-node scripts/build-passports.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cf:build": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.11",
+    "@usance/chaingpt": "workspace:*",
+    "@usance/domain": "workspace:*",
+    "@usance/evidence": "workspace:*",
+    "@usance/schemas": "workspace:*",
+    "@usance/sentinel": "workspace:*",
+    "@usance/xlayer": "workspace:*",
     "next": "15.1.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "viem": "^2.21.55",
-    "wagmi": "^2.14.6",
-    "@tanstack/react-query": "^5.62.11",
-    "@usance/domain": "workspace:*",
-    "@usance/xlayer": "workspace:*",
-    "@usance/schemas": "workspace:*",
-    "@usance/chaingpt": "workspace:*",
-    "@usance/evidence": "workspace:*",
-    "@usance/sentinel": "workspace:*"
+    "wagmi": "^2.14.6"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.2",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
@@ -34,6 +38,7 @@
     "@usance/schemas": "workspace:*",
     "typescript": "^5.7.2",
     "vite-node": "^2.1.8",
+    "wrangler": "^4.124.0",
     "zod": "^3.24.1"
   }
 }
