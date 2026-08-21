@@ -1,149 +1,133 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { formatUsd, type AccountStatus, type Gate } from "@usance/domain";
-import { AmountField, GateBanners, NotDeployedNotice, PreviewRow, TxTimeline, useAmount } from "@/components/action";
+import type { Address } from "viem";
+import { formatUsd } from "@usance/domain";
+import { AmountField, NotDeployedNotice, PreviewRow, TxTimeline, useAmount } from "@/components/action";
 import { Notice, RiskBadge } from "@/components/primitives";
-import { activeChain, loadDeployment, type Deployment } from "@/lib/deployments";
-import type { TxState } from "@/lib/tx";
+import { activeChain } from "@/lib/deployments";
+import { sendTransaction, type TxState } from "@/lib/tx";
+import {
+  CH_ACTION_ABI, ERC20_ABI, connectedAccount, usd18ToToken, tokenToUsd18,
+  addCollateralQuote, borrowQuote, repayQuote, withdrawQuote,
+  type AddQuote, type BorrowQuote, type RepayQuote, type WithdrawQuote,
+} from "@/lib/actions";
 
 /**
- * The four account actions as self-contained forms, decoupled from any route.
+ * The four account actions, wired for real.
  *
- * Each of these was the body of its own page. Pulling them out lets the same form appear in two
- * places without drifting: on its deep-linkable route (wrapped in `ActionShell`), and inline in the
- * overview's action panel, where acting on a position no longer costs you the view of it.
+ * Each form reads its own live quote from the deployed contracts, then submits through the shared
+ * `sendTransaction` funnel — which carries the builder-code suffix, decodes a protocol revert into
+ * the exact reason, and treats a lost RPC as CONFIRMATION_UNKNOWN rather than asking for a second
+ * signature. Deposits and repayments approve exactly the amount they need, to the exact contract
+ * that pulls the tokens, and nothing more.
  *
- * A form owns its own quote, amount and transaction state. It renders the form card and the
- * surrounding notices, but not the page chrome — title, intro, back link — which belongs to
- * whatever hosts it.
+ * The same components render on the deep-linkable routes (via ActionShell) and inline in the
+ * overview's action panel, so there is one implementation of each action, not two that drift.
  */
+
+// ---------------------------------------------------------------- shared states
+
+function Skeleton() {
+  return <div className="skeleton" style={{ height: 240 }} />;
+}
+
+function ConnectPrompt() {
+  return (
+    <Notice
+      tone="warn"
+      title="Sign in to act on your account"
+      action={<Link className="btn btn-primary" href="/app/onboarding">Connect &amp; sign in</Link>}
+    >
+      Reading and moving your position needs a signed session. Connect your wallet and sign in, then
+      this action becomes available.
+    </Notice>
+  );
+}
+
+const done = (s: TxState) => s.stage === "COMPLETE";
 
 // ================================================================= add collateral
 
-interface AddQuote {
-  marketValueUsd: bigint;
-  recognisedUsd: bigint;
-  borrowLimitUsd: bigint;
-  status: AccountStatus;
-  epoch: bigint;
-  walletBalance: bigint;
-  allowance: bigint;
-  decimals: number;
-  symbol: string;
-}
-
 export function AddCollateralForm() {
   const chain = activeChain();
-  const [deployment, setDeployment] = useState<Deployment | null | undefined>(undefined);
-  const [quote, setQuote] = useState<AddQuote | null>(null);
+  const [account, setAccount] = useState<Address | null | undefined>(undefined);
+  const [q, setQ] = useState<AddQuote | null | undefined>(undefined);
   const [tx, setTx] = useState<TxState>({ stage: "IDLE" });
+  const amount = useAmount(q?.walletBalance);
 
-  useEffect(() => {
-    let live = true;
-    loadDeployment(chain.id).then((d) => {
-      if (!live) return;
-      setDeployment(d);
-      setQuote(null);
+  const refresh = useCallback(async () => {
+    const acc = await connectedAccount();
+    setAccount(acc);
+    if (acc) setQ(await addCollateralQuote(acc));
+  }, []);
+  useEffect(() => { void refresh(); }, [refresh]);
+
+  const needsApproval = q !== null && q !== undefined && !amount.isEmpty && q.allowance < amount.parsed;
+
+  async function submit() {
+    if (!account || !q) return;
+    if (q.allowance < amount.parsed) {
+      const a = await sendTransaction({
+        to: q.token, abi: ERC20_ABI, functionName: "approve",
+        args: [q.collateralVault, amount.parsed], from: account, onStage: setTx,
+      });
+      if (!done(a)) return;
+    }
+    const r = await sendTransaction({
+      to: q.clearingHouse, abi: CH_ACTION_ABI, functionName: "addCollateral",
+      args: [q.assetId, amount.parsed], from: account, onStage: setTx,
     });
-    return () => {
-      live = false;
-    };
-  }, [chain.id]);
+    if (done(r)) { amount.setRaw(""); void refresh(); }
+  }
 
-  const amount = useAmount(quote?.walletBalance);
-
-  const preview = useMemo(() => {
-    if (!quote || amount.isEmpty || quote.marketValueUsd === 0n) return null;
-    const recognisedDelta = (amount.parsed * quote.recognisedUsd) / quote.marketValueUsd;
-    const haircut = amount.parsed - recognisedDelta;
-    const haircutBps = amount.parsed === 0n ? 0n : (haircut * 10_000n) / amount.parsed;
-    return {
-      recognisedDelta,
-      haircut,
-      haircutBps,
-      recognisedAfter: quote.recognisedUsd + recognisedDelta,
-      borrowableAfter: quote.borrowLimitUsd + (recognisedDelta * 8_500n) / 10_000n,
-    };
-  }, [quote, amount.parsed, amount.isEmpty]);
-
-  const needsApproval = quote !== null && !amount.isEmpty && quote.allowance < amount.parsed;
+  if (account === null) return <ConnectPrompt />;
+  if (account === undefined || q === undefined) return <Skeleton />;
+  if (q === null) return <NotDeployedNotice chainName={chain.name} />;
 
   return (
     <div className="stack" style={{ gap: 22 }}>
       <div className="card stack" style={{ gap: 20 }}>
         <Notice title="Recognised value is lower than market value, and the difference is not a fee">
           Nobody takes it. It stays in your deposit and you can withdraw it. Usance will not lend
-          against the part of the value it could not realise quickly under stress, so the smaller
-          number is the one every limit is built on.{" "}
-          <Link href="/simulate" style={{ textDecoration: "underline" }}>See how it is calculated</Link>.
+          against the part it could not realise under stress, so the smaller number is the one every
+          limit is built on. Your recognised collateral updates on your overview once the deposit
+          confirms.
         </Notice>
 
         <AmountField
           label="Amount to deposit"
           value={amount.raw}
           onChange={amount.setRaw}
-          suffix={quote?.symbol ?? deployment?.assets[0]?.symbol ?? "—"}
-          max={quote?.walletBalance}
+          suffix={q.symbol}
+          max={q.walletBalance}
           maxLabel="In your wallet"
-          disabled={!deployment || !quote}
-          hint={quote ? `Quoted under risk epoch ${quote.epoch}.` : undefined}
+          hint={`${formatUsd(q.walletBalance)} ${q.symbol} available.`}
         />
-
-        {preview ? (
-          <>
-            <div>
-              <div className="micro" style={{ marginBottom: 4 }}>What Usance will recognise</div>
-              <PreviewRow label="Market value of your deposit" after={`$${formatUsd(amount.parsed)}`} />
-              <PreviewRow
-                label="Held back for risk"
-                after={`−$${formatUsd(preview.haircut)} (${(Number(preview.haircutBps) / 100).toFixed(2)}%)`}
-              />
-              <PreviewRow label="Recognised collateral" after={`$${formatUsd(preview.recognisedDelta)}`} emphasis />
-            </div>
-            <div>
-              <div className="micro" style={{ marginBottom: 4 }}>Your account after</div>
-              <PreviewRow
-                label="Recognised collateral"
-                before={`$${formatUsd(quote!.recognisedUsd)}`}
-                after={`$${formatUsd(preview.recognisedAfter)}`}
-                emphasis
-              />
-              <PreviewRow
-                label="You could borrow up to"
-                before={`$${formatUsd(quote!.borrowLimitUsd)}`}
-                after={`$${formatUsd(preview.borrowableAfter)}`}
-              />
-            </div>
-          </>
-        ) : null}
 
         {needsApproval ? (
           <Notice title="Two signatures">
-            Depositing takes an approval and then the deposit itself. Usance asks for an allowance of
-            exactly this amount rather than an unlimited one, so nothing can be moved later without
-            you signing again.
+            Depositing takes an approval and then the deposit. Usance asks for an allowance of
+            exactly this amount, to the collateral vault, so nothing can be moved later without you
+            signing again.
           </Notice>
         ) : null}
 
         <button
           className="btn btn-primary btn-lg btn-block"
-          disabled={!deployment || !quote || amount.isEmpty || amount.overMax}
-          onClick={() => setTx({ stage: "AWAITING_WALLET" })}
+          disabled={amount.isEmpty || amount.overMax || tx.stage === "AWAITING_WALLET" || tx.stage === "SUBMITTED"}
+          onClick={submit}
         >
-          {amount.isEmpty ? "Enter an amount" : needsApproval ? `Approve and deposit ${amount.raw}` : `Deposit ${amount.raw}`}
+          {amount.isEmpty ? "Enter an amount" : needsApproval ? `Approve and deposit ${amount.raw} ${q.symbol}` : `Deposit ${amount.raw} ${q.symbol}`}
         </button>
 
         {tx.stage !== "IDLE" ? <TxTimeline tx={tx} explorerUrl={chain.explorerUrl} /> : null}
       </div>
 
-      {deployment === null ? <NotDeployedNotice chainName={chain.name} /> : null}
-
       <p className="caption" style={{ margin: 0 }}>
         Deposited collateral can be withdrawn at any time, as long as what remains still covers what
-        you owe.{" "}
-        <Link href="/app/withdraw" style={{ textDecoration: "underline" }}>Withdraw collateral</Link>.
+        you owe. <Link href="/app/withdraw" style={{ textDecoration: "underline" }}>Withdraw collateral</Link>.
       </p>
     </div>
   );
@@ -151,58 +135,46 @@ export function AddCollateralForm() {
 
 // ================================================================= borrow
 
-interface BorrowQuote {
-  byRisk: bigint;
-  byLiquidity: bigint;
-  limitedByLiquidity: boolean;
-  debtNow: bigint;
-  borrowLimit: bigint;
-  maintenanceLimit: bigint;
-  rateBps: number;
-  epoch: bigint;
-  status: AccountStatus;
-  gates: Gate[];
-}
-
 export function BorrowForm() {
   const chain = activeChain();
-  const [deployment, setDeployment] = useState<Deployment | null | undefined>(undefined);
-  const [quote, setQuote] = useState<BorrowQuote | null>(null);
+  const [account, setAccount] = useState<Address | null | undefined>(undefined);
+  const [q, setQ] = useState<BorrowQuote | null | undefined>(undefined);
   const [tx, setTx] = useState<TxState>({ stage: "IDLE" });
 
-  useEffect(() => {
-    let live = true;
-    loadDeployment(chain.id).then((d) => {
-      if (!live) return;
-      setDeployment(d);
-      if (d) setQuote(null);
-    });
-    return () => {
-      live = false;
-    };
-  }, [chain.id]);
+  const refresh = useCallback(async () => {
+    const acc = await connectedAccount();
+    setAccount(acc);
+    if (acc) setQ(await borrowQuote(acc));
+  }, []);
+  useEffect(() => { void refresh(); }, [refresh]);
 
-  const max = quote ? (quote.limitedByLiquidity ? quote.byLiquidity : quote.byRisk) : undefined;
+  const max = q ? (q.limitedByLiquidity ? q.byLiquidity : q.byRisk) : undefined;
   const amount = useAmount(max);
+  const blocked = q ? q.status !== "NORMAL" : false;
 
-  const preview = useMemo(() => {
-    if (!quote || amount.isEmpty) return null;
-    const debtAfter = quote.debtNow + amount.parsed;
-    const availableAfter = quote.borrowLimit > debtAfter ? quote.borrowLimit - debtAfter : 0n;
-    const annualCost = (amount.parsed * BigInt(quote.rateBps)) / 10_000n;
-    const buffer = quote.maintenanceLimit > debtAfter ? quote.maintenanceLimit - debtAfter : 0n;
-    return { debtAfter, availableAfter, annualCost, buffer };
-  }, [quote, amount.parsed, amount.isEmpty]);
+  async function submit() {
+    if (!account || !q) return;
+    const r = await sendTransaction({
+      to: q.clearingHouse, abi: CH_ACTION_ABI, functionName: "borrow",
+      args: [amount.parsed, BigInt(q.epoch)], from: account, onStage: setTx,
+    });
+    if (done(r)) { amount.setRaw(""); void refresh(); }
+  }
 
-  const blocked = quote?.status !== "NORMAL";
+  if (account === null) return <ConnectPrompt />;
+  if (account === undefined || q === undefined) return <Skeleton />;
+  if (q === null) return <NotDeployedNotice chainName={chain.name} />;
+
+  const debtAfter = q.debtNow + amount.parsed;
+  const availableAfter = q.borrowLimit > debtAfter ? q.borrowLimit - debtAfter : 0n;
+  const buffer = q.maintenanceLimit > debtAfter ? q.maintenanceLimit - debtAfter : 0n;
+  const annualCost = q.rateBps !== null ? (amount.parsed * BigInt(q.rateBps)) / 10_000n : null;
 
   return (
     <div className="stack" style={{ gap: 22 }}>
-      {quote ? <GateBanners gates={quote.gates} /> : null}
-
-      {quote && blocked ? (
+      {blocked ? (
         <Notice tone="stop" title="New borrowing is paused on this account">
-          Your account is currently <RiskBadge status={quote.status} />. You can still repay, add
+          Your account is currently <RiskBadge status={q.status} />. You can still repay, add
           collateral, or reduce exposure.
         </Notice>
       ) : null}
@@ -211,20 +183,20 @@ export function BorrowForm() {
         <div className="grid-2" style={{ gap: 14 }}>
           <div className="panel">
             <div className="stat-label">Your collateral supports</div>
-            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>{quote ? `$${formatUsd(quote.byRisk)}` : "—"}</div>
+            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>${formatUsd(q.byRisk)}</div>
             <p className="caption" style={{ marginTop: 6 }}>Raised by depositing more collateral.</p>
           </div>
           <div className="panel">
             <div className="stat-label">Lenders can fund</div>
-            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>{quote ? `$${formatUsd(quote.byLiquidity)}` : "—"}</div>
-            <p className="caption" style={{ marginTop: 6 }}>Adding collateral will not raise this. It moves when lenders supply more.</p>
+            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>${formatUsd(q.byLiquidity)}</div>
+            <p className="caption" style={{ marginTop: 6 }}>Moves when lenders supply more, not with your collateral.</p>
           </div>
         </div>
 
-        {quote?.limitedByLiquidity ? (
+        {q.limitedByLiquidity ? (
           <Notice tone="warn" title="Limited by available lender cash, not by your collateral">
             Your collateral would support more. Borrow a smaller amount now, or wait for lenders to
-            supply more liquidity. Adding collateral will not raise this number.
+            supply more liquidity.
           </Notice>
         ) : null}
 
@@ -232,38 +204,34 @@ export function BorrowForm() {
           label="Amount to borrow"
           value={amount.raw}
           onChange={amount.setRaw}
-          suffix={deployment?.settlementAsset.symbol ?? "USD"}
+          suffix={q.settlementSymbol}
           max={max}
           maxLabel="Available"
-          disabled={!deployment || blocked}
-          hint={
-            quote
-              ? `Rate ${(quote.rateBps / 100).toFixed(2)}% per year, variable. Quoted under risk epoch ${quote.epoch}.`
-              : undefined
-          }
+          disabled={blocked}
+          hint={q.rateBps !== null ? `Rate ${(q.rateBps / 100).toFixed(2)}% per year, variable. Quoted under risk epoch ${q.epoch}.` : `Quoted under risk epoch ${q.epoch}.`}
         />
 
         {amount.overMax && max !== undefined ? (
           <Notice tone="warn" title="That is more than you can borrow right now">
             Your current maximum is ${formatUsd(max)}.{" "}
-            {quote?.limitedByLiquidity ? "This is a liquidity limit — waiting will raise it." : "Add collateral to raise it."}
+            {q.limitedByLiquidity ? "This is a liquidity limit — waiting will raise it." : "Add collateral to raise it."}
           </Notice>
         ) : null}
 
-        {preview ? (
+        {!amount.isEmpty ? (
           <div>
             <div className="micro" style={{ marginBottom: 4 }}>What changes</div>
-            <PreviewRow label="Debt" before={`$${formatUsd(quote!.debtNow)}`} after={`$${formatUsd(preview.debtAfter)}`} emphasis />
-            <PreviewRow label="Financing cost" after={`~$${formatUsd(preview.annualCost)} / year`} />
-            <PreviewRow label="Still available after" before={`$${formatUsd(max!)}`} after={`$${formatUsd(preview.availableAfter)}`} />
-            <PreviewRow label="Buffer before maintenance" after={`$${formatUsd(preview.buffer)}`} />
+            <PreviewRow label="Debt" before={`$${formatUsd(q.debtNow)}`} after={`$${formatUsd(debtAfter)}`} emphasis />
+            {annualCost !== null ? <PreviewRow label="Financing cost" after={`~$${formatUsd(annualCost)} / year`} /> : null}
+            <PreviewRow label="Buffer before maintenance" after={`$${formatUsd(buffer)}`} />
+            <PreviewRow label="Still available after" after={`$${formatUsd(availableAfter)}`} />
           </div>
         ) : null}
 
         <button
           className="btn btn-primary btn-lg btn-block"
-          disabled={!deployment || blocked || amount.isEmpty || amount.overMax}
-          onClick={() => setTx({ stage: "AWAITING_WALLET" })}
+          disabled={blocked || amount.isEmpty || amount.overMax || tx.stage === "AWAITING_WALLET" || tx.stage === "SUBMITTED"}
+          onClick={submit}
         >
           {amount.isEmpty ? "Enter an amount" : `Borrow $${formatUsd(amount.parsed)}`}
         </button>
@@ -271,12 +239,9 @@ export function BorrowForm() {
         {tx.stage !== "IDLE" ? <TxTimeline tx={tx} explorerUrl={chain.explorerUrl} /> : null}
       </div>
 
-      {deployment === null ? <NotDeployedNotice chainName={chain.name} /> : null}
-
       <p className="caption" style={{ margin: 0 }}>
         Borrowing is secured against your collateral. If its recognised value falls, your account
-        can enter a restricted state.{" "}
-        <Link href="/simulate" style={{ textDecoration: "underline" }}>See how recognised value is calculated</Link>.
+        can enter a restricted state. <Link href="/simulate" style={{ textDecoration: "underline" }}>How recognised value is calculated</Link>.
       </p>
     </div>
   );
@@ -284,85 +249,78 @@ export function BorrowForm() {
 
 // ================================================================= repay
 
-interface RepayQuote {
-  debtUsd: bigint;
-  principalUsd: bigint;
-  interestUsd: bigint;
-  walletBalance: bigint;
-  recognisedUsd: bigint;
-  maintenanceLimitUsd: bigint;
-  status: AccountStatus;
-  symbol: string;
-}
-
 export function RepayForm() {
   const chain = activeChain();
-  const [deployment, setDeployment] = useState<Deployment | null | undefined>(undefined);
-  const [quote, setQuote] = useState<RepayQuote | null>(null);
+  const [account, setAccount] = useState<Address | null | undefined>(undefined);
+  const [q, setQ] = useState<RepayQuote | null | undefined>(undefined);
   const [payoff, setPayoff] = useState(false);
   const [tx, setTx] = useState<TxState>({ stage: "IDLE" });
+  const amount = useAmount(q?.debt);
 
-  useEffect(() => {
-    let live = true;
-    loadDeployment(chain.id).then((d) => {
-      if (!live) return;
-      setDeployment(d);
-      setQuote(null);
+  const refresh = useCallback(async () => {
+    const acc = await connectedAccount();
+    setAccount(acc);
+    if (acc) setQ(await repayQuote(acc));
+  }, []);
+  useEffect(() => { void refresh(); }, [refresh]);
+
+  async function submit() {
+    if (!account || !q) return;
+    const target = payoff ? q.debt : amount.parsed;
+    const neededTokens = usd18ToToken(target, q.settlementDecimals);
+    // Payoff clears against the live debt, which has accrued since the quote — approve a hair over
+    // so the second transaction is never one unit short of what the contract pulls.
+    const approveTokens = payoff ? neededTokens + neededTokens / 500n + 1n : neededTokens;
+    if (q.allowance < approveTokens) {
+      const a = await sendTransaction({
+        to: q.settlementToken, abi: ERC20_ABI, functionName: "approve",
+        args: [q.liquidityVault, approveTokens], from: account, onStage: setTx,
+      });
+      if (!done(a)) return;
+    }
+    const r = await sendTransaction({
+      to: q.clearingHouse, abi: CH_ACTION_ABI, functionName: "repay",
+      args: [payoff ? q.debt : amount.parsed, payoff], from: account, onStage: setTx,
     });
-    return () => {
-      live = false;
-    };
-  }, [chain.id]);
+    if (done(r)) { amount.setRaw(""); setPayoff(false); void refresh(); }
+  }
 
-  const amount = useAmount(quote?.debtUsd);
-  const applied = payoff && quote ? quote.debtUsd : amount.parsed;
+  if (account === null) return <ConnectPrompt />;
+  if (account === undefined || q === undefined) return <Skeleton />;
+  if (q === null) return <NotDeployedNotice chainName={chain.name} />;
 
-  const preview = useMemo(() => {
-    if (!quote || applied === 0n) return null;
-    const debtAfter = quote.debtUsd > applied ? quote.debtUsd - applied : 0n;
-    const shortfall = applied > quote.walletBalance ? applied - quote.walletBalance : 0n;
-    const bufferAfter = quote.maintenanceLimitUsd > debtAfter ? quote.maintenanceLimitUsd - debtAfter : 0n;
-    return { debtAfter, shortfall, bufferAfter, clears: debtAfter === 0n };
-  }, [quote, applied]);
+  const applied = payoff ? q.debt : amount.parsed;
+  const neededTokens = usd18ToToken(applied, q.settlementDecimals);
+  const shortfallTokens = neededTokens > q.walletBalance ? neededTokens - q.walletBalance : 0n;
+  const debtAfter = q.debt > applied ? q.debt - applied : 0n;
+  const walletUsd = tokenToUsd18(q.walletBalance, q.settlementDecimals);
 
   return (
     <div className="stack" style={{ gap: 22 }}>
-      {quote && quote.status !== "NORMAL" ? (
+      {q.status !== "NORMAL" ? (
         <Notice title="Repaying is always available">
-          Your account is <RiskBadge status={quote.status} />, which pauses new borrowing. Repaying
+          Your account is <RiskBadge status={q.status} />, which pauses new borrowing. Repaying
           reduces risk, so it is never blocked — this is the action that returns the account to normal.
         </Notice>
       ) : null}
 
       <div className="card stack" style={{ gap: 20 }}>
-        {quote ? (
-          <div className="grid-2" style={{ gap: 14 }}>
-            <div className="panel">
-              <div className="stat-label">You owe</div>
-              <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>${formatUsd(quote.debtUsd)}</div>
-              <div className="caption" style={{ marginTop: 6 }}>
-                ${formatUsd(quote.principalUsd)} borrowed + ${formatUsd(quote.interestUsd)} interest
-              </div>
-            </div>
-            <div className="panel">
-              <div className="stat-label">In your wallet</div>
-              <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>${formatUsd(quote.walletBalance)}</div>
-              <div className="caption" style={{ marginTop: 6 }}>{quote.symbol}</div>
-            </div>
+        <div className="grid-2" style={{ gap: 14 }}>
+          <div className="panel">
+            <div className="stat-label">You owe</div>
+            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>${formatUsd(q.debt)}</div>
+            <div className="caption" style={{ marginTop: 6 }}>Principal plus accrued interest.</div>
           </div>
-        ) : null}
-
-        <Notice title="Closing a loan costs more than you borrowed">
-          Your debt is the amount you drew plus the interest it has accrued, and only the amount you
-          drew was ever paid out to you. Repaying in full therefore needs more settlement token than
-          borrowing produced.
-        </Notice>
+          <div className="panel">
+            <div className="stat-label">In your wallet</div>
+            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>${formatUsd(walletUsd)}</div>
+            <div className="caption" style={{ marginTop: 6 }}>{q.settlementSymbol}</div>
+          </div>
+        </div>
 
         <label className="row" style={{ gap: 10, cursor: "pointer" }}>
-          <input type="checkbox" checked={payoff} disabled={!quote} onChange={(e) => setPayoff(e.target.checked)} />
-          <span className="caption">
-            Repay everything and close the loan{quote ? ` — $${formatUsd(quote.debtUsd)}` : ""}
-          </span>
+          <input type="checkbox" checked={payoff} onChange={(e) => setPayoff(e.target.checked)} />
+          <span className="caption">Repay everything and close the loan — ${formatUsd(q.debt)}</span>
         </label>
 
         {!payoff ? (
@@ -370,125 +328,90 @@ export function RepayForm() {
             label="Amount to repay"
             value={amount.raw}
             onChange={amount.setRaw}
-            suffix={quote?.symbol ?? deployment?.settlementAsset.symbol ?? "USD"}
-            max={quote?.debtUsd}
+            suffix={q.settlementSymbol}
+            max={q.debt}
             maxLabel="Total owed"
-            disabled={!deployment || !quote}
           />
-        ) : null}
-
-        {payoff ? (
+        ) : (
           <Notice title="Quoted now, settled on chain">
-            Interest accrues every block, so this figure moves between now and your signature. Usance
-            sends the instruction &ldquo;repay everything&rdquo; rather than a fixed amount, so the
-            loan closes exactly rather than leaving a few cents outstanding.
+            Interest accrues every block. Usance sends &ldquo;repay everything&rdquo; rather than a
+            fixed amount, so the loan closes exactly, and approves a hair over the current figure to
+            cover the seconds in between.
+          </Notice>
+        )}
+
+        {shortfallTokens > 0n ? (
+          <Notice tone="warn" title={`You need $${formatUsd(tokenToUsd18(shortfallTokens, q.settlementDecimals))} more ${q.settlementSymbol}`}>
+            Closing a loan needs principal plus the interest it accrued, and only the principal was
+            paid out to you. Add {q.settlementSymbol} to your wallet, or repay a smaller amount.
           </Notice>
         ) : null}
 
-        {preview && preview.shortfall > 0n ? (
-          <Notice tone="warn" title={`You need $${formatUsd(preview.shortfall)} more ${quote!.symbol}`}>
-            Your debt is principal plus the interest it has accrued, and only the principal was ever
-            paid out to you. Repaying in full therefore costs more than you received. Add{" "}
-            ${formatUsd(preview.shortfall)} to your wallet, or repay a smaller amount now.
-          </Notice>
-        ) : null}
-
-        {preview ? (
+        {applied > 0n ? (
           <div>
             <div className="micro" style={{ marginBottom: 4 }}>What changes</div>
-            <PreviewRow label="Debt" before={`$${formatUsd(quote!.debtUsd)}`} after={`$${formatUsd(preview.debtAfter)}`} emphasis />
-            {preview.clears ? (
-              <PreviewRow label="Loan" after="Closed" />
-            ) : (
-              <PreviewRow label="Buffer before maintenance" after={`$${formatUsd(preview.bufferAfter)}`} />
-            )}
-            <PreviewRow label="Your collateral" after={`$${formatUsd(quote!.recognisedUsd)} — unchanged`} />
+            <PreviewRow label="Debt" before={`$${formatUsd(q.debt)}`} after={`$${formatUsd(debtAfter)}`} emphasis />
+            <PreviewRow label={debtAfter === 0n ? "Loan" : "Remaining"} after={debtAfter === 0n ? "Closed" : `$${formatUsd(debtAfter)}`} />
           </div>
         ) : null}
 
         <button
           className="btn btn-primary btn-lg btn-block"
-          disabled={!deployment || !quote || applied === 0n || (preview?.shortfall ?? 0n) > 0n}
-          onClick={() => setTx({ stage: "AWAITING_WALLET" })}
+          disabled={applied === 0n || shortfallTokens > 0n || tx.stage === "AWAITING_WALLET" || tx.stage === "SUBMITTED"}
+          onClick={submit}
         >
           {applied === 0n ? "Enter an amount" : payoff ? "Repay everything" : `Repay $${formatUsd(applied)}`}
         </button>
 
         {tx.stage !== "IDLE" ? <TxTimeline tx={tx} explorerUrl={chain.explorerUrl} /> : null}
       </div>
-
-      {deployment === null ? <NotDeployedNotice chainName={chain.name} /> : null}
-
-      <p className="caption" style={{ margin: 0 }}>
-        Once your debt is clear you can{" "}
-        <Link href="/app/withdraw" style={{ textDecoration: "underline" }}>withdraw your collateral</Link> in full.
-      </p>
     </div>
   );
 }
 
 // ================================================================= withdraw
 
-interface WithdrawQuote {
-  depositedUsd: bigint;
-  recognisedUsd: bigint;
-  withdrawableUsd: bigint;
-  debtUsd: bigint;
-  maintenanceLimitUsd: bigint;
-  status: AccountStatus;
-  gates: Gate[];
-  epoch: bigint;
-  symbol: string;
-}
-
 export function WithdrawForm() {
   const chain = activeChain();
-  const [deployment, setDeployment] = useState<Deployment | null | undefined>(undefined);
-  const [quote, setQuote] = useState<WithdrawQuote | null>(null);
+  const [account, setAccount] = useState<Address | null | undefined>(undefined);
+  const [q, setQ] = useState<WithdrawQuote | null | undefined>(undefined);
   const [tx, setTx] = useState<TxState>({ stage: "IDLE" });
+  const amount = useAmount(q?.withdrawable);
 
-  useEffect(() => {
-    let live = true;
-    loadDeployment(chain.id).then((d) => {
-      if (!live) return;
-      setDeployment(d);
-      setQuote(null);
+  const refresh = useCallback(async () => {
+    const acc = await connectedAccount();
+    setAccount(acc);
+    if (acc) setQ(await withdrawQuote(acc));
+  }, []);
+  useEffect(() => { void refresh(); }, [refresh]);
+
+  const blocked = q ? !q.debtFree && q.status !== "NORMAL" : false;
+
+  async function submit() {
+    if (!account || !q) return;
+    const r = await sendTransaction({
+      to: q.clearingHouse, abi: CH_ACTION_ABI, functionName: "withdrawCollateral",
+      args: [q.assetId, amount.parsed], from: account, onStage: setTx,
     });
-    return () => {
-      live = false;
-    };
-  }, [chain.id]);
+    if (done(r)) { amount.setRaw(""); void refresh(); }
+  }
 
-  const amount = useAmount(quote?.withdrawableUsd);
-
-  const preview = useMemo(() => {
-    if (!quote || amount.isEmpty || quote.depositedUsd === 0n) return null;
-    const recognisedDelta = (amount.parsed * quote.recognisedUsd) / quote.depositedUsd;
-    const recognisedAfter = quote.recognisedUsd > recognisedDelta ? quote.recognisedUsd - recognisedDelta : 0n;
-    const maintenanceAfter = (recognisedAfter * 9_000n) / 10_000n;
-    const bufferAfter = maintenanceAfter > quote.debtUsd ? maintenanceAfter - quote.debtUsd : 0n;
-    return { recognisedAfter, bufferAfter, closesPosition: amount.parsed >= quote.depositedUsd };
-  }, [quote, amount.parsed, amount.isEmpty]);
-
-  const debtFree = quote !== null && quote.debtUsd === 0n;
-  const blocked = quote !== null && !debtFree && quote.status !== "NORMAL";
+  if (account === null) return <ConnectPrompt />;
+  if (account === undefined || q === undefined) return <Skeleton />;
+  if (q === null) return <NotDeployedNotice chainName={chain.name} />;
 
   return (
     <div className="stack" style={{ gap: 22 }}>
-      {quote ? <GateBanners gates={quote.gates} /> : null}
-
-      {debtFree ? (
+      {q.debtFree ? (
         <Notice title="You owe nothing">
           With no debt outstanding your collateral is yours to withdraw in full, whatever state the
           rest of the protocol is in.
         </Notice>
       ) : null}
-
       {blocked ? (
         <Notice tone="stop" title="Withdrawing is paused while your account is restricted">
-          Your account is <RiskBadge status={quote!.status} />. Taking collateral out would increase
-          risk, so it is blocked until you{" "}
-          <Link href="/app/repay" style={{ textDecoration: "underline" }}>repay</Link> or add more collateral.
+          Your account is <RiskBadge status={q.status} />. Taking collateral out would increase risk,
+          so it is blocked until you <Link href="/app/repay" style={{ textDecoration: "underline" }}>repay</Link> or add more collateral.
         </Notice>
       ) : null}
 
@@ -496,15 +419,13 @@ export function WithdrawForm() {
         <div className="grid-2" style={{ gap: 14 }}>
           <div className="panel">
             <div className="stat-label">You have deposited</div>
-            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>{quote ? `$${formatUsd(quote.depositedUsd)}` : "—"}</div>
+            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>{formatUsd(q.deposited)} {q.symbol}</div>
           </div>
           <div className="panel">
             <div className="stat-label">Free to withdraw</div>
-            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>{quote ? `$${formatUsd(quote.withdrawableUsd)}` : "—"}</div>
+            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>{formatUsd(q.withdrawable)} {q.symbol}</div>
             <p className="caption" style={{ marginTop: 6 }}>
-              {quote && quote.debtUsd > 0n
-                ? `$${formatUsd(quote.debtUsd)} of debt is holding the rest`
-                : "Debt holding your collateral limits this. A restricted account status pauses it entirely."}
+              {q.debtUsd > 0n ? `$${formatUsd(q.debtUsd)} of debt is holding the rest.` : "No debt is holding your collateral."}
             </p>
           </div>
         </div>
@@ -513,55 +434,30 @@ export function WithdrawForm() {
           label="Amount to withdraw"
           value={amount.raw}
           onChange={amount.setRaw}
-          suffix={quote?.symbol ?? deployment?.assets[0]?.symbol ?? "—"}
-          max={quote?.withdrawableUsd}
+          suffix={q.symbol}
+          max={q.withdrawable}
           maxLabel="Free"
-          disabled={!deployment || !quote || blocked}
-          hint={quote ? `Quoted under risk epoch ${quote.epoch}.` : undefined}
+          disabled={blocked}
+          hint={`Quoted under risk epoch ${q.epoch}.`}
         />
 
-        {amount.overMax && quote ? (
+        {amount.overMax ? (
           <Notice tone="warn" title="That is more than you can take out right now">
-            You can withdraw ${formatUsd(quote.withdrawableUsd)}. The rest is backing your{" "}
-            ${formatUsd(quote.debtUsd)} of debt.{" "}
+            You can withdraw {formatUsd(q.withdrawable)} {q.symbol}. The rest is backing your debt.{" "}
             <Link href="/app/repay" style={{ textDecoration: "underline" }}>Repay to free more</Link>.
-          </Notice>
-        ) : null}
-
-        {preview ? (
-          <div>
-            <div className="micro" style={{ marginBottom: 4 }}>What changes</div>
-            <PreviewRow
-              label="Recognised collateral"
-              before={`$${formatUsd(quote!.recognisedUsd)}`}
-              after={`$${formatUsd(preview.recognisedAfter)}`}
-              emphasis
-            />
-            <PreviewRow label="Debt" after={`$${formatUsd(quote!.debtUsd)} — unchanged`} />
-            {quote!.debtUsd > 0n ? <PreviewRow label="Buffer before maintenance" after={`$${formatUsd(preview.bufferAfter)}`} /> : null}
-            {preview.closesPosition ? <PreviewRow label="Position" after="Closed" /> : null}
-          </div>
-        ) : null}
-
-        {preview && quote!.debtUsd > 0n && preview.bufferAfter === 0n ? (
-          <Notice tone="warn" title="This leaves you with no margin">
-            After this withdrawal any fall in your collateral&rsquo;s recognised value puts the
-            account straight into a restricted state. Withdrawing less keeps a buffer.
           </Notice>
         ) : null}
 
         <button
           className="btn btn-primary btn-lg btn-block"
-          disabled={!deployment || !quote || blocked || amount.isEmpty || amount.overMax}
-          onClick={() => setTx({ stage: "AWAITING_WALLET" })}
+          disabled={blocked || amount.isEmpty || amount.overMax || tx.stage === "AWAITING_WALLET" || tx.stage === "SUBMITTED"}
+          onClick={submit}
         >
-          {amount.isEmpty ? "Enter an amount" : `Withdraw ${amount.raw}`}
+          {amount.isEmpty ? "Enter an amount" : `Withdraw ${amount.raw} ${q.symbol}`}
         </button>
 
         {tx.stage !== "IDLE" ? <TxTimeline tx={tx} explorerUrl={chain.explorerUrl} /> : null}
       </div>
-
-      {deployment === null ? <NotDeployedNotice chainName={chain.name} /> : null}
     </div>
   );
 }
