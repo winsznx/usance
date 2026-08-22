@@ -27,8 +27,6 @@ jobs:
           version: stable
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -86,8 +84,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -130,8 +126,6 @@ jobs:
           version: stable
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -173,7 +167,9 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11
+          # clean-room checks out into ./clean-room, so the packageManager field the action reads
+          # by default (at the workspace root) is not present there. Point it at the checked-out copy.
+          package_json_file: clean-room/package.json
 
       - uses: actions/setup-node@v4
         with:
@@ -207,8 +203,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       # Node 24: the gate loads the workspace TypeScript through Node's own type transform, which
       # is the version the script was verified against. It refuses to run rather than degrade if
@@ -291,8 +285,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
