@@ -9,6 +9,55 @@ import { Nav, Footer } from "@/components/primitives";
  * dump and it does not lead with "RWA Passport" or "clearing" — a first-time visitor gets the
  * outcome first and the machinery only if they want it.
  */
+
+/**
+ * Questions a first-time visitor actually asks, answered without spin. Kept honest on purpose: the
+ * testnet reality, the non-custodial model, and what is deliberately unfinished are stated as
+ * plainly as the answers that flatter the product.
+ */
+const FAQ: Array<{ q: string; a: string }> = [
+  {
+    q: "What is Usance?",
+    a: "A clearing and risk layer for tokenized real-world assets. It reads what an asset actually is from the issuer’s own filing, recognises a conservative value that could be recovered under stress, and lets you finance against that value — without selling the asset.",
+  },
+  {
+    q: "How is this different from a normal lending market?",
+    a: "A lending market takes a liquid token and applies a governance-set loan-to-value. Usance starts from what the asset is — its legal rights, issuer, custody and redemption terms, captured in a versioned Passport — and derives a value that could be recovered under stress. You borrow against that recognised value, and every haircut between market price and the usable amount is shown and named.",
+  },
+  {
+    q: "Why is my usable amount lower than the asset’s market value?",
+    a: "Because market price is not what you would recover if the asset had to be turned into cash under stress. Usance subtracts for liquidity, volatility, redemption friction and similar risks. Nothing is hidden — the derivation is shown line by line, and you can read the filing each figure came from.",
+  },
+  {
+    q: "Do I keep my asset? Is Usance custodial?",
+    a: "You keep the exposure. Collateral sits in an on-chain vault that stays yours: you draw settlement liquidity against it and can repay and withdraw whenever you want. Usance is non-custodial — no one, including an agent you authorise, can move your collateral out.",
+  },
+  {
+    q: "What happens if my collateral falls in value?",
+    a: "Your capacity follows the evidence automatically. As health declines the account moves through named states: new risk is refused first, then borrowing is restricted, and only in the worst case is a position reduced to cover debt. You are always told which bound you hit — before it acts, not during a liquidation.",
+  },
+  {
+    q: "Can an agent act on my behalf safely?",
+    a: "Yes. You can grant an agent a mandate inside limits you sign — for example, to repay or add collateral to hold a buffer. It can never withdraw your collateral or take on new risk you did not authorise, and revoking the mandate is immediate and permanent, in a single transaction.",
+  },
+  {
+    q: "How do I know the numbers aren’t just marketing?",
+    a: "Every value is derived deterministically, and independent re-implementations of the risk engine agree to the wei. Prices are Chainlink feeds read back on-chain. Each step, from the source document to the final on-chain state, is written to a public receipt that anyone can verify without a wallet.",
+  },
+  {
+    q: "Is this on mainnet? Can I lose real money?",
+    a: "No. Usance runs on X Layer testnet today. The tokens are labelled test stand-ins with no real value, and nothing here is a live financial product. It is built so the whole mechanism can be checked before any real value is ever at stake.",
+  },
+  {
+    q: "What do I need to try it?",
+    a: "An X Layer wallet and a little OKB for gas. Test collateral and settlement tokens come from the faucet — no purchase, no sign-up, no KYC. Connect your wallet and Usance shows which of your holdings it can work with.",
+  },
+  {
+    q: "What isn’t finished yet?",
+    a: "A few paths need access Usance does not have, and they are disabled rather than faked: model-assisted document extraction has no API key, so Passports are built from a single deterministic path and labelled as such; external-venue hedging is off; and one Chainlink product is not available on X Layer. The live status page lists every capability and its exact state.",
+  },
+];
+
 export default function Landing() {
   return (
     <>
@@ -217,6 +266,31 @@ export default function Landing() {
                   <h3>{a.who}</h3>
                   <p>{a.body}</p>
                 </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- faq */}
+        <section className="section" id="faq">
+          <div className="shell">
+            <div className="micro">Questions</div>
+            <h2 className="heading-lg" style={{ margin: "14px 0 0", maxWidth: "20ch" }}>
+              Questions people ask first
+            </h2>
+            <p className="muted" style={{ margin: "16px 0 0", maxWidth: "56ch" }}>
+              If something here is still unclear, the{" "}
+              <Link href="/status" className="faq-link">integration status</Link> and a{" "}
+              <Link href="/assets/franklin-fobxx" className="faq-link">live Passport</Link> show the
+              real thing rather than describe it.
+            </p>
+
+            <div className="faq-list">
+              {FAQ.map((f, i) => (
+                <details className="faq-item" key={f.q} open={i === 0}>
+                  <summary className="faq-q">{f.q}</summary>
+                  <p className="faq-a">{f.a}</p>
+                </details>
               ))}
             </div>
           </div>
