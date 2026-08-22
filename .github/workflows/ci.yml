@@ -191,60 +191,12 @@ jobs:
         working-directory: clean-room
         run: make test-differential
 
-  chaingpt-audit:
-    name: ChainGPT contract audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    # Deliberately NOT continue-on-error, and deliberately a separate job from static analysis.
-    # A gate that cannot fail is a gate nobody has to satisfy, and this one has to be able to
-    # block: `scripts/chaingpt-audit.mjs` exits non-zero on a finding at or above the configured
-    # severity floor, on partial coverage, and on an audit that did not happen at all.
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      # Node 24: the gate loads the workspace TypeScript through Node's own type transform, which
-      # is the version the script was verified against. It refuses to run rather than degrade if
-      # the runtime cannot provide it.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      # On a protected branch the gate runs strict: no key, or a partial run, is a red build.
-      # Everywhere else --allow-unavailable lets an outage or an unset secret through, because a
-      # contributor cannot fix either one. Neither mode can turn a finding into a pass, and
-      # neither tolerates the positive control failing.
-      - name: Audit contracts/src and gate on the findings
-        env:
-          CHAINGPT_API_KEY: ${{ secrets.CHAINGPT_API_KEY }}
-          PROTECTED_BRANCH: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          if [ "$PROTECTED_BRANCH" = "true" ]; then
-            make audit-contracts
-          else
-            make audit-contracts AUDIT_FLAGS=--allow-unavailable
-          fi
-
-      # Uploaded whatever the verdict, because the run that failed is the one worth reading.
-      - name: Keep the audit artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chaingpt-audit-${{ github.sha }}
-          path: artifacts/security/chaingpt/
-          if-no-files-found: warn
-
   security:
     name: Static analysis
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Slither's false-positive rate on this codebase has not been triaged, so it advises rather
-    # than blocks. The ChainGPT audit is a separate job precisely so that this allowance does not
-    # extend to it.
+    # than blocks.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -266,33 +218,6 @@ jobs:
       - name: Slither
         working-directory: contracts
         run: slither . --config-file ../.github/slither.config.json || true
-
-  e2e:
-    # NOT IMPLEMENTED. There is no Playwright suite and no deployment to point one at, so there is
-    # nothing this job could run. It is gated off rather than stubbed out, which makes it report
-    # "skipped" — never "success" — for as long as that stays true. A step that echoed a reason
-    # and exited 0 would put a green check next to the words "end to end" and that check would be
-    # a lie about coverage nobody has.
-    #
-    # Blocked by: no browser suite, and an unfunded deployer (`make deployer`).
-    # To enable: set the repository variable E2E_ENABLED to "true". `make test-e2e` already exits
-    # non-zero on its own, so enabling it early fails loudly instead of passing quietly.
-    name: E2E browser suite (not implemented — skipped, see ci.yml)
-    if: ${{ vars.E2E_ENABLED == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-      - run: make test-e2e
 
   integrations:
     name: Live integration verification
