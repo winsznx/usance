@@ -18,27 +18,27 @@ import { Nav, Footer } from "@/components/primitives";
 const FAQ: Array<{ q: string; a: string }> = [
   {
     q: "What is Usance?",
-    a: "A clearing and risk layer for tokenized real-world assets. It reads what an asset actually is from the issuer’s own filing, recognises a conservative value that could be recovered under stress, and lets you finance against that value — without selling the asset.",
+    a: "A clearing and risk layer for tokenized real-world assets. It reads what an asset actually is from the issuer’s own filing, works out a conservative value that could be recovered under stress, and lets you borrow against that value without selling the asset.",
   },
   {
     q: "How is this different from a normal lending market?",
-    a: "A lending market takes a liquid token and applies a governance-set loan-to-value. Usance starts from what the asset is — its legal rights, issuer, custody and redemption terms, captured in a versioned Passport — and derives a value that could be recovered under stress. You borrow against that recognised value, and every haircut between market price and the usable amount is shown and named.",
+    a: "A lending market takes a liquid token and applies a governance-set loan-to-value. Usance starts from what the asset is. It reads the legal rights, issuer, custody and redemption terms from the filing, captures them in a versioned Passport, and works out a value that could be recovered under stress. You borrow against that value, and every haircut between market price and the usable amount is shown and named.",
   },
   {
     q: "Why is my usable amount lower than the asset’s market value?",
-    a: "Because market price is not what you would recover if the asset had to be turned into cash under stress. Usance subtracts for liquidity, volatility, redemption friction and similar risks. Nothing is hidden — the derivation is shown line by line, and you can read the filing each figure came from.",
+    a: "Because market price is not what you would recover if the asset had to be turned into cash under stress. Usance subtracts for liquidity, volatility, redemption friction and similar risks. Nothing is hidden. The full derivation is shown line by line, and you can read the filing each figure came from.",
   },
   {
     q: "Do I keep my asset? Is Usance custodial?",
-    a: "You keep the exposure. Collateral sits in an on-chain vault that stays yours: you draw settlement liquidity against it and can repay and withdraw whenever you want. Usance is non-custodial — no one, including an agent you authorise, can move your collateral out.",
+    a: "You keep the exposure. Collateral sits in an on-chain vault that stays yours. You draw settlement liquidity against it and can repay and withdraw whenever you want. Usance is non-custodial, and no one, including an agent you authorise, can move your collateral out.",
   },
   {
     q: "What happens if my collateral falls in value?",
-    a: "Your capacity follows the evidence automatically. As health declines the account moves through named states: new risk is refused first, then borrowing is restricted, and only in the worst case is a position reduced to cover debt. You are always told which bound you hit — before it acts, not during a liquidation.",
+    a: "Your capacity follows the evidence automatically. As health declines the account moves through named states. New risk is refused first, then borrowing is restricted, and only in the worst case is a position reduced to cover debt. You always see which bound you hit, and the limit lands before a liquidation would.",
   },
   {
     q: "Can an agent act on my behalf safely?",
-    a: "Yes. You can grant an agent a mandate inside limits you sign — for example, to repay or add collateral to hold a buffer. It can never withdraw your collateral or take on new risk you did not authorise, and revoking the mandate is immediate and permanent, in a single transaction.",
+    a: "Yes. You can grant an agent a mandate inside limits you sign, for example to repay or add collateral to hold a buffer. It can never withdraw your collateral or take on new risk you didn’t authorise, and revoking the mandate is immediate and permanent, in a single transaction.",
   },
   {
     q: "How do I know the numbers aren’t just marketing?",
@@ -46,15 +46,15 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: "Is this on mainnet? Can I lose real money?",
-    a: "No. Usance runs on X Layer testnet today. The tokens are labelled test stand-ins with no real value, and nothing here is a live financial product. It is built so the whole mechanism can be checked before any real value is ever at stake.",
+    a: "No. Usance runs on X Layer testnet today. The tokens are labelled test stand-ins with no real value, and nothing here is a live financial product. It’s built so you can check the whole mechanism before any real value is at stake.",
   },
   {
     q: "What do I need to try it?",
-    a: "An X Layer wallet and a little OKB for gas. Test collateral and settlement tokens come from the faucet — no purchase, no sign-up, no KYC. Connect your wallet and Usance shows which of your holdings it can work with.",
+    a: "An X Layer wallet and a little OKB for gas. The faucet gives you test collateral and settlement tokens for free, and there’s no account or KYC to set up. Connect your wallet and Usance shows which of your holdings it can work with.",
   },
   {
     q: "What isn’t finished yet?",
-    a: "A few paths need access Usance does not have, and they are disabled rather than faked: model-assisted document extraction has no API key, so Passports are built from a single deterministic path and labelled as such; external-venue hedging is off; and one Chainlink product is not available on X Layer. The live status page lists every capability and its exact state.",
+    a: "A few paths need access Usance doesn’t have. Model-assisted document extraction has no API key, so Passports are built from a single deterministic path and labelled that way. External-venue hedging is off. One Chainlink product isn’t available on X Layer. Each of these is switched off in the product with the reason shown, never faked. The live status page lists every capability and its exact state.",
   },
 ];
 
@@ -281,8 +281,8 @@ export default function Landing() {
             <p className="muted" style={{ margin: "16px 0 0", maxWidth: "56ch" }}>
               If something here is still unclear, the{" "}
               <Link href="/status" className="faq-link">integration status</Link> and a{" "}
-              <Link href="/assets/franklin-fobxx" className="faq-link">live Passport</Link> show the
-              real thing rather than describe it.
+              <Link href="/assets/franklin-fobxx" className="faq-link">live Passport</Link> let you
+              check the real thing yourself.
             </p>
 
             <div className="faq-list">
