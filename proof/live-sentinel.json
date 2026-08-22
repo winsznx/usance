@@ -27,23 +27,60 @@
   "receiptStatus": "CONFIRMED",
   "receiptKind": "SENTINEL_RUN_EXECUTED",
   "identityWarning": "tUSTB/tUSD are labelled testnet stand-ins, not any issuer token. This proves autonomy mechanics.",
+  "priorTransactions": [
+    {
+      "label": "deploy SentinelTemplateRegistry",
+      "hash": "0x1e5788489bbf546428dff458c9c8c550d6d1beb19efc383694be9a17cf146609",
+      "blockNumber": 38757037,
+      "status": "success",
+      "fromSetup": true
+    },
+    {
+      "label": "deploy SentinelInstanceRegistry",
+      "hash": "0x5d57685a12d4dd2e0434bf2042e52ae479edfe0d23abd0d91c70bb174ae7795f",
+      "blockNumber": 38757038,
+      "status": "success",
+      "fromSetup": true
+    },
+    {
+      "label": "commitTemplate T1 Safety Buffer v1",
+      "hash": "0xa096089b032ad571e3c2988429bc57b959d73c3e9f908cb768682eec55fe9b73",
+      "blockNumber": 38757161,
+      "status": "success",
+      "fromSetup": true
+    },
+    {
+      "label": "registerInstance pins (templateId, version, manifestHash)",
+      "hash": "0x203c2288c4c36cc013199cae226b2283d47d9e1c5ad5a28c6f27b8fda4f047e3",
+      "blockNumber": 38761632,
+      "status": "success",
+      "fromSetup": true
+    },
+    {
+      "label": "registerInstance with mismatched manifest — refused (ManifestMismatch)",
+      "hash": "0x97a68428aa879197c5cda8b363a4a8c45683edea6babebca3f6aa4bf2a11ba4d",
+      "blockNumber": 38762212,
+      "status": "reverted",
+      "fromSetup": true
+    }
+  ],
   "transactions": [
     {
       "label": "registerMandate",
       "hash": "0x891b29afe391847f5346e9cd8ceccb8ad56a9840cb9645098b2ffc51456b48c7",
-      "block": 38767400,
+      "blockNumber": 38767400,
       "status": "success"
     },
     {
       "label": "agent approves ClearingHouse",
       "hash": "0xc1701805278d8b0b7b802493e87d593ebf06144842992ff02464aebc498507ef",
-      "block": 38767404,
+      "blockNumber": 38767404,
       "status": "success"
     },
     {
       "label": "sentinel autonomous REPAY",
       "hash": "0xb037f143ffe9b39f23b348e23f079518d40a9d74394aa008e25d740a1831df61",
-      "block": 38767411,
+      "blockNumber": 38767411,
       "status": "success"
     }
   ]
