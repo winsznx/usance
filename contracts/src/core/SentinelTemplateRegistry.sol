@@ -121,8 +121,8 @@ contract SentinelTemplateRegistry is Authorized {
         }
 
         if (
-            p.manifestHash == bytes32(0) || p.configSchemaHash == bytes32(0) || p.triggerSchemaHash == bytes32(0)
-                || p.planSchemaHash == bytes32(0)
+            p.manifestHash == bytes32(0) || p.configSchemaHash == bytes32(0)
+                || p.triggerSchemaHash == bytes32(0) || p.planSchemaHash == bytes32(0)
         ) revert ZeroHash();
 
         if (p.feePerSuccessfulRunBps > MAX_FEE_BPS || p.feeFlatPerRunUsd18 > MAX_FLAT_FEE_USD18) {
@@ -138,7 +138,8 @@ contract SentinelTemplateRegistry is Authorized {
             revert TriggerBitOutsideVocabulary(p.requiredTriggerClasses);
         }
 
-        if (p.riskClass == RiskClass.RISK_REDUCING_ONLY && (p.requiredActions & RISK_INCREASING_ACTIONS) != 0) {
+        if (p.riskClass == RiskClass.RISK_REDUCING_ONLY && (p.requiredActions & RISK_INCREASING_ACTIONS) != 0)
+        {
             revert RiskReducingRequiresNonIncreasing();
         }
 

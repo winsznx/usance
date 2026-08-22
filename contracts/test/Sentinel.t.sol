@@ -68,7 +68,9 @@ contract SentinelRegistriesTest is Test {
 
     function _commitV1() internal {
         vm.prank(publisher);
-        templates.commitTemplate(TID, 1, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS));
+        templates.commitTemplate(
+            TID, 1, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS)
+        );
     }
 
     // ------------------------------------------------------------------ template versioning
@@ -79,25 +81,43 @@ contract SentinelRegistriesTest is Test {
 
         // Re-committing v1 is rejected: version must be latest + 1.
         vm.prank(publisher);
-        vm.expectRevert(abi.encodeWithSelector(SentinelTemplateRegistry.VersionNotSequential.selector, uint64(2), uint64(1)));
-        templates.commitTemplate(TID, 1, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SentinelTemplateRegistry.VersionNotSequential.selector, uint64(2), uint64(1)
+            )
+        );
+        templates.commitTemplate(
+            TID, 1, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS)
+        );
 
         // Skipping to v3 is rejected.
         vm.prank(publisher);
-        vm.expectRevert(abi.encodeWithSelector(SentinelTemplateRegistry.VersionNotSequential.selector, uint64(2), uint64(3)));
-        templates.commitTemplate(TID, 3, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SentinelTemplateRegistry.VersionNotSequential.selector, uint64(2), uint64(3)
+            )
+        );
+        templates.commitTemplate(
+            TID, 3, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS)
+        );
 
         // v2 by the family publisher is accepted.
         vm.prank(publisher);
-        templates.commitTemplate(TID, 2, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS));
+        templates.commitTemplate(
+            TID, 2, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS)
+        );
         assertEq(templates.latestVersion(TID), 2);
     }
 
     function test_onlyFamilyPublisherMayAddVersions() public {
         _commitV1();
         vm.prank(stranger);
-        vm.expectRevert(abi.encodeWithSelector(SentinelTemplateRegistry.NotFamilyPublisher.selector, publisher, stranger));
-        templates.commitTemplate(TID, 2, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS));
+        vm.expectRevert(
+            abi.encodeWithSelector(SentinelTemplateRegistry.NotFamilyPublisher.selector, publisher, stranger)
+        );
+        templates.commitTemplate(
+            TID, 2, _params(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY, REDUCING_ACTIONS)
+        );
     }
 
     function test_feePolicyBoundedByCeilings() public {
@@ -116,10 +136,14 @@ contract SentinelRegistriesTest is Test {
     }
 
     function test_rejectsActionBitOutsideVocabulary() public {
-        SentinelTemplateRegistry.CommitParams memory p =
-            _params(SentinelTemplateRegistry.RiskClass.MARKET_NEUTRAL, uint16(1) << uint16(templates.MANDATE_ACTION_COUNT()));
+        SentinelTemplateRegistry.CommitParams memory p = _params(
+            SentinelTemplateRegistry.RiskClass.MARKET_NEUTRAL,
+            uint16(1) << uint16(templates.MANDATE_ACTION_COUNT())
+        );
         vm.prank(publisher);
-        vm.expectRevert(abi.encodeWithSelector(SentinelTemplateRegistry.ActionBitOutsideVocabulary.selector, uint16(64)));
+        vm.expectRevert(
+            abi.encodeWithSelector(SentinelTemplateRegistry.ActionBitOutsideVocabulary.selector, uint16(64))
+        );
         templates.commitTemplate(TID, 1, p);
     }
 
@@ -145,7 +169,10 @@ contract SentinelRegistriesTest is Test {
         // Publisher may deprecate their own template.
         vm.prank(publisher);
         templates.setStatus(TID, 1, SentinelTemplateRegistry.TemplateStatus.DEPRECATED);
-        assertEq(uint8(templates.getVersion(TID, 1).status), uint8(SentinelTemplateRegistry.TemplateStatus.DEPRECATED));
+        assertEq(
+            uint8(templates.getVersion(TID, 1).status),
+            uint8(SentinelTemplateRegistry.TemplateStatus.DEPRECATED)
+        );
 
         // Neither publisher nor guardian may lift it back to ACTIVE.
         vm.prank(publisher);
@@ -164,7 +191,9 @@ contract SentinelRegistriesTest is Test {
         // Only GOVERNANCE may lift.
         vm.prank(governance);
         templates.setStatus(TID, 1, SentinelTemplateRegistry.TemplateStatus.ACTIVE);
-        assertEq(uint8(templates.getVersion(TID, 1).status), uint8(SentinelTemplateRegistry.TemplateStatus.ACTIVE));
+        assertEq(
+            uint8(templates.getVersion(TID, 1).status), uint8(SentinelTemplateRegistry.TemplateStatus.ACTIVE)
+        );
     }
 
     // ------------------------------------------------------------------ instances
@@ -172,21 +201,29 @@ contract SentinelRegistriesTest is Test {
     function test_registrationPinsManifestAndRefusesMissingOrDisabled() public {
         // No template yet → registration reverts inside getVersion.
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(SentinelTemplateRegistry.UnknownTemplateVersion.selector, TID, uint64(1)));
+        vm.expectRevert(
+            abi.encodeWithSelector(SentinelTemplateRegistry.UnknownTemplateVersion.selector, TID, uint64(1))
+        );
         instances.registerInstance(TID, 1, MANIFEST, executor, MANDATE, keccak256("cfg"));
 
         _commitV1();
 
         // Manifest mismatch is refused (I-62 defence in depth).
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(SentinelInstanceRegistry.ManifestMismatch.selector, MANIFEST, keccak256("wrong")));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SentinelInstanceRegistry.ManifestMismatch.selector, MANIFEST, keccak256("wrong")
+            )
+        );
         instances.registerInstance(TID, 1, keccak256("wrong"), executor, MANDATE, keccak256("cfg"));
 
         // A well-formed registration lands, and its id matches the derivation.
         vm.prank(owner);
         bytes32 id = instances.registerInstance(TID, 1, MANIFEST, executor, MANDATE, keccak256("cfg"));
         assertEq(id, instances.instanceIdFor(owner, 0));
-        assertEq(uint8(instances.getInstance(id).status), uint8(SentinelInstanceRegistry.InstanceStatus.REGISTERED));
+        assertEq(
+            uint8(instances.getInstance(id).status), uint8(SentinelInstanceRegistry.InstanceStatus.REGISTERED)
+        );
 
         // Disable the template; new registrations are refused (I-68).
         vm.prank(guardian);
@@ -218,7 +255,9 @@ contract SentinelRegistriesTest is Test {
         // Guardian may lift the guardian pause.
         vm.prank(guardian);
         instances.resume(id);
-        assertEq(uint8(instances.getInstance(id).status), uint8(SentinelInstanceRegistry.InstanceStatus.REGISTERED));
+        assertEq(
+            uint8(instances.getInstance(id).status), uint8(SentinelInstanceRegistry.InstanceStatus.REGISTERED)
+        );
     }
 
     function test_revokeIsTerminalAndOwnerOnly() public {
@@ -233,7 +272,9 @@ contract SentinelRegistriesTest is Test {
 
         vm.prank(owner);
         instances.revoke(id);
-        assertEq(uint8(instances.getInstance(id).status), uint8(SentinelInstanceRegistry.InstanceStatus.REVOKED));
+        assertEq(
+            uint8(instances.getInstance(id).status), uint8(SentinelInstanceRegistry.InstanceStatus.REVOKED)
+        );
 
         // Terminal: no further transition, in any direction.
         vm.prank(owner);
@@ -277,7 +318,11 @@ contract SentinelRegistriesTest is Test {
         // v1 is untouched.
         SentinelTemplateRegistry.TemplateVersion memory v1 = templates.getVersion(TID, 1);
         assertEq(v1.manifestHash, MANIFEST, "v1 manifest mutated");
-        assertEq(uint8(v1.riskClass), uint8(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY), "v1 risk class mutated");
+        assertEq(
+            uint8(v1.riskClass),
+            uint8(SentinelTemplateRegistry.RiskClass.RISK_REDUCING_ONLY),
+            "v1 risk class mutated"
+        );
 
         // The instance still pins v1 and v1's manifest — adopting v2 would be a fresh registration.
         SentinelInstanceRegistry.Instance memory inst = instances.getInstance(id);

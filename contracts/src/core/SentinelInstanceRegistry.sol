@@ -84,7 +84,9 @@ contract SentinelInstanceRegistry is Authorized {
         bytes32 configHash
     ) external returns (bytes32 instanceId) {
         SentinelTemplateRegistry.TemplateVersion memory tv = templates.getVersion(templateId, templateVersion);
-        if (tv.status == SentinelTemplateRegistry.TemplateStatus.SECURITY_DISABLED) revert TemplateDisabled();
+        if (tv.status == SentinelTemplateRegistry.TemplateStatus.SECURITY_DISABLED) {
+            revert TemplateDisabled();
+        }
         if (tv.manifestHash != manifestHash) revert ManifestMismatch(tv.manifestHash, manifestHash);
         if (agentExecutor == address(0) || mandateId == bytes32(0)) revert ZeroExecutorOrMandate();
 
