@@ -191,4 +191,6 @@ the plan that is recorded rather than hidden.
 
 ## Licence
 
-Contracts are BUSL-1.1. Specifications and documentation are CC BY 4.0.
+The contracts and application code are under the [Business Source License 1.1](LICENSE), which
+converts to the Apache License 2.0 on the Change Date. Specifications and documentation are CC BY
+4.0.
