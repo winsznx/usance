@@ -87,8 +87,8 @@ export default function NewMandatePage() {
             />
             {agentAddress.length > 0 && !agentLooksValid ? (
               <p className="caption" style={{ margin: 0, color: "var(--stop)" }}>
-                That is not a 20-byte address. Check it against the agent you intend to authorise —
-                a mandate signed to the wrong address authorises the wrong party.
+                That is not a 20-byte address. Check it against the agent you intend to authorise.
+                A mandate signed to the wrong address authorises the wrong party.
               </p>
             ) : null}
 
@@ -112,7 +112,7 @@ export default function NewMandatePage() {
             <Row label="Debt ceiling" value={`$${maxDebt}`} />
             <Row label="Expires" value={`${days} days from signing`} />
             <Row label="Can this raise your risk?" value={canIncreaseRisk(mask) ? "Yes" : "No"} />
-            <Row label="Can this withdraw your collateral?" value="No — never" />
+            <Row label="Can this withdraw your collateral?" value="No, never" />
           </div>
 
           {refused.length > 0 ? (

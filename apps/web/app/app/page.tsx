@@ -297,7 +297,7 @@ function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
             */}
             <p className="caption" style={{ margin: 0, color: "var(--graphite)" }}>
               Every financial action on this account, with the transaction that carried it. Nothing
-              here is reconstructed — a row exists only where a receipt does.
+              here is reconstructed. A row exists only where a receipt does.
             </p>
             <Link href="/app/activity" className="btn btn-ghost" style={{ marginTop: 14 }}>
               Open activity

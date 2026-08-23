@@ -25,7 +25,7 @@ export default function SentinelsAppPage() {
   return (
     <AccountShell
       title="Sentinels"
-      intro="Autonomous agents you have armed. Each acts only through a mandate you signed — you can pause or revoke any of them, and a compromised agent still cannot withdraw your collateral."
+      intro="Autonomous agents you have armed. Each acts only through a mandate you signed. You can pause or revoke any of them, and a compromised agent still cannot withdraw your collateral."
     >
       {(account) => <InstanceList account={account} />}
     </AccountShell>

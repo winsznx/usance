@@ -78,7 +78,7 @@ function Position({ account }: { account: `0x${string}` }) {
   if (data.outcome === "UNREADABLE") {
     return (
       <Notice tone="warn" title="Could not read your position">
-        {data.reason} This does not mean your position is empty — it means Usance could not check.
+        {data.reason} This does not mean your position is empty. It means Usance could not check.
         Nothing has changed on chain and no action is needed.
       </Notice>
     );

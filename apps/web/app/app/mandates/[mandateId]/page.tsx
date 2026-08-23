@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 const TONE: Record<string, { tone: "neutral" | "warn" | "stop"; blurb: string }> = {
   ACTIVE: { tone: "neutral", blurb: "This agent can act on your account right now, within the limits below." },
   PAUSED: { tone: "warn", blurb: "Suspended. The agent cannot act until you resume it. Nothing is lost." },
-  REVOKED: { tone: "stop", blurb: "Permanently ended. Revocation cannot be undone — a new mandate needs a new signature." },
+  REVOKED: { tone: "stop", blurb: "Permanently ended. Revocation cannot be undone, and a new mandate needs a new signature." },
   EXPIRED: { tone: "stop", blurb: "Past its expiry. The agent can no longer act, and a new mandate needs a new signature." },
 };
 
@@ -48,7 +48,7 @@ export default async function MandateDetailPage({ params }: { params: Promise<{ 
             title="Could not read the registry"
             action={<Link className="btn btn-ghost" href="/app/mandates">Back</Link>}
           >
-            {lookup.reason} This does not mean the mandate does not exist — it means Usance could not
+            {lookup.reason} This does not mean the mandate does not exist. It means Usance could not
             check. Do not sign a replacement on the strength of this screen.
           </Notice>
         ) : lookup.outcome === "NOT_FOUND" ? (
@@ -151,7 +151,7 @@ function Detail({ mandate, explorer }: { mandate: MandateDetail; explorer?: stri
             Revoke
           </button>
           <span className="caption" style={{ alignSelf: "center" }}>
-            Not wired to a wallet yet — these would submit transactions, and a disabled control is
+            Not wired to a wallet yet. These would submit transactions, and a disabled control is
             more honest than one that does nothing.
           </span>
         </div>

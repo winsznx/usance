@@ -59,7 +59,7 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
                 */}
                 <Notice tone="warn" title="This is still being reconciled">
                   Usance submitted this and has not confirmed the outcome. That does not mean it
-                  failed. Do not retry it — a duplicate would be a second real action. Reconciliation
+                  failed. Do not retry it. A duplicate would be a second real action. Reconciliation
                   asks the chain and resolves this without your involvement.
                 </Notice>
               </div>
@@ -97,7 +97,7 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
                   <TxRow key={t.txHash} tx={t} explorer={explorer} />
                 ))}
                 <p className="caption" style={{ margin: "10px 0 0" }}>
-                  These reached a block and were rejected. That is the protocol working — the
+                  These reached a block and were rejected. That is the protocol working, and the
                   refusal is as verifiable as anything it allowed.
                 </p>
               </div>

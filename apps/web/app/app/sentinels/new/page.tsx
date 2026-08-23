@@ -47,7 +47,7 @@ export default function NewSentinelPage() {
   return (
     <AccountShell
       title="Arm a Sentinel"
-      intro="Install the Safety Buffer strategy. It can only repay debt on your behalf — it cannot borrow, trade, or move collateral — and it acts strictly within the mandate you are about to sign."
+      intro="Install the Safety Buffer strategy. It can only repay debt on your behalf, and it cannot borrow, trade, or move collateral. It acts strictly within the mandate you are about to sign."
     >
       {(account) => <Create account={account} />}
     </AccountShell>
@@ -207,7 +207,7 @@ function Create({ account }: { account: `0x${string}` }) {
 
           <Notice title="You are signing a delegation, not a payment">
             The next step opens your wallet to sign an EIP-712 mandate showing the agent, the cap and
-            the expiry. Arming submits two transactions — the mandate, then the instance that pins
+            the expiry. Arming submits two transactions, the mandate, then the instance that pins
             the template. A compromised agent still cannot exceed this mandate or withdraw collateral.
           </Notice>
 

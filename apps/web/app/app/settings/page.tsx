@@ -99,7 +99,7 @@ function SettingsBody({ account }: { account: `0x${string}` }) {
           <div className="micro" style={{ marginBottom: 6 }}>Notifications</div>
           <p className="caption" style={{ margin: "0 0 6px", color: "var(--graphite)" }}>
             A desktop alert when something needs a decision, even with this tab in the background.
-            Your in-app alerts always show regardless — this only adds one outside the tab.
+            Your in-app alerts always show regardless. This only adds one outside the tab.
           </p>
 
           <SettingRow
@@ -162,8 +162,8 @@ function SettingsBody({ account }: { account: `0x${string}` }) {
             <ModeToggle />
           </div>
           <p className="caption" style={{ margin: 0, color: "var(--graphite)" }}>
-            Advanced adds provenance — block numbers, asset ids, which bound was binding. It never
-            removes risk information: a mode that could hide a margin call would get somebody
+            Advanced adds provenance, like block numbers, asset ids, and which bound was binding. It
+            never removes risk information: a mode that could hide a margin call would get somebody
             liquidated for using the default.
           </p>
         </section>
@@ -213,7 +213,7 @@ function SettingsBody({ account }: { account: `0x${string}` }) {
             <OnChain kind="address" value={account} label="your account" />
           </div>
           <Row label="Network" value={`${chain.name} (chain ${chain.id})`} />
-          <Row label="Settlement asset" value={chain.id === 196 ? "USDC" : "tUSD — TEST ASSET, NO REAL VALUE"} />
+          <Row label="Settlement asset" value={chain.id === 196 ? "USDC" : "tUSD (TEST ASSET, NO REAL VALUE)"} />
         </section>
 
         {/* Session */}
@@ -221,7 +221,7 @@ function SettingsBody({ account }: { account: `0x${string}` }) {
           <div className="micro" style={{ marginBottom: 10 }}>Session</div>
           <p className="caption" style={{ margin: "0 0 14px", color: "var(--graphite)" }}>
             You are signed in with a signature from this wallet, kept only in this browser. Signing
-            out clears it here — it does not touch anything on chain, and your position is unchanged.
+            out clears it here. It does not touch anything on chain, and your position is unchanged.
           </p>
           <button className="btn btn-ghost" onClick={signOut}>Sign out</button>
         </section>

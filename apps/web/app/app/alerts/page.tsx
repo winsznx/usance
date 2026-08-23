@@ -64,7 +64,7 @@ function Alerts({ account }: { account: `0x${string}` }) {
   if (error) {
     return (
       <Notice tone="warn" title="Could not read your account">
-        {error} This does not mean nothing is wrong — it means Usance could not check.
+        {error} This does not mean nothing is wrong. It means Usance could not check.
       </Notice>
     );
   }
