@@ -100,7 +100,7 @@ export default async function AssetPassportPage({ params }: { params: Promise<{ 
 
         <div className="shell" style={{ padding: "40px 24px 0" }}>
           {asset.isTestFixture ? (
-            <Notice tone="warn" title="No token contract — this is evidence, not a live market">
+            <Notice tone="warn" title="No token contract yet, only verified evidence">
               Usance has read {asset.issuer}&rsquo;s actual filing and derived a Passport from it.
               It has <strong>not</strong> verified a token contract address for {asset.symbol} on X
               Layer, and no Usance contracts are deployed, so nothing here can be deposited or
@@ -171,13 +171,13 @@ export default async function AssetPassportPage({ params }: { params: Promise<{ 
               <div className="stack" style={{ gap: 14 }}>
                 <p className="muted" style={{ margin: 0 }}>
                   Two paths corroborate only if they can fail differently. A deterministic parser and
-                  a language model qualify. Two prompts against the same model do not — that is one
+                  a language model qualify. Two prompts against the same model do not. That is one
                   path wearing two hats, and counting it twice would let a single hallucination
                   corroborate itself.
                 </p>
                 <p className="muted" style={{ margin: 0 }}>
-                  Comparison is exact equality after type-directed normalisation. Not fuzzy matching,
-                  not embedding distance. Any softer rule lets two different readings of a redemption
+                  Comparison is exact equality after type-directed normalisation, not fuzzy matching
+                  or embedding distance. Any softer rule lets two different readings of a redemption
                   term count as agreement.
                 </p>
               </div>
@@ -187,7 +187,7 @@ export default async function AssetPassportPage({ params }: { params: Promise<{ 
                 <Row label="Independent paths" value={String(asset.independentPathCount)} />
                 <Row
                   label="Passport capped"
-                  value={asset.singleSource ? "Yes — single source" : "No"}
+                  value={asset.singleSource ? "Yes, single source" : "No"}
                 />
                 {asset.conflictingFields.length > 0 ? (
                   <Row label="Disputed fields" value={asset.conflictingFields.join(", ")} />
@@ -272,8 +272,8 @@ export default async function AssetPassportPage({ params }: { params: Promise<{ 
             {asset.calls.length > 0 ? (
               <>
                 <p className="muted" style={{ maxWidth: 680, marginTop: 0 }}>
-                  The pipeline produces calldata and stops. It holds no key and broadcasts nothing —
-                  an evidence pipeline that could sign is one that can commit its own conclusions.
+                  The pipeline produces calldata and stops. It holds no key and broadcasts nothing.
+                  An evidence pipeline that could sign is one that can commit its own conclusions.
                   The ordering matters: evidence commitments must land before the Passport that
                   roots them, because no contract checks that relationship and a Passport rooting
                   commitments that do not exist is a commitment to nothing.
@@ -318,7 +318,7 @@ export default async function AssetPassportPage({ params }: { params: Promise<{ 
             ) : (
               <Notice tone="stop" title="No Passport candidate was produced">
                 The pipeline did not reach a committable state for this asset. That is a conclusion,
-                not an error — a disputed or unreadable filing must not become a Passport.
+                not an error. A disputed or unreadable filing must not become a Passport.
               </Notice>
             )}
           </div>
@@ -397,7 +397,7 @@ function FilingHistory({ slug }: { slug: string }) {
 
         <p className="caption" style={{ marginTop: 20 }}>
           Classification is made by deterministic policy from the diff. No model decides whether a
-          change is a risk deterioration — a model that could would be a model that sets risk
+          change is a risk deterioration. A model that could would be a model that sets risk
           parameters.
         </p>
       </div>
@@ -479,7 +479,7 @@ function CustodyChain({ asset }: { asset: AssetView }) {
       title: "Passport candidate",
       detail: asset.candidate
         ? "Merkle-rooted over the evidence and the claims"
-        : "Not produced — the evidence did not support one",
+        : "Not produced, because the evidence did not support one",
       value: asset.candidate ? `v${asset.candidate.version}` : "none",
     },
     {
@@ -493,7 +493,7 @@ function CustodyChain({ asset }: { asset: AssetView }) {
     {
       n: "07",
       title: "Onchain commitment",
-      detail: "Calldata produced. Not broadcast — no deployment exists yet.",
+      detail: "Calldata produced. Not broadcast, because no deployment exists yet.",
       value: `${asset.calls.length} call${asset.calls.length === 1 ? "" : "s"}`,
     },
   ];
@@ -659,7 +659,7 @@ function EvidenceCard({ evidence }: { evidence: EvidenceView }) {
 
       {evidence.isDerived ? (
         <div style={{ marginTop: 18 }}>
-          <Notice tone="stop" title="Derived fixture — not issuer-published">
+          <Notice tone="stop" title="Derived fixture, not issuer-published">
             {evidence.derivationNote ?? "This document was derived from another and is not an issuer filing."}
           </Notice>
         </div>

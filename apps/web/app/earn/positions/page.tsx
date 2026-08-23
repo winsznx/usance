@@ -153,7 +153,7 @@ function Position({ data }: { data: Loaded }) {
             */}
             <Notice tone="warn" title="Part of your capital is lent out">
               You can withdraw {fmt(position.withdrawableNow, d)} {sym} immediately. The rest is
-              financing borrowers and comes back as they repay. You can queue for it — your shares
+              financing borrowers and comes back as they repay. You can queue for it. Your shares
               are burned when you do, which fixes your claim at today&rsquo;s value and stops it
               earning from that moment.
             </Notice>
