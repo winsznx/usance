@@ -111,6 +111,7 @@ export function Nav({ cta = true }: { cta?: boolean }) {
             <Link href="/simulate">How it works</Link>
             <Link href="/security">Security</Link>
             <Link href="/status">Status</Link>
+            <a href="https://docs.usance.xyz" target="_blank" rel="noreferrer">Docs</a>
           </nav>
           {cta ? (
             <Link href="/app/onboarding" className="btn btn-primary site-header-cta">
