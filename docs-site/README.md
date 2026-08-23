@@ -6,8 +6,7 @@ description: Make tokenized assets usable as capital.
 
 Usance is a clearing and risk layer on [X Layer](networks.md). It reads what a tokenized asset
 actually is, recognises a conservative portion of it as collateral, and lets you finance against
-that portion without selling — while telling you, line by line, exactly how it arrived at the
-number.
+that portion without selling. It also tells you, line by line, exactly how it arrived at the number.
 
 ## The problem
 
@@ -22,8 +21,8 @@ turning an issuer's filing into a number a lender can trust.
 Usance does that work, and shows it.
 
 * **Reads the evidence.** For every supported asset it fetches the issuer's own filing, hashes it,
-  and extracts a structured, versioned set of claims — legal rights, custody, redemption terms,
-  transfer restrictions. That becomes the asset's **Passport**.
+  and extracts a structured, versioned set of claims about its legal rights, custody, redemption
+  terms and transfer restrictions. That becomes the asset's **Passport**.
 * **Recognises a conservative value.** Market price is not liquidation value. Usance recognises
   only the portion it could defend under stress, applying named haircuts in a fixed order and
   flooring the result at a stressed-exit estimate. The recognised value is deliberately lower than
@@ -32,7 +31,7 @@ Usance does that work, and shows it.
   the exposure, and repay whenever you want to take the asset back. The position stays yours the
   entire time.
 * **Bounds any automation.** You can delegate a narrow, signed [mandate](security.md#a-mandate) to
-  an agent — for example, to maintain a safety buffer — inside limits you set. It can only ever
+  an agent, for example to maintain a safety buffer, inside limits you set. It can only ever
   reduce risk, never widen your permissions, and never withdraw your collateral.
 * **Proves every step.** From the original document to the final on-chain state, each action writes
   a public receipt that anyone can verify without a wallet.
@@ -49,9 +48,9 @@ Usance does that work, and shows it.
 
 ## Where to go next
 
-* [**How Usance works**](how-it-works.md) — evidence to Passport to recognised value to capacity,
-  and the risk machinery that governs it.
-* [**Security and authority**](security.md) — the difference between a connection, a session, an
-  allowance and a mandate, and why withdrawal can never be delegated.
-* [**Networks and what is live**](networks.md) — testnet today, the mainnet plan, and an honest
-  integration status.
+* [**How Usance works**](how-it-works.md) traces the path from evidence to Passport to recognised
+  value to capacity, and the risk machinery that governs it.
+* [**Security and authority**](security.md) covers the difference between a connection, a session,
+  an allowance and a mandate, and why withdrawal can never be delegated.
+* [**Networks and what is live**](networks.md) lays out testnet today, the mainnet plan, and an
+  honest integration status.
