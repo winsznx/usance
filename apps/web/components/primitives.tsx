@@ -150,6 +150,7 @@ export function Footer() {
               <li><Link href="/assets">Assets</Link></li>
               <li><Link href="/earn">Earn</Link></li>
               <li><Link href="/simulate">Walkthrough</Link></li>
+              <li><a href="https://docs.usance.xyz" target="_blank" rel="noreferrer">Docs</a></li>
               <li><Link href="/app/onboarding">Launch Usance</Link></li>
             </ul>
           </div>
