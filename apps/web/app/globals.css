@@ -1664,7 +1664,7 @@ h4 {
      pushes the next section into view on load and then hides it again when the bar collapses. */
   min-height: 100svh;
   /* Top padding clears the header so the composition is centred in what is actually readable. */
-  padding: 132px 0 96px;
+  padding: 180px 0 96px;
   overflow: hidden;
 }
 
