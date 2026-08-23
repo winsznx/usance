@@ -43,15 +43,15 @@ export default function TermsPage() {
             </Clause>
 
             <Clause n="2" title="No financial advice">
-              The figures Usance shows — recognised value, borrowing capacity, stressed exit, risk
-              status — are the deterministic output of software reading public data. They are not
+              The figures Usance shows, like recognised value, borrowing capacity, stressed exit and
+              risk status, are the deterministic output of software reading public data. They are not
               advice, a recommendation, or a promise of any outcome. You are responsible for your own
               decisions.
             </Clause>
 
             <Clause n="3" title="Risk">
-              Interacting with smart contracts carries risk, including bugs, and — on any future
-              mainnet deployment — the risk of liquidation when collateral value falls. Recognised
+              Interacting with smart contracts carries risk, including bugs, and, on any future
+              mainnet deployment, the risk of liquidation when collateral value falls. Recognised
               collateral value is deliberately lower than market value and can fall when the evidence
               behind an asset changes. Do not commit value you cannot afford to lose.
             </Clause>

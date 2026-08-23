@@ -105,14 +105,14 @@ export default function Simulate() {
       <main>
         <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--hairline)", padding: "56px 0" }}>
           <div className="shell" style={{ maxWidth: 820 }}>
-            <span className="tag tag-dark">Simulation — frozen inputs, real pipeline</span>
+            <span className="tag tag-dark">Simulation · frozen inputs, real pipeline</span>
             <h1 className="heading-lg" style={{ margin: "22px 0 16px" }}>
               How evidence becomes borrowing power
             </h1>
             <p className="body-lg muted" style={{ margin: 0 }}>
               Every number below is computed by the same risk pipeline that runs onchain, from the
               canonical scenario set the contracts are tested against. The inputs are fixed so the
-              output is reproducible; the arithmetic is not simulated.
+              output is reproducible. The arithmetic is not simulated.
             </p>
           </div>
         </section>
@@ -211,7 +211,7 @@ export default function Simulate() {
 
             <div className="grid-2" style={{ marginTop: 32, alignItems: "start" }}>
               <div className="card">
-                <div className="micro">Before — Passport v1</div>
+                <div className="micro">Before · Passport v1</div>
                 <div style={{ marginTop: 16 }} className="stack-sm">
                   <div className="row-between">
                     <span className="caption">Usable collateral</span>
@@ -229,7 +229,7 @@ export default function Simulate() {
               </div>
 
               <div className="card">
-                <div className="micro">After — redemption floor cut to 90%</div>
+                <div className="micro">After · redemption floor cut to 90%</div>
                 <div style={{ marginTop: 16 }} className="stack-sm">
                   <div className="row-between">
                     <span className="caption">Usable collateral</span>
@@ -311,7 +311,7 @@ export default function Simulate() {
             </h2>
             <p className="muted" style={{ maxWidth: 660, marginTop: 0 }}>
               Each of these blocks new risk while leaving repayment, collateral top-up and exit
-              available. A degraded input can only ever restrict — never make an account look
+              available. A degraded input can only ever restrict. It can never make an account look
               healthier than it is.
             </p>
 

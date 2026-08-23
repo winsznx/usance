@@ -66,7 +66,7 @@ export default async function TemplateDetail({ params }: { params: Promise<{ tem
             <div className="card card-flush" style={{ marginTop: 20 }}>
               <Row label="Actions" value={<span className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>{t.actions.map((a) => <span key={a} className="tag">{a}</span>)}</span>} />
               <Row label="Trigger classes" value={<span className="row" style={{ gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>{t.triggerClasses.map((c) => <span key={c} className="tag">{c.replace(/_/g, " ").toLowerCase()}</span>)}</span>} />
-              <Row label="Venues" value={t.requiredVenues.length ? t.requiredVenues.join(", ") : <span className="caption">none — settlement-token repay only</span>} />
+              <Row label="Venues" value={t.requiredVenues.length ? t.requiredVenues.join(", ") : <span className="caption">none, settlement-token repay only</span>} />
               <Row label="Fee per successful run" value={<span className="tnum">{t.feePerSuccessfulRunBps} bps{BigInt(t.flatPerRunUsd18) > 0n ? ` + $${fmtUsd18(t.flatPerRunUsd18)}` : ""}</span>} />
             </div>
 
@@ -85,10 +85,10 @@ export default async function TemplateDetail({ params }: { params: Promise<{ tem
             <div className="card" style={{ marginTop: 20 }}>
               {stats.executedRuns === 0 ? (
                 <p className="caption" style={{ margin: 0 }}>
-                  No runs recorded yet. Statistics here are derived from receipts and indexed state —
-                  active instances, reconciled runs, execution-success and execution-unknown rates,
-                  realized-vs-quoted slippage, mandate violations refused. None are shown until they
-                  are real.
+                  No runs recorded yet. Statistics here are derived from receipts and indexed state,
+                  like active instances, reconciled runs, execution-success and execution-unknown
+                  rates, realized-vs-quoted slippage, and mandate violations refused. None are shown
+                  until they are real.
                 </p>
               ) : (
                 <div className="stack-sm">
@@ -106,7 +106,7 @@ export default async function TemplateDetail({ params }: { params: Promise<{ tem
               <Notice title="Installing is a signature, not a click">
                 Installing pins this template version and hash to a new instance and asks you to sign
                 a bounded EIP-712 mandate. A later template update can never widen an instance you
-                already armed — upgrading is a fresh review over a fresh mandate.
+                already armed. Upgrading is a fresh review over a fresh mandate.
               </Notice>
             </div>
           </div>

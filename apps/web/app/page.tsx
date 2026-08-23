@@ -158,11 +158,11 @@ export default function Landing() {
                   {[
                     ["X Layer settlement", "Live", "Chain 196 / 1952, verified against the live RPC."],
                     ["Chainlink price feeds", "Live", "26 Data Feeds on X Layer, read back onchain."],
-                    ["Evidence → Passport → capacity", "Live", "Deterministic, three implementations agree to the wei."],
+                    ["Evidence → Passport → capacity", "Live", "Deterministic, independent implementations agree to the wei."],
                     ["Builder Code attribution", "Live", "ERC-8021 suffix on every write path."],
-                    ["ChainGPT extraction", "Needs access", "No API key configured. Single-path extraction is capped."],
-                    ["Exchange OS execution", "Needs access", "No builder deployment access. Hedging is disabled, not simulated."],
-                    ["Chainlink Data Streams", "Not on X Layer", "Adapter retained; nothing routes through it."],
+                    ["ChainGPT extraction", "Live", "Verified against the live API. Public Passports are built single-source by design, so they stay capped."],
+                    ["Exchange OS execution", "Needs access", "No builder deployment access. Hedging is off and no fill is ever simulated."],
+                    ["Chainlink Data Streams", "Not on X Layer", "Adapter retained. Nothing routes through it."],
                   ].map(([cap, status, detail]) => (
                     <tr key={cap}>
                       <td style={{ fontWeight: 500 }}>{cap}</td>

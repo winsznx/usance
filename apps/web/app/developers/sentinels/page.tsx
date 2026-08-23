@@ -37,14 +37,14 @@ export default function DevelopersSentinelsPage() {
             <div className="card card-flush" style={{ marginTop: 18 }}>
               <Step n={1} title="Define a manifest">Identity, risk class, the exact actions and trigger classes the strategy needs, a bounded fee policy, and the config/trigger/plan schema hashes.</Step>
               <Step n={2} title="Run the conformance + security suite">The deterministic compiler, the strict schemas, and the invariant guards must pass before a version is publishable.</Step>
-              <Step n={3} title="Commit an immutable version">`commitTemplate` writes a sequential, immutable version. You can deprecate or security-disable later; you can never rewrite a version, and an update cannot widen an installed instance (I-62).</Step>
-              <Step n={4} title="Never hold authority" last>The registry stores hashes and bounded policy. It cannot authorize anyone&rsquo;s money — a user&rsquo;s signed mandate is the only thing that can, and it bounds every run.</Step>
+              <Step n={3} title="Commit an immutable version">`commitTemplate` writes a sequential, immutable version. You can deprecate or security-disable later. You can never rewrite a version, and an update cannot widen an installed instance (I-62).</Step>
+              <Step n={4} title="Never hold authority" last>The registry stores hashes and bounded policy. It cannot authorize anyone&rsquo;s money. A user&rsquo;s signed mandate is the only thing that can, and it bounds every run.</Step>
             </div>
 
             <div style={{ marginTop: 28 }}>
               <Notice title="Publishing is a signed, immutable commitment">
                 A published version is fixed forever at its <span className="mono">(templateId, version)</span>.
-                The fee policy is version-pinned and bounded by contract constants — a publisher cannot
+                The fee policy is version-pinned and bounded by contract constants. A publisher cannot
                 raise a fee at execution time or past the ceiling.
               </Notice>
             </div>

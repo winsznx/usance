@@ -149,7 +149,7 @@ function VaultCard({ vault }: { vault: VaultView }) {
         <Row label="Written off against lenders" value={`${amount(vault.badDebt, d)} ${sym}`} />
         <p className="caption" style={{ margin: "14px 0 0" }}>
           The reserve absorbs the first loss. Only what it cannot cover reduces lender value, and
-          losses stay in this vault — they are never spread to lenders who chose a different asset.
+          losses stay in this vault. They are never spread to lenders who chose a different asset.
         </p>
       </div>
 

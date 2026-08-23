@@ -24,7 +24,7 @@ export default function SentinelsPage() {
             <h1 className="heading-lg" style={{ margin: "18px 0 14px" }}>Bounded autonomous agents, from a versioned library</h1>
             <p className="body-lg muted" style={{ margin: 0 }}>
               A Sentinel watches your account and the world, and acts strictly through a mandate you
-              sign. Templates hold no authority and never contain executable code — they are
+              sign. Templates hold no authority and never contain executable code. They are
               declarative strategy specifications, pinned by version and hash.
             </p>
           </div>
@@ -58,8 +58,8 @@ export default function SentinelsPage() {
 
             <div style={{ marginTop: 28 }}>
               <Notice title="Templates cannot move your money">
-                A template is a strategy specification and a set of schema hashes — not code Usance
-                runs with your authority. Every financial action a Sentinel takes still passes the
+                A template is a strategy specification and a set of schema hashes. It is not code
+                Usance runs with your authority. Every financial action a Sentinel takes still passes the
                 same check as an owner&rsquo;s own: what the protocol allows, and what your signed
                 mandate allows.
               </Notice>
