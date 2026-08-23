@@ -45,7 +45,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ runId: string }> }) {
   const { runId } = await params;
   const s = await loadSampleRun(runId);
-  return { title: s ? `Sentinel run ${runId.slice(0, 10)} — Usance proof` : "Run not found — Usance" };
+  return { title: s ? `Sentinel run ${runId.slice(0, 10)} · Usance proof` : "Run not found · Usance" };
 }
 
 /**

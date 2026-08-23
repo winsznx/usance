@@ -23,8 +23,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ receiptId: string }> }) {
   const { receiptId } = await params;
   const r = loadReceipt(receiptId);
-  if (!r) return { title: "Receipt not found — Usance" };
-  return { title: `${r.kind.replace(/_/g, " ").toLowerCase()} — Usance proof` };
+  if (!r) return { title: "Receipt not found · Usance" };
+  return { title: `${r.kind.replace(/_/g, " ").toLowerCase()} · Usance proof` };
 }
 
 const KIND_COPY: Record<string, { verdict: string; blurb: string }> = {

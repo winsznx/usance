@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Footer, Nav, Notice } from "@/components/primitives";
 import { sentinelCatalogue } from "@/lib/sentinels";
 
-export const metadata = { title: "Publish a Sentinel — Usance Developers" };
+export const metadata = { title: "Publish a Sentinel · Usance Developers" };
 
 /**
  * `/developers/sentinels` — the publisher's view of the library.

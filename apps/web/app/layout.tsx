@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   // base is the approach that works under OpenNext on Cloudflare (no edge `next/og` runtime needed).
   // Override per deployment with NEXT_PUBLIC_SITE_URL (the Cloudflare / custom domain, no trailing slash).
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://usance.xyz"),
-  title: "Usance — make tokenized assets usable as capital",
+  title: "Usance · make tokenized assets usable as capital",
   // From the shipped kit. BRAND_LOCK.md fixes the geometry of the Capacity Cut mark, so these are
   // referenced rather than regenerated at other sizes.
   icons: {
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   manifest: "/assets/brand/site.webmanifest",
   openGraph: {
-    title: "Usance — make tokenized assets usable as capital",
+    title: "Usance · make tokenized assets usable as capital",
     description:
       "Usance verifies what a tokenized asset actually is, recognises a conservative portion of it as collateral, and lets you finance against it without selling.",
     url: "/",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
         url: "/assets/social/og-background.png",
         width: 1200,
         height: 630,
-        alt: "Usance — make tokenized assets usable as capital",
+        alt: "Usance · make tokenized assets usable as capital",
       },
     ],
     type: "website",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@usance_fi",
     creator: "@usance_fi",
-    title: "Usance — make tokenized assets usable as capital",
+    title: "Usance · make tokenized assets usable as capital",
     description:
       "Verify what a tokenized asset is, recognise a conservative portion as collateral, and finance against it without selling.",
     images: ["/assets/social/og-background.png"],

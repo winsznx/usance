@@ -3,7 +3,7 @@ import { Footer, Nav } from "@/components/primitives";
 import { integrations, STATUS_LABEL, type Status } from "@/lib/integration-status";
 
 export const metadata = {
-  title: "Status — Usance",
+  title: "Status · Usance",
   description: "What is live in Usance, what needs access, and what is not available at all.",
 };
 

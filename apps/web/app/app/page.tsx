@@ -217,7 +217,7 @@ function Dashboard({ view, txs }: { view: Serialised; txs: TxRow[] }) {
     for (const a of alerts) {
       if (!prefs.notify[a.severity] || notified.current.has(a.id)) continue;
       notified.current.add(a.id);
-      new Notification(`Usance — ${a.title}`, { body: a.what, tag: a.id });
+      new Notification(`Usance · ${a.title}`, { body: a.what, tag: a.id });
     }
   }, [alerts, prefs]);
 

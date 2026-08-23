@@ -29,9 +29,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ assetId: string }> }) {
   const { assetId } = await params;
   const asset = await loadAsset(assetId);
-  if (!asset) return { title: "Asset not found — Usance" };
+  if (!asset) return { title: "Asset not found · Usance" };
   return {
-    title: `${asset.symbol} — Asset Passport — Usance`,
+    title: `${asset.symbol} · Asset Passport · Usance`,
     description: `${asset.name}, issued by ${asset.issuer}. ${asset.verdict.headline}.`,
   };
 }

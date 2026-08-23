@@ -8,7 +8,7 @@ import { Nav, Footer, Notice } from "@/components/primitives";
  */
 
 export const metadata = {
-  title: "Terms of Service — Usance",
+  title: "Terms of Service · Usance",
   description: "Plain-language terms for the Usance testnet deployment: non-custodial, test assets with no value, no financial advice.",
 };
 

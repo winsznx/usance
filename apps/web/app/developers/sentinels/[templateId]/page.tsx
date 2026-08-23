@@ -10,7 +10,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ templateId: string }> }) {
   const { templateId } = await params;
   const t = templateById(templateId);
-  return { title: t ? `${t.name} — publisher view` : "Template not found — Usance" };
+  return { title: t ? `${t.name} · publisher view` : "Template not found · Usance" };
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {

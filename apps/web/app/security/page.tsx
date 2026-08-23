@@ -15,7 +15,7 @@ import { WITHDRAWAL_IS_NOT_DELEGABLE } from "@/lib/mandate";
  */
 
 export const metadata = {
-  title: "Security — Usance",
+  title: "Security · Usance",
   description:
     "What a wallet connection, an app session, a token allowance, a mandate and a transaction each grant, when each one ends, and which of them survive closing the browser.",
 };

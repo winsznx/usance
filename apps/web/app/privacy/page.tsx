@@ -9,7 +9,7 @@ import { Nav, Footer, Notice } from "@/components/primitives";
  */
 
 export const metadata = {
-  title: "Privacy Policy — Usance",
+  title: "Privacy Policy · Usance",
   description: "What Usance stores (a wallet session and preferences, in your own browser), and what it does not (no accounts, no tracking cookies).",
 };
 

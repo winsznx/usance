@@ -4,7 +4,7 @@ import { TokenBadge } from "@/components/token-badge";
 import { loadAssets } from "@/lib/passport-data";
 
 export const metadata = {
-  title: "Supported assets — Usance",
+  title: "Supported assets · Usance",
   description:
     "Every asset Usance has read, the evidence behind it, and whether it can be used as collateral.",
 };

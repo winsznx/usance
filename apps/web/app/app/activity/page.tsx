@@ -16,7 +16,7 @@ import { loadReceipts } from "@/lib/receipts";
  * Every row links to its public receipt, which needs no wallet and can be sent to anyone.
  */
 
-export const metadata = { title: "Activity — Usance" };
+export const metadata = { title: "Activity · Usance" };
 
 const KIND_LABEL: Record<string, string> = {
   PASSPORT_COMMITTED: "Passport committed",
