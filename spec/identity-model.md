@@ -77,6 +77,8 @@ canonicalRef =
     native instrument: keccak256(abi.encode("USANCE_NATIVE_REF_V1", nativeId))
                        where nativeId is the chain-native asset identifier as a string
                        (e.g. a Hedera token id "0.0.1234567")
+    raw (FIXTURE_LABEL only): the literal bytes32 used on chain, when no token was ever
+                       deployed and the reference is a UTF-8 label packed into bytes32
 
 instrumentStandardId = keccak256(abi.encode("USANCE_INSTRUMENT_STANDARD_V1", standard))
 
@@ -219,11 +221,16 @@ Enforced in `packages/schemas/src/instrument.ts`:
 - `deployments/instrument-bindings.json` is a generated artifact (`scripts/gen-instrument-bindings.mjs`),
   carrying generator version, input digests and the deployment digest it was bound against, under
   the same freshness discipline as every other artifact (`spec/evidence-model.md`, D-015).
-- `services/indexer` resolves `legacyAssetId → instrumentId`, exposes the binding chain, and
-  exposes `homeDomain(instrumentId)`. Existing projections keyed by `assetId` are unchanged.
-- The public asset view distinguishes, on the page, the instrument (issuer, domain, standard,
-  version, accounting mode) from the underlying reference (company/fund, class, ticker). If two
-  instruments reference the same company they render as two instruments.
+- **Built (Phase 01):** `services/indexer` resolves `legacyAssetId → instrumentId`, exposes the
+  binding chain, and exposes `homeDomain(instrumentId)`. Existing projections keyed by `assetId`
+  are unchanged.
+- **Planned (Phase 11, UI/IA migration):** the public asset view distinguishes, on the page, the
+  instrument (issuer, domain, standard, version, accounting mode) from the underlying reference
+  (company/fund, class, ticker); two instruments referencing the same company render as two
+  instruments; the route moves toward `/assets/[instrumentId]`. Until then the deployed
+  `apps/web` `deriveAssetIdFromKey` produces the same fixture-label ids this model classifies as
+  `FIXTURE_LABEL`, and the binding artifact already carries the real identity for the one that
+  was committed on chain (Franklin FOBXX).
 
 ## 8. What does not change
 

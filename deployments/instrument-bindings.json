@@ -1,0 +1,122 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-09-06T20:04:52.289Z",
+    "generatedBy": "scripts/gen-instrument-bindings.mjs",
+    "gitCommit": "abca084e3da0e518c87179497fdca6d8077597cf-dirty",
+    "chainId": 1952,
+    "deploymentDigest": "0xbba53ba61e0ae670959f838ea687cbf76b49c6ec2c0d8348f21635f1e3b3035e",
+    "inputDigest": "0xfa6762e2cac78c59e820c3e1fce9bb8ff7f29e76436d8d0408d638e3dc4655a7",
+    "schema": 1
+  },
+  "instruments": [
+    {
+      "instrumentId": "0x9c418c6cf3bbfaf7c153878394b77fe8b4554e156d660be17692227d12810114",
+      "domainId": "0xbc756770bcdca902a5502582a63c0ea4a0226fbf6014e80c479922e829d728b1",
+      "caip2": "eip155:1952",
+      "canonicalRef": "0x00000000000000000000000014494c714cb18f24a5fe68c6136203781abb2676",
+      "canonicalRefKind": "evm",
+      "token": "0x14494c714cb18f24a5fe68c6136203781abb2676",
+      "issuerId": "0x7d76d502de20090181f993f524f3ab81ffe0926ca0d65084ed9703d73da23dec",
+      "issuerLegalName": "Usance Testnet Fixtures",
+      "issuerJurisdiction": "ZZ",
+      "instrumentStandard": "ERC20",
+      "instrumentStandardId": "0x8a029ad01cbff9a5a632ddeefaa997050273651f8bf3e499b9fa30dbf3aaebd5",
+      "instrumentVersion": 1,
+      "underlyingReferenceId": "0x76db145a4aaaf9033802121e96a435989e7a0182655d21880d4ba64f6d7a0b1c",
+      "underlying": {
+        "assetClass": "CASH",
+        "isin": "",
+        "figi": "",
+        "ticker": "",
+        "name": "US Dollar (Usance testnet stand-in, not a real claim)"
+      },
+      "accountingMode": "FIXED_UNIT"
+    },
+    {
+      "instrumentId": "0x615af7b30196c52d27492e7ea1b63ed5bb29cd8af79c84f32cd8ee32a07f77a9",
+      "domainId": "0xbc756770bcdca902a5502582a63c0ea4a0226fbf6014e80c479922e829d728b1",
+      "caip2": "eip155:1952",
+      "canonicalRef": "0x00000000000000000000000017837c668aa0aba07b0e9129a7f849afb9c73c9b",
+      "canonicalRefKind": "evm",
+      "token": "0x17837c668aa0aba07b0e9129a7f849afb9c73c9b",
+      "issuerId": "0x7d76d502de20090181f993f524f3ab81ffe0926ca0d65084ed9703d73da23dec",
+      "issuerLegalName": "Usance Testnet Fixtures",
+      "issuerJurisdiction": "ZZ",
+      "instrumentStandard": "ERC20",
+      "instrumentStandardId": "0x8a029ad01cbff9a5a632ddeefaa997050273651f8bf3e499b9fa30dbf3aaebd5",
+      "instrumentVersion": 1,
+      "underlyingReferenceId": "0x7cf09ec14cf692ac4f290af452d404b50b8e45e7ed8686ef0e33eff9b547a951",
+      "underlying": {
+        "assetClass": "TREASURY",
+        "isin": "",
+        "figi": "",
+        "ticker": "",
+        "name": "US Treasury bill (Usance testnet stand-in, not a real claim)"
+      },
+      "accountingMode": "FIXED_UNIT"
+    },
+    {
+      "instrumentId": "0x0a29440c5d0f1fe9b09d2880ebebbaa36e1bf431daa807ec1965960f36b4b121",
+      "domainId": "0xbc756770bcdca902a5502582a63c0ea4a0226fbf6014e80c479922e829d728b1",
+      "caip2": "eip155:1952",
+      "canonicalRef": "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
+      "canonicalRefKind": "raw",
+      "issuerId": "0x20266c37ca7dc8118c8a522e43cae11cf3cd0a0900376441ea5b943e464b06a8",
+      "issuerLegalName": "Franklin Templeton Trust",
+      "issuerJurisdiction": "US",
+      "instrumentStandard": "ERC20",
+      "instrumentStandardId": "0x8a029ad01cbff9a5a632ddeefaa997050273651f8bf3e499b9fa30dbf3aaebd5",
+      "instrumentVersion": 1,
+      "underlyingReferenceId": "0x7566e26e91a38f2acb9dd366e587ba19186b0e040ac3fb42c3da396fa3823b96",
+      "underlying": {
+        "assetClass": "MONEY_MARKET_FUND",
+        "isin": "",
+        "figi": "",
+        "ticker": "FOBXX",
+        "name": "Franklin OnChain U.S. Government Money Fund"
+      },
+      "accountingMode": "FIXED_UNIT"
+    }
+  ],
+  "bindings": [
+    {
+      "bindingId": "0x0f38dbacefcb8aeb468bb5daeb34b14988b585dc63b35711d087fde02f47bbeb",
+      "legacyAssetId": "0xa2ef679d6d8194d6529915001547d13c39dc85b4b680673a909c408acf7b553f",
+      "legacyAssetIdKind": "DERIVED",
+      "instrumentId": "0x9c418c6cf3bbfaf7c153878394b77fe8b4554e156d660be17692227d12810114",
+      "boundAt": 1787093382,
+      "boundAtBlock": 0,
+      "boundBy": "scripts/gen-instrument-bindings.mjs (Product Lock Phase 01)",
+      "boundAtDomain": "eip155:1952",
+      "deploymentDigest": "0xbba53ba61e0ae670959f838ea687cbf76b49c6ec2c0d8348f21635f1e3b3035e",
+      "supersedes": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "note": "X Layer testnet settlement stand-in tUSD (deployments/1952.json settlementAsset). TEST ASSET, no real value, no issuer relationship. Bound under Product Lock Phase 01."
+    },
+    {
+      "bindingId": "0xf82e57e5347446ac0278193988ba35c2af61dbcd7d9fdd2f6e85e3bb047ab497",
+      "legacyAssetId": "0x61745a589d0f9875ca3eaeae7588162918edea2e1e85670ff4703c9d75a140d8",
+      "legacyAssetIdKind": "DERIVED",
+      "instrumentId": "0x615af7b30196c52d27492e7ea1b63ed5bb29cd8af79c84f32cd8ee32a07f77a9",
+      "boundAt": 1787093382,
+      "boundAtBlock": 0,
+      "boundBy": "scripts/gen-instrument-bindings.mjs (Product Lock Phase 01)",
+      "boundAtDomain": "eip155:1952",
+      "deploymentDigest": "0xbba53ba61e0ae670959f838ea687cbf76b49c6ec2c0d8348f21635f1e3b3035e",
+      "supersedes": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "note": "X Layer testnet collateral stand-in tUSTB (deployments/1952.json testnetFixtures). TEST ASSET, no real value, not FOBXX/OUSG/ARCOIN or any issuer token. Bound under Product Lock Phase 01."
+    },
+    {
+      "bindingId": "0xbb1cef0ce5342c1d5f63eca2ead1bcd62fcce01e3943360da4d33c17cdb0a3cb",
+      "legacyAssetId": "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
+      "legacyAssetIdKind": "FIXTURE_LABEL",
+      "instrumentId": "0x0a29440c5d0f1fe9b09d2880ebebbaa36e1bf431daa807ec1965960f36b4b121",
+      "boundAt": 1787093382,
+      "boundAtBlock": 0,
+      "boundBy": "scripts/gen-instrument-bindings.mjs (Product Lock Phase 01)",
+      "boundAtDomain": "eip155:1952",
+      "deploymentDigest": "0xbba53ba61e0ae670959f838ea687cbf76b49c6ec2c0d8348f21635f1e3b3035e",
+      "supersedes": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "note": "The Franklin FOBXX demo Passport (proof/passport-franklin-fobxx-2026-v1.json) was committed on X Layer testnet under assetId 0x7573...666f, which decodes to the ASCII 'usance-fixture-asset:franklin-fo' — a non-derived fixture label, exactly the ticker-shaped identity the Product Lock forbids for production. No token was deployed; nothing was ever deposited. Bound to the real fund's identity so the historical proof stays valid and unedited. instrumentStandard and accountingMode are recorded as ERC20/FIXED_UNIT by default and are NOT authoritative for the real Franklin token."
+    }
+  ]
+}

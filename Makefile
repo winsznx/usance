@@ -16,7 +16,8 @@ FIXTURES  := fixtures/canonical/risk-scenarios.json
         build build-contracts build-web lint fmt fmt-check verify-integrations \
         deploy-testnet demo-local clean test-rust deployer deployer-create test-live-xlayer \
         test-risk test-e2e demo-testnet audit-contracts slither slither-baseline characterize-feeds \
-        franklin-history test-indexer test-artifact-freshness check-proof-currency
+        franklin-history test-indexer test-artifact-freshness check-proof-currency \
+        instrument-bindings check-instrument-bindings
 
 # Flags forwarded to the ChainGPT audit gate. CI passes --allow-unavailable on every branch except
 # a protected one, so a missing credential blocks a release without blocking a pull request.
@@ -158,6 +159,15 @@ test-artifact-freshness: ## Attack the freshness gates with deliberately stale a
 
 check-proof-currency: ## Refuse proof records that cite a superseded deployment
 	@node scripts/check-proof-currency.mjs
+
+instrument-bindings: ## Regenerate deployments/instrument-bindings.json from the manifest + identity inputs
+#  The explicit legacyAssetId -> InstrumentIdentity map (spec/identity-model.md). Deterministic and
+#  offline; --experimental-transform-types is needed because @usance/schemas uses constructor
+#  parameter properties, the same reason the ChainGPT and Franklin targets pass it.
+	@node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/gen-instrument-bindings.mjs
+
+check-instrument-bindings: ## Refuse a hand-edited or stale instrument-bindings.json
+	@node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/check-instrument-bindings.mjs
 
 test-indexer: ## Indexer projections, idempotency, reorg and deployment binding
 	@pnpm --filter @usance/indexer test

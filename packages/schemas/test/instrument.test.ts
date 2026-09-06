@@ -181,6 +181,31 @@ describe("instrumentId separates what must stay separate", () => {
     expect(withIsin.instrumentId).toBe(withoutIsin.instrumentId);
   });
 
+  it("accepts a raw canonical reference for a fixture-label legacy id", () => {
+    const fixture = instrumentIdentitySchema.parse({
+      domain: { caip2: "eip155:1952", label: "X Layer testnet" },
+      canonicalRef: {
+        kind: "raw",
+        value: "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
+      },
+      issuer: { legalName: "Franklin Templeton Trust", jurisdiction: "US" },
+      standard: "ERC20",
+      instrumentVersion: 1,
+      underlying: {
+        assetClass: "MONEY_MARKET_FUND",
+        isin: "",
+        figi: "",
+        ticker: "FOBXX",
+        name: "Franklin OnChain U.S. Government Money Fund",
+      },
+      accountingMode: "FIXED_UNIT",
+    });
+    expect(fixture.canonicalRefHex).toBe(
+      "0x7573616e63652d666978747572652d61737365743a6672616e6b6c696e2d666f",
+    );
+    expect(fixture.instrumentId).toMatch(/^0x[0-9a-f]{64}$/);
+  });
+
   it("the accounting mode is NOT an input — a rebase does not change identity", () => {
     const fixed = instrumentIdentitySchema.parse({
       domain: { caip2: "eip155:8453", label: "Base" },
@@ -364,11 +389,15 @@ describe("bindings artifact schema", () => {
   };
 
   const okArtifact = {
-    schemaVersion: 1 as const,
-    generator: "scripts/gen-instrument-bindings.mjs",
-    generatorVersion: "1",
-    generatedAt: 1_756_900_000,
-    inputDigests: { "deployments/1952.json": `0x${"11".repeat(32)}` },
+    $provenance: {
+      generatedAt: "2026-09-06T00:00:00.000Z",
+      generatedBy: "scripts/gen-instrument-bindings.mjs",
+      gitCommit: "test",
+      chainId: 1952,
+      deploymentDigest: "0xabc",
+      inputDigest: `0x${"11".repeat(32)}`,
+      schema: 1 as const,
+    },
     instruments: [instrument],
     bindings: [
       {

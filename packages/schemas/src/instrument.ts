@@ -152,10 +152,20 @@ export type UnderlyingReference = z.infer<typeof underlyingReferenceSchema>;
 export const canonicalRefSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("evm"), token: addressSchema }).strict(),
   z.object({ kind: z.literal("native"), nativeId: z.string().min(1) }).strict(),
+  // The literal bytes32 that was used on chain. Only for a FIXTURE_LABEL legacy id, where no
+  // token was ever deployed and the on-chain reference is a UTF-8 string packed into bytes32.
+  z.object({ kind: z.literal("raw"), value: hex32Schema }).strict(),
 ]);
 
 export function canonicalRefOf(ref: z.infer<typeof canonicalRefSchema>): Hex32 {
-  return ref.kind === "evm" ? evmCanonicalRef(ref.token) : nativeCanonicalRef(ref.nativeId);
+  switch (ref.kind) {
+    case "evm":
+      return evmCanonicalRef(ref.token);
+    case "native":
+      return nativeCanonicalRef(ref.nativeId);
+    case "raw":
+      return ref.value;
+  }
 }
 
 // ---------------------------------------------------------------------------- instrument identity
@@ -236,14 +246,22 @@ export const instrumentBindingSchema = z
 
 export type InstrumentBinding = z.infer<typeof instrumentBindingSchema>;
 
+/** The `$provenance` block every generated artifact in this repo carries (`scripts/_artifact.mjs`). */
+export const artifactProvenanceSchema = z
+  .object({
+    generatedAt: z.string().min(1),
+    generatedBy: z.string().min(1),
+    gitCommit: z.string().min(1),
+    chainId: z.number().int().optional(),
+    deploymentDigest: z.string().nullable().optional(),
+    inputDigest: z.string().min(1),
+    schema: z.literal(1),
+  })
+  .passthrough();
+
 export const instrumentBindingsArtifactSchema = z
   .object({
-    schemaVersion: z.literal(1),
-    generator: z.string().min(1),
-    generatorVersion: z.string().min(1),
-    generatedAt: z.number().int().min(0),
-    /** Digests of every input the generator read, for the freshness gate (D-015). */
-    inputDigests: z.record(z.string(), hex32Schema),
+    $provenance: artifactProvenanceSchema,
     instruments: z.array(instrumentIdentityRecordSchema()),
     bindings: z.array(instrumentBindingSchema).min(1),
   })
@@ -311,7 +329,7 @@ function instrumentIdentityRecordSchema() {
       domainId: hex32Schema,
       caip2: caip2Schema,
       canonicalRef: hex32Schema,
-      canonicalRefKind: z.enum(["evm", "native"]),
+      canonicalRefKind: z.enum(["evm", "native", "raw"]),
       token: addressSchema.optional(),
       nativeId: z.string().optional(),
       issuerId: hex32Schema,
