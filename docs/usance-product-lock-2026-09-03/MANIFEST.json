@@ -1,0 +1,97 @@
+{
+  "bundle": "Usance Product Lock",
+  "date": "2026-09-03",
+  "implementation_performed": false,
+  "files": [
+    {
+      "file": "ARCHITECTURE.md",
+      "bytes": 11024,
+      "sha256": "948581ea88b3f7e2947d676a6889ef909b27eaf722255e45c832c61f6df9adae"
+    },
+    {
+      "file": "BASE_STRATEGY.md",
+      "bytes": 3584,
+      "sha256": "45aebfb6f26f68438adc90a923e0f85c5b9500a0989c2c5a3fddc9dfd270133f"
+    },
+    {
+      "file": "BUILD_CONTRACT.md",
+      "bytes": 2988,
+      "sha256": "4fd47f6ba7d20637ac847537e8be0ad36189d6d27f1022d9b295a2898d8eff4a"
+    },
+    {
+      "file": "COMPETITION_MATRIX.md",
+      "bytes": 3290,
+      "sha256": "566e2bd59e6c93bb8636e01f553416fa155be91aa24642a6396fe29c1523edb0"
+    },
+    {
+      "file": "CONFLICTS_AND_LOCK_REPORT.md",
+      "bytes": 5227,
+      "sha256": "cf48f1764439d3521745183cc8815e02708b347302793fa906f21afb80378e50"
+    },
+    {
+      "file": "CURRENT_STATE_AUDIT.md",
+      "bytes": 11684,
+      "sha256": "fe7f637cbd46b969aea50ea54ca3044c0b2ec31be5115b5852e9200e7e79eadc"
+    },
+    {
+      "file": "DECISIONS.md",
+      "bytes": 3332,
+      "sha256": "eb86e4448dcbc2980552154caea1d59d3cdbad69336dbcecefea5daa75f4be4e"
+    },
+    {
+      "file": "ETHONLINE_2026_PLAN.md",
+      "bytes": 4790,
+      "sha256": "3130877ed8fb32cdd46b85e16a97e5cd4f8d7a54b00fa63c98ba1743191b7d05"
+    },
+    {
+      "file": "EVIDENCE_AND_MEASUREMENT_PLAN.md",
+      "bytes": 4021,
+      "sha256": "a44ae81d217558292f86ef73d5fef0c80373e214c049b784e5706dd48edc921a"
+    },
+    {
+      "file": "IMPLEMENTATION_ORDER.md",
+      "bytes": 5445,
+      "sha256": "a141ad01863afa57dbee5f6ab7cc45d197ef3c804b01c9988fece6e7ebba5b23"
+    },
+    {
+      "file": "MIGRATION_PLAN.md",
+      "bytes": 5217,
+      "sha256": "e80461341fcc1332817e047e6b5b6b84bf15537159a3aaa9ed8eaea5e702c2dd"
+    },
+    {
+      "file": "OFFICIAL_SOURCE_REGISTER.md",
+      "bytes": 10072,
+      "sha256": "158a54ec3a7949e86a27b4246ea267916c8d6780ff5ad125356c938d9ea35157"
+    },
+    {
+      "file": "OKX_DEV_DAY_2026_PLAN.md",
+      "bytes": 2563,
+      "sha256": "95db0b1ffe7a40d46dde1eeee439eb00e6eb1575784f1f3f4126c6c8e58c9454"
+    },
+    {
+      "file": "PRODUCT_LOCK.md",
+      "bytes": 10513,
+      "sha256": "fef018231030464b7f0a53fc4b4c74dbf223c311be86e98bf92caa75e00662b0"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1317,
+      "sha256": "f603612ea315b1c2e39691a8d31227d3957f11ef55db18d8706789c268d1cd69"
+    },
+    {
+      "file": "SECURITY_AND_THREAT_MODEL.md",
+      "bytes": 5186,
+      "sha256": "250cc1d056b9d868b4bc054eb25bf99b71a5d2f6ac5c69b814c643ff762e689b"
+    },
+    {
+      "file": "UI_UX_INFORMATION_ARCHITECTURE.md",
+      "bytes": 5524,
+      "sha256": "efdbe30cd1bc72f99debd327fe97a8ec132768ec7f691fa1ba9488160941f128"
+    },
+    {
+      "file": "USANCE_MASTER_PRD.md",
+      "bytes": 13960,
+      "sha256": "5488c601b65a827505bbcbdbff3f27714d59737dca596934636bc2b2b19ad7bd"
+    }
+  ]
+}
