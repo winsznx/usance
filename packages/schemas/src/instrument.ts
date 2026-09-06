@@ -52,10 +52,12 @@ export type AssetClass = z.infer<typeof assetClassSchema>;
  * to `instrumentId` — an instrument does not acquire a new identity because it rebased.
  */
 export const INSTRUMENT_ACCOUNTING_MODES = [
-  "FIXED_UNIT",
-  "REBASING_BALANCE",
-  "SHARE_BASED",
-  "EXTERNALLY_MANAGED",
+  // spec/corporate-action-model.md §2. Names describe Usance semantics, not provider brands.
+  "FIXED_UNIT", //          no corporate-action factor; stored == effective == credited
+  "EXTERNALLY_SCALED", //   balanceOf() raw and stable; a separate multiplier() accessor (B20)
+  "REBASING_BALANCE", //    balanceOf() itself is adjusted by the token (xStocks on EVM)
+  "SHARE_BASED_CUSTODY", // the account holds Usance pool shares; effective tracks the pool
+  "EXTERNALLY_MANAGED", //  partition/compliance-gated (Hedera ATS)
 ] as const;
 export const instrumentAccountingModeSchema = z.enum(INSTRUMENT_ACCOUNTING_MODES);
 export type InstrumentAccountingMode = z.infer<typeof instrumentAccountingModeSchema>;
@@ -183,15 +185,26 @@ export const instrumentIdentitySchema = z
   })
   .strict()
   .superRefine((i, ctx) => {
-    // A rebase-bearing standard must not be silently accounted as fixed units.
+    // Each corporate-action-capable standard has a specific accounting mode — spec/corporate-action-model.md §2.
+    // B20 keeps balanceOf() raw and exposes a separate multiplier; xStocks adjusts balanceOf() itself.
+    if (i.standard === "B20" && i.accountingMode !== "EXTERNALLY_SCALED") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["accountingMode"],
+        message:
+          "B20 keeps balanceOf() raw and exposes a separate WAD multiplier; it must be EXTERNALLY_SCALED",
+      });
+    }
     if (
-      (i.standard === "XSTOCKS_TRACKER_CERT" || i.standard === "B20") &&
-      i.accountingMode === "FIXED_UNIT"
+      i.standard === "XSTOCKS_TRACKER_CERT" &&
+      i.accountingMode !== "REBASING_BALANCE" &&
+      i.accountingMode !== "SHARE_BASED_CUSTODY"
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["accountingMode"],
-        message: `${i.standard} carries issuer multiplier / corporate-action semantics; FIXED_UNIT would mis-account it`,
+        message:
+          "xStocks adjusts balanceOf() itself; custody it as REBASING_BALANCE or the SHARE_BASED_CUSTODY V2 path",
       });
     }
     if (i.standard === "ATS_ERC1400" && i.accountingMode !== "EXTERNALLY_MANAGED") {

@@ -170,18 +170,26 @@ EQUITY  FUND  MONEY_MARKET_FUND  TREASURY  PRIVATE_CREDIT  COMMODITY  CASH  OTHE
 
 ```
 FIXED_UNIT           a held quantity is the economic quantity; 1 token in = 1 token of claim.
-                     Plain ERC-20 stablecoins and T-bill tokens without a rebase mechanism.
-REBASING_BALANCE     balanceOf() reflects issuer multiplier / corporate-action adjustments.
-                     xStocks on EVM, and B20 variants that implement the same. The vault must
-                     account by measured delta and re-read balances, never by a stored
-                     "deposited amount".
-SHARE_BASED          the token is a claim on a pool whose per-share value moves (vault shares).
+                     Plain ERC-20 stablecoins and T-bill tokens without a corporate-action factor.
+EXTERNALLY_SCALED    balanceOf() is raw and stable across corporate actions; a separate accessor
+                     (multiplier() / scaledBalanceOf()) carries the WAD factor. Coinbase B20.
+REBASING_BALANCE     balanceOf() itself is adjusted by the token's internal multiplier. xStocks
+                     on EVM. The vault must not store a nominal per-account "deposited amount".
+SHARE_BASED_CUSTODY  the account holds Usance pool shares; effective ownership tracks the pool
+                     whose size follows the custodied token. The additive V2 path for rebasing
+                     instruments — spec/corporate-action-model.md §8.
 EXTERNALLY_MANAGED   transferability and balance are gated by an external compliance/partition
                      system (ATS). The adapter, not a generic ERC-20 path, owns the semantics.
 ```
 
+Full behaviour and the family-by-family capability records are in
+`spec/corporate-action-model.md` and `fixtures/corporate-actions/capability-registry.json`.
+
 `InstrumentAccountingMode` is a field on the `InstrumentIdentity` record. It is **not** an input to
-`instrumentId`. An instrument does not acquire a new identity because it rebased.
+`instrumentId`. An instrument does not acquire a new identity because it rebased. Adding a mode
+variant (Phase 03 added `EXTERNALLY_SCALED` and renamed `SHARE_BASED` → `SHARE_BASED_CUSTODY` once
+the real B20 / xStocks semantics were verified) is a runtime-behaviour change, not an
+`InstrumentIdentity` meaning change — `DECISIONS.md` D-023.
 
 ## 5. Three concepts that must never be confused
 

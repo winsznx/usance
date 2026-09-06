@@ -136,7 +136,7 @@ describe("instrumentId separates what must stay separate", () => {
       standard: "B20",
       instrumentVersion: 1,
       underlying: { assetClass: "EQUITY", isin: "", figi: "", ticker: "AAPL", name: "Apple Inc" },
-      accountingMode: "REBASING_BALANCE",
+      accountingMode: "EXTERNALLY_SCALED",
     });
     const xstock = instrumentIdentitySchema.parse({
       domain: { caip2: "eip155:1952", label: "X Layer testnet" },
@@ -158,7 +158,7 @@ describe("instrumentId separates what must stay separate", () => {
       standard: "B20",
       instrumentVersion: 1,
       underlying: { assetClass: "EQUITY", isin: "", figi: "", ticker: "AAPL", name: "Apple Inc" },
-      accountingMode: "REBASING_BALANCE",
+      accountingMode: "EXTERNALLY_SCALED",
     });
     const withIsin = instrumentIdentitySchema.parse({
       domain: { caip2: "eip155:8453", label: "Base" },
@@ -173,7 +173,7 @@ describe("instrumentId separates what must stay separate", () => {
         ticker: "AAPL",
         name: "Apple Inc",
       },
-      accountingMode: "REBASING_BALANCE",
+      accountingMode: "EXTERNALLY_SCALED",
     });
     expect(withIsin.underlying.underlyingReferenceId).not.toBe(
       withoutIsin.underlying.underlyingReferenceId,
@@ -223,7 +223,7 @@ describe("instrumentId separates what must stay separate", () => {
       standard: "ERC20",
       instrumentVersion: 1,
       underlying: { assetClass: "TREASURY", isin: "", figi: "", ticker: "", name: "US 3M T-Bill" },
-      accountingMode: "SHARE_BASED",
+      accountingMode: "SHARE_BASED_CUSTODY",
     });
     expect(share.instrumentId).toBe(fixed.instrumentId);
   });

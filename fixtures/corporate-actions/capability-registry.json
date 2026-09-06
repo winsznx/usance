@@ -1,0 +1,85 @@
+{
+  "$comment": "Machine-readable corporate-action capability records per provider family. Verified against current authoritative documentation on the dates below. Where a behaviour could not be established from authoritative sources it is 'UNKNOWN' and support is restricted. Do not infer. spec/corporate-action-model.md.",
+  "schemaVersion": 1,
+  "verifiedOn": "2026-09-06",
+  "families": [
+    {
+      "family": "B20",
+      "label": "Coinbase tokenized stocks on Base",
+      "issuerOperator": "Coinbase / B20 registry",
+      "network": "Base (eip155:8453)",
+      "tokenStandard": "B20 — an extension of ERC-20 (ERC-8056 for scheduled multiplier changes)",
+      "usanceAccountingMode": "EXTERNALLY_SCALED",
+      "rawBalanceSemantics": "balanceOf() returns raw B20 token units and is UNCHANGED by dividends and splits.",
+      "economicQuantitySemantics": "scaledBalanceOf(account) = raw x multiplier / WAD. toScaledBalance(raw) / toRawBalance(scaled) convert. 'One B20 token does not permanently equal one share — always apply the current multiplier.'",
+      "corporateActionMechanism": "A single WAD-scaled state variable `multiplier` (WAD_PRECISION() == 1e18). A split lifts the multiplier; a dividend lifts it as cash is reinvested into shares. Raw balances are held fixed.",
+      "activationModel": "Scheduled path: updateUIMultiplier (ERC-8056) sets a future-dated change with advance on-chain notice, emits Announcement. Instant path: updateMultiplier (deprecated) applies immediately. During a corporate action the Chainlink feed freezes (registry pause flag set) and holds last-known-good; transfers remain unblocked on-chain.",
+      "transferBehavior": "Transfers gated by a policy registry via isAuthorized(policyID, account). approve() is NOT policy-gated.",
+      "decimals": "standard ERC-20 decimals()",
+      "totalSupplySemantics": "standard ERC-20; no special mechanics documented",
+      "priceConvention": "FACTOR_IN_PRICE — the Chainlink 'Base Tokenized Equities (Coinbase B20)' feed reports Token Price = Underlying Equity Market Price x Multiplier. The multiplier is applied by the feed; consumers use rawBalance x feedPrice and must NOT also multiply by scaledBalanceOf.",
+      "supportStatus": "TESTED_SUPPORTED",
+      "existingCoreCustody": "CONDITIONAL — balanceOf(vault) is stable across corporate actions so CollateralVault totalDeposited stays matched and I-01 holds. Needs an additive read adapter supplying raw quantity + a pinned CorporateActionSnapshot + feedStatus. No CollateralVault change.",
+      "unknowns": [
+        "exact B20 asset contract addresses for each ticker (source from base.org/stocks at admission time)",
+        "the exact ERC-8056 announcement lead time and whether it is per-asset configurable",
+        "feed decimals and heartbeat (Chainlink doc did not state them in the pages read)",
+        "whether the policy registry can freeze transfers of an already-held balance during an action"
+      ],
+      "sources": [
+        { "url": "https://docs.base.org/base-chain/asset-issuance/tokenized-stocks-on-base", "retrievedAt": "2026-09-06", "note": "B20 mechanics: multiplier WAD-scaled, scaledBalanceOf/toScaledBalance/toRawBalance, updateUIMultiplier vs updateMultiplier, feed freeze during action" },
+        { "url": "https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase", "retrievedAt": "2026-09-06", "note": "feed price = underlying x multiplier, multiplier applied by the feed, pause holds last-known-good" },
+        { "url": "https://blog.base.dev/b20-tokenized-stocks-on-base", "retrievedAt": "2026-09-06", "note": "B20 keeps balanceOf fixed while the multiplier adjusts the redeemable claim" }
+      ]
+    },
+    {
+      "family": "XSTOCKS_TRACKER_CERT",
+      "label": "xStocks tracker certificates (Backed Finance)",
+      "issuerOperator": "Backed Finance AG (issuer and token-mechanics operator)",
+      "network": "Solana and EVM chains including X Layer (eip155:1952 testnet / eip155:196)",
+      "tokenStandard": "ERC-20 on EVM, with an internal multiplier applied inside balanceOf()",
+      "usanceAccountingMode": "REBASING_BALANCE",
+      "rawBalanceSemantics": "There is a 'Raw Balance' internally, but on EVM chains the smart contract applies the multiplier internally and balanceOf() returns the ALREADY-ADJUSTED (equity-adjusted) balance.",
+      "economicQuantitySemantics": "effective = balanceOf() directly on EVM. scaled amount = raw x multiplier. Current and historical multiplier via api.xstocks.fi/api/v2/public/assets/{SYMBOL}/multiplier[/history]?network={NETWORK}.",
+      "corporateActionMechanism": "A global on-chain Multiplier linking each holder's Raw Balance to its current custody-share entitlement. A split lifts the Multiplier proportionally; a dividend lifts it further as the issuer reinvests cash into shares; a reverse split lowers it (2-for-1 reverse split example: 4.032 -> 2.016). No per-holder mint or burn.",
+      "activationModel": "The multiplier is published on-chain BEFORE each corporate event, with activation set for 00:30 UTC on the day immediately following the Ex-Date.",
+      "transferBehavior": "ERC-20 transfer of the adjusted balance; issuer compliance controls exist (mark UNKNOWN pending contract inspection).",
+      "decimals": "UNKNOWN — multiplier values are non-integer (4.032, 2.016); on-chain fixed-point precision not established from the docs read. Treat as UNKNOWN until the contract is inspected; use conservative handling.",
+      "totalSupplySemantics": "UNKNOWN whether totalSupply is raw or adjusted on EVM",
+      "priceConvention": "UNKNOWN — needs the exact xStocks price feed semantics for the target domain. Until established, treat as FACTOR_IN_QUANTITY with effective = balanceOf() and require a raw underlying-share feed, or RESTRICT.",
+      "supportStatus": "TESTED_SUPPORTED",
+      "existingCoreCustody": "NO — balanceOf(vault) changes on a corporate action. A positive rebase orphans value in CollateralVault.surplus; a negative rebase (reverse split) makes held < totalDeposited and breaks I-01. Requires the additive SHARE_BASED_CUSTODY V2 vault (spec/corporate-action-model.md §8), deployed with a domain in Phase 09.",
+      "unknowns": [
+        "on-chain multiplier fixed-point precision / decimals",
+        "exact EVM contract addresses per ticker on X Layer",
+        "whether totalSupply() on EVM is raw or adjusted",
+        "the exact price feed and whether it reports adjusted or raw underlying price",
+        "issuer transfer-restriction / freeze behaviour on EVM",
+        "behaviour during the announcement->00:30-UTC activation window on-chain (does balanceOf jump exactly at activation)"
+      ],
+      "sources": [
+        { "url": "https://docs.xstocks.fi/developers/multipliers", "retrievedAt": "2026-09-06", "via": "web search summary (docs.xstocks.fi returns 403 to direct fetch)", "note": "multiplier rebasing, EVM balanceOf returns adjusted, activation 00:30 UTC day after Ex-Date, reverse-split 4.032->2.016, API endpoints" },
+        { "url": "https://docs.xstocks.fi/docs/dividends-and-stock-splits", "retrievedAt": "2026-09-06", "via": "web search summary", "note": "rebasing reflects dividends/splits/reverse-splits, value preserved at the Multiplier layer" },
+        { "url": "https://www.cfbenchmarks.com/blog/cf-benchmarks-xstocks-product-suite-is-live-with-regulated-indices-and-a-corporate-actions-feed", "retrievedAt": "2026-09-06", "note": "a separate corporate-actions feed exists for xStocks" }
+      ]
+    },
+    {
+      "family": "FIXED_UNIT_ERC20",
+      "label": "Plain ERC-20 with no corporate-action mechanism",
+      "network": "any",
+      "tokenStandard": "ERC-20",
+      "usanceAccountingMode": "FIXED_UNIT",
+      "rawBalanceSemantics": "balanceOf() is the economic quantity; no multiplier",
+      "economicQuantitySemantics": "effective = stored = credited",
+      "corporateActionMechanism": "none",
+      "activationModel": "n/a",
+      "transferBehavior": "standard ERC-20",
+      "decimals": "as declared",
+      "priceConvention": "FACTOR_ABSENT",
+      "supportStatus": "VERIFIED_SUPPORTED",
+      "existingCoreCustody": "YES — this is what the deployed CollateralVault holds today (tUSTB, tUSD).",
+      "unknowns": [],
+      "sources": []
+    }
+  ]
+}

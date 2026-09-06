@@ -161,7 +161,7 @@ describe("assertInstrumentIdentityComplete — I-77", () => {
     standard: "B20",
     instrumentVersion: 1,
     underlying: { assetClass: "EQUITY", isin: "", figi: "", ticker: "AAPL", name: "Apple Inc" },
-    accountingMode: "REBASING_BALANCE",
+    accountingMode: "EXTERNALLY_SCALED",
   });
 
   const completeIdentity = {

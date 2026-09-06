@@ -9,6 +9,55 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-023 — Corporate-action accounting: reference model first, deployed core untouched, B20 ≠ xStocks
+
+**Decision.** Corporate-action accounting (`spec/corporate-action-model.md`) is a provider-neutral
+reference model plus fixtures plus an adversarial campaign. No deployed contract changes.
+
+- **Three quantities** are kept distinct: `stored` (what the token/adapter holds), `effective`
+  (economic ownership now, after the corporate-action factor), `credited` (what Usance attributes
+  to an account). Equal only for `FIXED_UNIT`.
+- **B20 and xStocks are modelled independently** — they use opposite `balanceOf()` semantics. B20
+  keeps `balanceOf()` raw and exposes a separate WAD `multiplier()` (`EXTERNALLY_SCALED`); xStocks
+  adjusts `balanceOf()` internally (`REBASING_BALANCE`). Verified against current Base / Chainlink
+  / xStocks documentation; records in `fixtures/corporate-actions/capability-registry.json`.
+- **`InstrumentAccountingMode` gains `EXTERNALLY_SCALED`** and `SHARE_BASED` is renamed
+  `SHARE_BASED_CUSTODY`. This is a runtime-behaviour change, not an `InstrumentIdentity` meaning
+  change (mode is not an input to `instrumentId`, D-021), so it is not an RFC. A corporate action
+  never changes `instrumentId`.
+- **`CorporateActionSnapshot`** pins the factor, its source block/event, any pending scheduled
+  factor and activation time, the price convention and feed status. A quote / RiskEpoch records
+  the snapshot it used; a decision under one snapshot cannot execute under another (`I-85`).
+- **Existing-core compatibility**: `FIXED_UNIT` = YES (deployed). `EXTERNALLY_SCALED` (B20) =
+  CONDITIONAL — `balanceOf(vault)` is stable so `I-01` holds; needs an additive read adapter for
+  the pinned snapshot + feed-pause handling, no `CollateralVault` change. `REBASING_BALANCE`
+  (xStocks) = NO — a rebasing `balanceOf` orphans value on a positive rebase and breaks `I-01` on
+  a reverse split; needs the additive `SHARE_BASED_CUSTODY` V2 vault
+  (`RebasingCollateralVault`, spec §8), deployed with a domain in Phase 09, never a modification
+  of the deployed `CollateralVault`.
+
+**What it displaced.** Patching `CollateralVault` / `ClearingHouse` to "support rebasing" and
+relabelling the live 1952 deployment historical. That would corrupt the byte-for-byte proof and
+the nominal accounting the deployed `FIXED_UNIT` instruments rely on. An additive V2 custody path
+for future rebasing instruments is preferable to changing historical financial semantics
+(constraint 7 of the Phase 03 brief; `MIGRATION_PLAN` "code to add").
+
+**Why it is not an RFC.** No trust boundary moves; no deployed contract changes; the risk pipeline
+stays a pure function of `bytes32` + `quantity` — corporate-action accounting only decides which
+`quantity` (`= effective`) to hand it and pins the snapshot. Consistent with D-021, D-104, D-106.
+
+**Evidence.** `packages/corp-actions` reference model + fixtures; conservation campaign
+(multi-user, deposit-before/after-action, partial withdrawal, liquidation); mutation campaign
+(precision, activation block, decimals, rounding, sign, duplicate/reordered/stale/missing events,
+unprovenanced balance change, stale-oracle+fresh-factor and the reverse); `spec/invariants.md`
+I-80…I-85. Forge suite unchanged; no new production claim in `proof/claims.json`.
+
+**Consequence.** Phase 08/09 build the B20 read adapter and the xStocks `SHARE_BASED_CUSTODY`
+vault against a frozen, adversarially-tested accounting model. Phase 03 proves *Usance can safely
+represent family X*, not *asset Y is production collateral*.
+
+---
+
 ## D-022 — Domains and facilities are described in schemas and read models; Phase 02 adds no contract
 
 **Decision.** The multi-domain / facility abstraction layer (`spec/facility-model.md`) is

@@ -174,3 +174,26 @@ hold **by construction** — nothing reads the descriptors on a financial path. 
 
 `Current state:` the count line at the top of this file is regenerated from source, not maintained
 here.
+
+---
+
+## Corporate-action accounting (I-80…I-85)
+
+Introduced with the corporate-action reference model (`spec/corporate-action-model.md`,
+`DECISIONS.md` D-023). The reference model and adversarial campaign are Vitest in
+`packages/corp-actions/test/*`; the deployed core is unchanged, so the invariants that concern a
+future rebasing custody vault are `SPECIFIED` until that vault ships (Phase 09).
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-80 | Conservation: for a corporate-action-capable instrument, `Σ effectiveOf(account) + classified dust == economically attributable vault position`, subject only to authorised deposits, withdrawals, liquidation transfers, issuer corporate actions and modelled fees. A corporate action may change economic units; it cannot make units appear for one account disproportionately or vanish into an unowned bucket. | ENFORCED (reference model) / SPECIFIED (on-chain V2 vault) | `conservation.test` — multi-user, deposit-before/after-action, partial withdrawal, liquidation, 3+ accounts, dust accumulation |
+| I-81 | A rebase is not a deposit; a negative adjustment is not a withdrawal. An externally-driven balance change is a distinct accounting/event category (`RebaseObserved`), never `CollateralDeposited` / `CollateralWithdrawn`. | ENFORCED (reference model) | `applyAction` returns a `REBASE` effect with no deposit/withdraw side; `mutation.test` (rebase-as-deposit rejected) |
+| I-82 | An unsolicited token transfer into custody is not a corporate action. An unprovenanced balance increase is classified as unattributed surplus and credited to no holder and no share. Where a token cannot distinguish a rebase from a donation on-chain, the conservative default is surplus. | ENFORCED (reference model) | `mutation.test` (balance change with no corporate-action provenance → surplus, not credited) |
+| I-83 | Activation windows fail closed. Between announcement and `pendingActivationAt`, and while `feedStatus == PAUSED_FOR_ACTION`, new risk is blocked or capped; risk-reducing ops remain available; a pending factor never increases collateral privilege before it is authoritative; capacity uses the more conservative of `{factor, pendingFactor}`. | ENFORCED (reference model) | `activation.test` (pending 2× factor does not raise capacity pre-activation; repay still allowed) |
+| I-84 | Price × quantity applies the corporate-action factor exactly once. `priceConvention` names the side that carries it; a 2× split with a 0.5× unit-price move preserves economic value before haircuts. | ENFORCED (reference model) | `valuation.test` split / reverse-split / dividend — value conserved; `mutation.test` (factor on both sides → detected) |
+| I-85 | Stale corporate-action state cannot authorise new risk. A quote/RiskEpoch binds the `CorporateActionSnapshot` it used; a decision under snapshot N cannot execute under snapshot N+1 — it refuses or recomputes. `UNKNOWN` support never unlocks new risk. Restates `I-12` over corporate-action state. | ENFORCED (reference model) / SPECIFIED (on-chain enforcement for a future rebasing asset) | `staleness.test` (snapshot mismatch → refuse), `mutation.test` (stale factor + fresh oracle, and the reverse) |
+
+Ingestion is idempotent and the event stream is not financial truth: the factor is reconciled from
+authoritative chain state at the domain's safe depth, a duplicate announcement produces one
+effect, an indexer restart reproduces the snapshot, and a reorg reconciles to canonical state
+(`spec/corporate-action-model.md §10`, tests in `packages/corp-actions/test/ingestion.test`).
