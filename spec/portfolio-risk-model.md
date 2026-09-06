@@ -56,7 +56,7 @@ real loss/recovery mechanism.
 | **ISSUER** | `issuerId` | one tokenization provider fails / freezes / is sanctioned — every product it issues is affected | one `UNKNOWN_ISSUER` group, stricter cap |
 | **CUSTODY** | `custodyGroupId` | the custodian holding the underlying assets fails — different issuers can share one custodian | one `UNKNOWN_CUSTODY` group, stricter cap. **Missing custodian ≠ independent custody.** |
 | **SECTOR** | `sectorGroupId` | a sector shock (semiconductors, rates, a single mega-cap) hits many underlyings at once | one `UNKNOWN_SECTOR` group, stricter cap |
-| **LIQUIDITY** | `liquidityGroupId` + a versioned `depthUsd18` | positions whose liquidation routes compete for the same finite depth / quote asset / market maker | missing depth → `depthUsd18 = 0` (maximally restrictive); missing group → `UNKNOWN_LIQUIDITY` |
+| **LIQUIDITY** | a declared `liquidityGroupId` **and** a versioned positive `depthUsd18` | positions whose liquidation routes compete for the same finite depth / quote asset / market maker | a position without a declared `(route, positive depth)` is **not** liquidity-capped (the dimension is a no-op for it). Route metadata is an **admission requirement** for any production instrument whose liquidation could compete — enforced by the admission layer, not by silently zeroing a position. A shallower declared depth can only reduce; adding a position to a declared route can only reduce its co-members. |
 | **SESSION** | `marketSession` per position | 24/7 token transfer ≠ 24/7 underlying liquidity | `UNKNOWN` and `CLOSED` are the most restrictive session factors |
 | **STRESS** (optional) | named deterministic scenario tags | a coherent shock scenario that captures several shared risks at once | a scenario with stale/missing inputs restricts; scenarios are policy, never model output |
 
@@ -114,6 +114,16 @@ point. No covariance matrix.
 
 `capBps[d, groupKind]` has a `groupKind` of `NAMED` or `UNKNOWN`; `capBps[d, UNKNOWN] ≤ capBps[d,
 NAMED]` is enforced by the policy schema.
+
+**Small portfolios are conservatively capped, on purpose.** The cap is always `base × capBps /
+BPS`, with no equal-weight floor. A one-underlying portfolio (whether one wrapper or two wrappers
+of the same company) is `100%` of that underlying and is scaled to `capBps`; a 50/50 two-name
+portfolio has each name at `50% > 40%` and each is scaled to `40%` of base. This is the same
+deliberate behaviour `risk-model.md §5` already accepts for `maxConcentrationBps` ("a single-asset
+portfolio caps itself"). Portfolio-backed credit is *relative-diversification* credit; a portfolio
+that is not diversified does not get portfolio-scale recognition. The model still distinguishes
+*kinds* of concentration — two wrappers of NVIDIA (one underlying group) recognise less than NVIDIA
++ Apple (two underlying groups), which recognise less than NVIDIA + Apple in different sectors.
 
 ## 5. Explainability
 

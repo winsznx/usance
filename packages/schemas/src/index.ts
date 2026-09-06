@@ -5,6 +5,7 @@ export * from "./ids";
 export * from "./instrument";
 export * from "./domain";
 export * from "./corporate-action";
+export * from "./portfolio-risk";
 export * from "./evidence";
 export * from "./passport";
 export * from "./facility";

@@ -119,6 +119,15 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(supports-color@10.2.2)(terser@5.16.9)
 
+  packages/portfolio-risk:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(supports-color@10.2.2)(terser@5.16.9)
+
   packages/schemas:
     dependencies:
       viem:
