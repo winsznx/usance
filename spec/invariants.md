@@ -154,3 +154,23 @@ Forge tests in `contracts/test/Sentinel.t.sol` and Vitest in `services/sentinel/
 I-71 and I-72 are named now and refused by absence: no venue adapter and no basket issuance path
 exists, so neither capability can be exercised at all. They move to ENFORCED when those features
 ship with their own tests, not before.
+
+---
+
+## Domains and facilities — multi-domain layer (I-75…I-79)
+
+Introduced with the domain/facility abstractions (`spec/facility-model.md`, `DECISIONS.md` D-022).
+This layer is descriptive: it adds no on-chain contract and no money role, so several invariants
+hold **by construction** — nothing reads the descriptors on a financial path. Proofs are Vitest in
+`packages/schemas/test/{facility,domain}.test.ts` and `services/indexer/test/facility.test.ts`.
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-75 | A facility's `FacilityImplementation` has exactly one authoritative home domain, and it is immutable once the facility is `ACTIVE`. There is no `setHomeDomain`. | ENFORCED | `homeDomainId` is an input to `facilityId` (`facility-model.md §4`), so a different home domain is a different facility; `assertValidFacilityTransition` rejects a home-domain / type / controller change on an `ACTIVE`-or-later descriptor. `facility.test.ts` |
+| I-76 | Registering a `DomainDescriptor` grants no financial capability — no asset admission, no collateral, no borrowing, no transport authorisation, no venue authorisation, no oracle trust. | ENFORCED (by construction) | No money contract reads a `DomainDescriptor`. `domain.test.ts` asserts the schema carries no capability field and that an `ACTIVE` domain is inert without a separate admission/policy/adapter decision. |
+| I-77 | Binding an `InstrumentIdentity` grants no `COLLATERAL` capability, LTV, risk status, borrowing authority or settlement authority. Completeness is necessary for `MULTI_DOMAIN_V2` admission, never sufficient. | ENFORCED (by construction) | No money contract reads the bindings artifact (Phase 01) or a completeness check. `facility.test.ts` asserts `assertInstrumentIdentityComplete` returns only a pass/fail and no capability. |
+| I-78 | `facilityId` is unique per `(facilityType, homeDomainId, controller, discriminator)`. One controller can hold many facilities without collision; two descriptors that share the full tuple derive the same id, so a duplicate registration is detectable. | ENFORCED | `facility.test.ts` — collision matrix, one-controller-two-facilities, migration (new controller → new id, old preserved). |
+| I-79 | Aggregated cross-domain read-model state is never settlement truth. A stale or unreachable domain renders as stale/unknown and cannot increase any usable/available figure; it can only restrict. | ENFORCED | `services/indexer/test/facility.test.ts` — a stale domain position is excluded from usable totals and marked; `aggregatePortfolio` carries per-position provenance and never sums a stale figure into "available". Restates `I-07` on the cross-domain surface. |
+
+`Current state:` the count line at the top of this file is regenerated from source, not maintained
+here.

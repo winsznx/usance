@@ -9,6 +9,50 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-022 — Domains and facilities are described in schemas and read models; Phase 02 adds no contract
+
+**Decision.** The multi-domain / facility abstraction layer (`spec/facility-model.md`) is
+spec + `packages/schemas` + a generated descriptor artifact + `services/indexer` read models. It
+introduces **no Solidity**.
+
+- Four terms are kept distinct: `FacilityImplementation` (owns financial state — today
+  `ClearingHouse` for revolving credit), `FacilityDescriptor` (immutable-once-active metadata),
+  `FacilityReadModel` (indexed view with provenance), `FacilityAdapter` (zero-authority read
+  facade). `ClearingHouse` inherits no facility interface.
+- `facilityId = H("USANCE_FACILITY_V1", facilityType, homeDomainId, controller, discriminator)`.
+  Home domain is an input, so there is no `setHomeDomain` — a different home domain is a different
+  facility. An in-place proxy upgrade preserves identity; a redeployment is a migration.
+- A `DomainDescriptor` is metadata only. Registering one admits nothing, enables no capital
+  operation, and makes no oracle or venue trusted (invariant I-76).
+- `AdmissionProfile`: `LEGACY_V1` (deployed X Layer path, `identity` optional, unchanged) vs
+  `MULTI_DOMAIN_V2` (Base / X Layer production / Hedera — a complete, non-ticker-only
+  `InstrumentIdentity` is required). Enforced before a governance signer gets calldata; the
+  deployed `commitPassport` ABI is untouched.
+- `usanceReceiptSchema` gains two optional null-defaulted fields (`homeDomain`, `instrumentId`);
+  `receiptId` derivation and every existing receipt are unchanged.
+
+**What it displaced.** Authoring undeployed `DomainRegistry` / `InstrumentRegistry` /
+`FacilityRegistry` contracts now. They have no on-chain consumer until Phase 06 (institutional
+controller), Phase 08 (Base) and Phase 09 (X Layer) — each a deliberate deployment with its own
+manifest, roles and proof. Dead code now would be reshaped by the consuming phase and would add
+EIP-170 and audit surface for no benefit. The invariants that matter are structural in the id
+derivations and true by construction because no money contract reads any of this.
+
+**Why it is not an RFC.** No trust boundary moves; no money contract changes; the existing
+facility's authority stays `ClearingHouse`. Consistent with D-104, D-106, D-107, D-021. See
+`spec/facility-model.md §10`.
+
+**Evidence.** `packages/schemas/test/{facility,domain}.test.ts`,
+`services/indexer/test/facility.test.ts`, `services/evidence/test` receipt-compat cases,
+`make check-facility-descriptors`. Invariants I-75…I-79. Forge suite unchanged.
+
+**Consequence.** Phase 06's `InstitutionalFacilityController` implements the same `FacilityImplementation`
+semantics without being forced into `ClearingHouse`; Base and X Layer adapters resolve an
+instrument to a domain without it becoming admitted collateral; the cross-domain portfolio view is
+a read model that stale state can only restrict.
+
+---
+
 ## D-021 — Instrument identity is an additive layer above the deployed financial key, not a redeployment
 
 **Decision.** The exact identity of a tokenized instrument — domain, canonical token, legal issuer,

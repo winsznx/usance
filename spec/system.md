@@ -146,6 +146,11 @@ Three properties of that picture are load-bearing:
 | Price and freshness | Chainlink | nothing stored by Usance | Chainlink | built |
 | Sequencer liveness | Chainlink uptime feed | nothing stored by Usance | Chainlink | built |
 | **Recognised value, limits, health, status** | **nobody** | **not stored** | **n/a** | built |
+| A facility's collateral, debt, reservations, lifecycle, home-domain settlement | its `FacilityImplementation` — `ClearingHouse` (+ vault/engine) for revolving credit today; a separate `InstitutionalFacilityController` later | as above | `ClearingHouse` only, today | built (revolving credit) / specified (institutional) |
+| A facility's home domain | fixed at the `facilityId` derivation (`facility-model.md §4`), immutable once `ACTIVE` | `deployments/facility-descriptors.json` (descriptive) | nobody — it is an input to the identity, not a setting | built (descriptor) |
+| Domain metadata: CAIP-2, environment, finality model, explorer, native asset, adapter versions | `DomainDescriptor` | `deployments/facility-descriptors.json` (config) | config / governance; **grants no financial trust** (`I-76`) | built (descriptor) |
+| Instrument identity ↔ legacy `assetId` binding | `deployments/instrument-bindings.json` (Phase 01) | generated artifact | `scripts/gen-instrument-bindings.mjs`; **read by no money contract** (`I-77`) | built |
+| Cross-domain aggregated portfolio | `services/indexer` `FacilityReadModel` | derived, never stored as settlement | nobody — read model only (`I-79`) | built |
 
 That last row is the point. `accounting.md §3` forbids a `recognizedCollateral` field, and there
 is none. Every risk number is recomputed from live inputs on every read, so there is no cached

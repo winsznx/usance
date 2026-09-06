@@ -221,7 +221,9 @@ body rather than choosing a design.
 | `IRemoteCollateralAdapter` | credit a non-transferable collateral position from a verified remote lock | `I-02`, `I-21`, `I-22` |
 | `IRemoteAssetEscrow` | lock and release on the source chain | `I-02`, `I-22` |
 | `IVenueAdapter` (Solidity side) | onchain half of an execution route | `I-19`, `I-23`, `I-24` |
-| `ICashTransport` (Solidity side) | move settlement cash between domains | idempotent under duplicate delivery |
+| `ICashTransport` (Solidity side) | move settlement cash between domains; a transport receipt is not a facility settlement (`facility-model.md §9`) | idempotent under duplicate delivery |
+| `IInstrumentAdapter` | a domain adapter's view of one instrument: canonical identity, accounting mode, `effectiveBalanceOf` (post-multiplier), transferability + reason, corporate-action state, home-domain `lock`/`release` | `I-77` (grants no capability), `system.md §1` (no per-account accounting), degrades restrictively; `facility-model.md §9` |
+| `ICapitalFacility` | the read shape common to every `FacilityImplementation`: `facilityId`, `homeDomain`, `status`, `currentRiskEpoch`, `settlementAsset` | `I-75` (one immutable home domain); never inherited by `ClearingHouse` — exposed by an additive `FacilityAdapter` |
 | `IStreamsOracleAdapter` | Chainlink Data Streams | **not deployable on X Layer**; keep unregistered |
 
 Three obligations bind every one of them, and they are the reason the shapes are frozen before the
