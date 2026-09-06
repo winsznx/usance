@@ -1,0 +1,54 @@
+{
+  "$provenance": {
+    "generatedAt": "2026-09-06T20:31:38.129Z",
+    "generatedBy": "scripts/gen-facility-descriptors.mjs",
+    "gitCommit": "088b597b15182f937b7db49e7f1ede4269073aae-dirty",
+    "chainId": 1952,
+    "deploymentDigest": "0xbba53ba61e0ae670959f838ea687cbf76b49c6ec2c0d8348f21635f1e3b3035e",
+    "inputDigest": "0xf382387c5f3b4bafd2a2ece4bebed3b0310b448f5dace137cf46513295e44998",
+    "schema": 1
+  },
+  "domains": [
+    {
+      "domainId": "0xbc756770bcdca902a5502582a63c0ea4a0226fbf6014e80c479922e829d728b1",
+      "caip2": "eip155:1952",
+      "label": "X Layer testnet",
+      "environment": "TESTNET",
+      "finalityModel": {
+        "kind": "l2-sequencer",
+        "safeDepthBlocks": 64,
+        "notes": "OP-stack-style L2; sequencer uptime feed gated in ChainlinkFeedAdapter"
+      },
+      "nativeAsset": {
+        "symbol": "OKB",
+        "decimals": 18
+      },
+      "explorerUrl": "https://www.oklink.com/x-layer-testnet",
+      "adapterVersions": {
+        "oracle": "ChainlinkFeedAdapter@1952"
+      },
+      "status": "ACTIVE"
+    }
+  ],
+  "facilities": [
+    {
+      "facilityId": "0xf0fe66befb70f33dfd3cf1440dd1d2618484e26699abf53c8ba645f46069af22",
+      "facilityType": "REVOLVING_CREDIT",
+      "homeDomainCaip2": "eip155:1952",
+      "homeDomainId": "0xbc756770bcdca902a5502582a63c0ea4a0226fbf6014e80c479922e829d728b1",
+      "controllerRef": "0x000000000000000000000000a38c072f7970d70f00c5ad9b911c222357255cc0",
+      "controllerAddress": "0xa38c072f7970d70f00c5ad9b911c222357255cc0",
+      "discriminator": "0xa2ef679d6d8194d6529915001547d13c39dc85b4b680673a909c408acf7b553f",
+      "settlementAssetId": "0xa2ef679d6d8194d6529915001547d13c39dc85b4b680673a909c408acf7b553f",
+      "status": "ACTIVE",
+      "implementation": [
+        "ClearingHouse",
+        "CollateralVault",
+        "FinancingEngine",
+        "LiquidityVault"
+      ],
+      "migratedTo": null,
+      "note": "The existing consumer revolving-credit engine, named as a facility without any bytecode change (spec/facility-model.md §5). ClearingHouse remains the sole financial authority."
+    }
+  ]
+}

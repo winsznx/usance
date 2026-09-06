@@ -120,6 +120,46 @@ export function instrumentBindingId(legacyAssetId: Hex32, instrumentIdValue: Hex
   );
 }
 
+// ------------------------------------------------------------------------------- facility identity
+//
+// `spec/facility-model.md §4`. Home domain and controller are inputs, so a facility with a
+// different home domain or a redeployed controller is a different facility — there is no
+// `setHomeDomain`. Pinned against `cast` in `../test/facility.test.ts`.
+
+export interface FacilityIdParts {
+  facilityType: string;
+  homeDomainId: Hex32;
+  /** Canonical reference of the controlling contract — `evmCanonicalRef` for EVM. */
+  controller: Hex32;
+  /** Distinguishes facilities that share the tuple above. Revolving-credit singleton: the settlement assetId. */
+  discriminator: Hex32;
+}
+
+export function facilityId(p: FacilityIdParts): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [
+        { type: "string" },
+        { type: "string" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+      ],
+      ["USANCE_FACILITY_V1", p.facilityType, p.homeDomainId, p.controller, p.discriminator],
+    ),
+  );
+}
+
+/** A borrower's position within a facility. `keccak256(abi.encode(facilityId, accountId))`. */
+export function facilityPositionId(facilityIdValue: Hex32, accountIdValue: Hex32): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [{ type: "bytes32" }, { type: "bytes32" }],
+      [facilityIdValue, accountIdValue],
+    ),
+  );
+}
+
 export function accountId(owner: EvmAddress): Hex32 {
   return keccak256(
     encodeAbiParameters([{ type: "string" }, { type: "address" }], ["USANCE_ACCOUNT_V1", owner]),

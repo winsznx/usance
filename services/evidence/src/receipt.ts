@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { hex32Schema, unixSecondsSchema, type Hex32 } from "@usance/schemas";
+import { caip2Schema, hex32Schema, unixSecondsSchema, type Hex32 } from "@usance/schemas";
 
 /**
  * The canonical receipt.
@@ -93,6 +93,15 @@ export const usanceReceiptSchema = z
      */
     evidenceAssetId: hex32Schema.nullable(),
     financialAssetId: hex32Schema.nullable(),
+
+    /**
+     * Cross-domain context — `spec/facility-model.md §11`. Additive and optional so every existing
+     * receipt still parses and re-derives byte-for-byte. When present these are DERIVED from
+     * `chainId` + `financialAssetId` through the instrument bindings and are never authoritative;
+     * `receiptId` does not depend on them. A V1 receipt without them stays valid V1 forever.
+     */
+    homeDomain: caip2Schema.nullable().optional(),
+    instrumentId: hex32Schema.nullable().optional(),
 
     workflowId: z.string().nullable(),
     intentId: hex32Schema.nullable(),
