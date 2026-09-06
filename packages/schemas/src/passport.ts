@@ -2,6 +2,7 @@ import { z } from "zod";
 import { sourceClassSchema } from "./source-class";
 import { bpsSchema, hex32Schema, unixSecondsSchema } from "./primitives";
 import { claimSetSchema } from "./evidence";
+import { instrumentAccountingModeSchema, instrumentStandardSchema } from "./instrument";
 
 /**
  * The Passport candidate: everything needed to call `PassportRegistry.commitPassport`, and nothing
@@ -36,11 +37,40 @@ export const admissionOutcomeSchema = z.enum([
 
 export type AdmissionOutcome = z.infer<typeof admissionOutcomeSchema>;
 
+/**
+ * The Identity section of the Passport (`spec/identity-model.md`, `ARCHITECTURE.md §5`).
+ *
+ * Additive and optional. It links a Passport to the exact instrument it describes without changing
+ * `commitPassportArgs` — the on-chain commit surface is frozen against the deployed
+ * `PassportRegistry`. The remaining Passport sections (LegalRights, BackingAndCustody, …) arrive
+ * with the domain adapters that produce those facts.
+ */
+export const passportIdentitySectionSchema = z
+  .object({
+    instrumentId: hex32Schema,
+    domainId: hex32Schema,
+    issuerId: hex32Schema,
+    underlyingReferenceId: hex32Schema,
+    instrumentStandard: instrumentStandardSchema,
+    /** uint32; must match the `InstrumentBinding` active when this Passport was built. */
+    instrumentVersion: z.number().int().min(1).max(0xffffffff),
+    accountingMode: instrumentAccountingModeSchema,
+  })
+  .strict();
+
+export type PassportIdentitySection = z.infer<typeof passportIdentitySectionSchema>;
+
 export const passportCandidateSchema = z
   .object({
     assetId: hex32Schema,
     /** Strictly `currentVersion + 1`. The registry rejects anything else. */
     version: z.number().int().positive(),
+
+    /**
+     * Instrument identity this Passport describes. Optional so every existing candidate and every
+     * historical Passport stays valid; when present it is provenance, never an input to a limit.
+     */
+    identity: passportIdentitySectionSchema.optional(),
 
     evidenceRoot: hex32Schema,
     claimsRoot: hex32Schema,

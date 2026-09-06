@@ -14,6 +14,112 @@ export function assetId(chainId: bigint, token: EvmAddress): Hex32 {
   return keccak256(encodeAbiParameters([{ type: "uint256" }, { type: "address" }], [chainId, token]));
 }
 
+// ---------------------------------------------------------------------- instrument identity
+//
+// The product-identity layer above `assetId`, frozen in `spec/identity-model.md`. `assetId`
+// stays the financial key the deployed contracts use; nothing here is an input to a formula in
+// `accounting.md` or a key in any deployed contract. Every derivation is `keccak256(abi.encode(...))`
+// of value types so it is pinned against `cast` in `../test/instrument.test.ts`.
+
+/** `keccak256(abi.encode("USANCE_DOMAIN_V1", caip2))`. `caip2` is authored by a human, e.g. "eip155:8453". */
+export function domainId(caip2: string): Hex32 {
+  return keccak256(
+    encodeAbiParameters([{ type: "string" }, { type: "string" }], ["USANCE_DOMAIN_V1", caip2]),
+  );
+}
+
+/** `keccak256(abi.encode("USANCE_INSTRUMENT_STANDARD_V1", standard))` over the closed vocabulary. */
+export function instrumentStandardId(standard: string): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [{ type: "string" }, { type: "string" }],
+      ["USANCE_INSTRUMENT_STANDARD_V1", standard],
+    ),
+  );
+}
+
+/**
+ * The exact token this instrument is.
+ *
+ * EVM: the 20-byte address left-padded into `bytes32`, the same value `abi.encode(address)` and
+ * `bytes32(uint256(uint160(addr)))` both produce. Native: a hash of the chain-native identifier.
+ */
+export function evmCanonicalRef(token: EvmAddress): Hex32 {
+  return `0x${token.toLowerCase().replace(/^0x/, "").padStart(64, "0")}` as Hex32;
+}
+
+export function nativeCanonicalRef(nativeId: string): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [{ type: "string" }, { type: "string" }],
+      ["USANCE_NATIVE_REF_V1", nativeId],
+    ),
+  );
+}
+
+export interface UnderlyingReferenceParts {
+  assetClass: string;
+  isin: string;
+  figi: string;
+  ticker: string;
+  name: string;
+}
+
+/**
+ * The economic reference — company / fund / asset. Deliberately NOT an input to `instrumentId`:
+ * learning an ISIN later must not change an instrument's identity, and two instruments over one
+ * underlying must stay distinct.
+ */
+export function underlyingReferenceId(u: UnderlyingReferenceParts): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [
+        { type: "string" },
+        { type: "string" },
+        { type: "string" },
+        { type: "string" },
+        { type: "string" },
+        { type: "string" },
+      ],
+      ["USANCE_UNDERLYING_REF_V1", u.assetClass, u.isin, u.figi, u.ticker, u.name],
+    ),
+  );
+}
+
+export interface InstrumentIdParts {
+  domainId: Hex32;
+  canonicalRef: Hex32;
+  issuerId: Hex32;
+  instrumentStandardId: Hex32;
+  /** uint32, starts at 1. Bumped only on a genuine identity change — never for a corporate action. */
+  instrumentVersion: number;
+}
+
+export function instrumentId(i: InstrumentIdParts): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "uint32" },
+      ],
+      [i.domainId, i.canonicalRef, i.issuerId, i.instrumentStandardId, i.instrumentVersion],
+    ),
+  );
+}
+
+/** `keccak256(abi.encode(legacyAssetId, instrumentId, boundAt))` — see `spec/identity-model.md §3`. */
+export function instrumentBindingId(legacyAssetId: Hex32, instrumentIdValue: Hex32, boundAt: number): Hex32 {
+  return keccak256(
+    encodeAbiParameters(
+      [{ type: "bytes32" }, { type: "bytes32" }, { type: "uint64" }],
+      [legacyAssetId, instrumentIdValue, BigInt(boundAt)],
+    ),
+  );
+}
+
 export function accountId(owner: EvmAddress): Hex32 {
   return keccak256(
     encodeAbiParameters([{ type: "string" }, { type: "address" }], ["USANCE_ACCOUNT_V1", owner]),

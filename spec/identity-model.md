@@ -68,8 +68,9 @@ domainId = keccak256(abi.encode("USANCE_DOMAIN_V1", caip2))
 issuerId = keccak256(abi.encode(legalName, jurisdiction))
 
     Identical to canonical.ts::issuerId, which already binds evidence sources. legalName is
-    NFC-normalised, lower-cased and whitespace-collapsed; jurisdiction is upper-cased. Reused,
-    not redefined.
+    trimmed, NFC-normalised and lower-cased; jurisdiction is trimmed and upper-cased. Reused,
+    not redefined. The same normalisation (trim, NFC, lower-case) applies to the `name` field
+    of an UnderlyingReference.
 
 canonicalRef =
     EVM instrument:    bytes32(uint256(uint160(tokenAddress)))          (left-padded address)

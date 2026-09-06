@@ -2,6 +2,7 @@ export * from "./primitives";
 export * from "./source-class";
 export * from "./canonical";
 export * from "./ids";
+export * from "./instrument";
 export * from "./evidence";
 export * from "./passport";
 export * from "./audit";
