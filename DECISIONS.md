@@ -9,6 +9,55 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-021 — Instrument identity is an additive layer above the deployed financial key, not a redeployment
+
+**Decision.** The exact identity of a tokenized instrument — domain, canonical token, legal issuer,
+instrument standard, version, underlying reference, accounting mode — is introduced as a layer
+*above* the deployed `assetId = keccak256(abi.encode(chainId, token))`, which stays the financial
+key. The pieces:
+
+- `spec/identity-model.md` freezes `DomainId`, `IssuerIdentity` (reusing `canonical.ts::issuerId`),
+  `UnderlyingReference`, `InstrumentIdentity` and `InstrumentAccountingMode`, and the derivation
+  `instrumentId = H(domainId, canonicalRef, issuerId, instrumentStandardId, instrumentVersion)`.
+- `packages/schemas/src/instrument.ts` carries the schemas and the ambiguity guards (a
+  ticker-only underlying is rejected; domain/issuer/standard are part of identity).
+- `deployments/instrument-bindings.json` is a generated, provenance-bearing map from every
+  historical `assetId` — including the Franklin FOBXX Passport's `FIXTURE_LABEL` id — to an
+  `InstrumentIdentity`, with a `supersedes` chain so one deployed token can carry an evolving
+  legal identity over time without corrupting historical records.
+- `services/indexer` and the public asset view resolve and display the new identity.
+
+The on-chain `InstrumentRegistry` and `DomainRegistry` are **authored later** (Phase 02), alongside
+the domain/facility abstractions, and deployed only in a deliberate future deployment migration.
+Until then the deployed `AssetRegistry` remains a valid current component for the existing X Layer
+facility.
+
+**What it displaced.** Two worse options. Modifying `AssetRegistry`/`ClearingHouse` to carry the
+new identity would have changed the bytecode of a live deployment that currently matches source
+byte-for-byte, then "solved" the drift by relabelling the current deployment historical. And
+reinterpreting the existing `bytes32` `assetId` in place would have made historical `passportId`
+and proof references ambiguous. Neither is acceptable; the binding is explicit and versioned
+instead.
+
+**Why it is not an RFC.** `system.md §1` reserves RFCs for changing a trust boundary or moving
+ownership of a fact. This layer takes ownership from no one (nothing currently owns "the exact
+legal identity of a wrapper"), holds no role over any money contract, is read by none, and cannot
+move a limit, balance or status. Same category as `EvidenceRegistry`. See `spec/identity-model.md §9`.
+
+**Evidence.** `packages/schemas/test/instrument.test.ts` (derivations pinned against `cast`;
+ticker-only rejected; two instruments over one underlying stay distinct; domain part of identity;
+`instrumentVersion`/Passport-version/corporate-action separation; binding supersession chain),
+`services/indexer/test/instrument.test.ts` (resolution, unknown id, binding chain, `homeDomain`),
+and a compatibility test that every `assetId` in `deployments/1952.json` and `proof/*.json`
+resolves through the bindings artifact. Forge suite unchanged at 245; `make test-differential`
+unchanged.
+
+**Consequence.** Base, X Layer production and Hedera adapters can be built against a real instrument
+identity without a migration blocking them, and the historical X Layer proof set stays interpretable
+and unedited. The four stale proof-currency records are a separate task and are not touched here.
+
+---
+
 ## D-020 — A Sentinel is an autonomy plane over the money engines, never a fourth authority
 
 **Decision.** Autonomous agents ("Usance Sentinels") are added as a plane that observes, plans and

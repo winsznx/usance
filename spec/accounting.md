@@ -121,6 +121,26 @@ configuration change. A price moving inside an existing configuration does **not
 epoch; the epoch identifies the *policy* under which a decision was made, and the oracle
 observation is recorded alongside it.
 
+### 2.1 Instrument-identity ids (additive — `identity-model.md`)
+
+`assetId` above is the **financial key**: one token contract on one chain, and the key the vault,
+the risk pipeline and the clearing house use. It is unchanged.
+
+`identity-model.md` adds a product-identity layer above it, and none of the following is an input
+to any formula in this document or a key in any deployed contract:
+
+```
+domainId              = keccak256(abi.encode("USANCE_DOMAIN_V1", caip2))
+issuerId              = keccak256(abi.encode(legalName, jurisdiction))   // == canonical.ts::issuerId
+instrumentStandardId  = keccak256(abi.encode("USANCE_INSTRUMENT_STANDARD_V1", standard))
+underlyingReferenceId = keccak256(abi.encode("USANCE_UNDERLYING_REF_V1", assetClass, isin, figi, ticker, name))
+instrumentId          = keccak256(abi.encode(domainId, canonicalRef, issuerId, instrumentStandardId, instrumentVersion))
+```
+
+The binding `legacyAssetId → instrumentId` is an explicit provenance-bearing record, never a
+reinterpretation of the existing `bytes32`. Full definition and the ambiguity guards live in
+`identity-model.md`.
+
 ---
 
 ## 3. Account model
