@@ -197,3 +197,27 @@ Ingestion is idempotent and the event stream is not financial truth: the factor 
 authoritative chain state at the domain's safe depth, a duplicate announcement produces one
 effect, an indexer restart reproduces the snapshot, and a reorg reconciles to canonical state
 (`spec/corporate-action-model.md §10`, tests in `packages/corp-actions/test/ingestion.test`).
+
+---
+
+## Portfolio risk (I-86…I-93)
+
+Introduced with the portfolio-risk reference model (`spec/portfolio-risk-model.md`, `DECISIONS.md`
+D-024). Pure model in `packages/portfolio-risk`; no on-chain contract, so all invariants are
+`ENFORCED` at the reference-model level and `SPECIFIED` for a future on-chain facility. Proofs are
+Vitest in `packages/portfolio-risk/test/*`.
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-86 | `PortfolioRecognizedValue ≤ Σ SingleInstrumentRecognizedValue`, and `≥ 0`. No diversification bonus: no combination of positions or correlation metadata can make the portfolio recognise more than the sum of its parts. | ENFORCED | `properties.test` (fuzzed over random portfolios, policies and group assignments) |
+| I-87 | Portfolio risk runs over a facility's admitted collateral set on its home domain; an organisation-wide multi-domain holdings view is never collateral for one facility, and a global view never converts a remote-domain position into local borrowing power. | ENFORCED (model) / SPECIFIED (facility wiring) | `scope.test` — a position outside the facility's admitted set and home domain is excluded; `facility-model.md §8`, I-75 |
+| I-88 | The result is permutation-invariant in the positions. Reordering the input yields the identical `PortfolioRecognizedValue` and the identical `constraintBreakdown`. | ENFORCED | `properties.test` (shuffle) |
+| I-89 | Unknown metadata cannot improve portfolio capacity. Replacing a known group with UNKNOWN, or marking a shared group independent, or dropping a `RiskGroupRef`, never increases `PortfolioRecognizedValue`. | ENFORCED | `properties.test` + `mutation.test` (remove/UNKNOWN each dimension) |
+| I-90 | A stricter policy parameter cannot increase `PortfolioRecognizedValue`. Lower any cap, a worse session factor, a larger stress haircut → same or lower. A policy change is a new version and a new `RiskEpoch`. | ENFORCED | `properties.test` (monotone over cap/session/stress perturbations); `mutation.test` (policy change without epoch movement flagged) |
+| I-91 | A duplicate `instrumentId` in the input cannot be counted twice; positions are deduped (summed) by `instrumentId` before the formula runs. | ENFORCED | `properties.test`, `mutation.test` (duplicate instrument / duplicated recognized amount) |
+| I-92 | Portfolio risk never rewrites principal already borrowed. A worse portfolio result reduces available new credit and can move the account's safety state deterministically; stored debt is unchanged. | SPECIFIED | `debt.test` — result carries only recognised value and status contribution, no debt/rate field; `spec/portfolio-risk-model.md §10` |
+| I-93 | Overlapping constraints compose without unexplained double-counting (per-position `min` across dimensions, each cap against the original base), and adding an otherwise-eligible position never reduces the recognised value of unrelated existing collateral, nor produces a discontinuous cliff. | ENFORCED | `properties.test` (add-collateral around every threshold; unrelated-collateral-unchanged); `composition.test` (same underlying + same sector → `min`, not product) |
+
+`INSTRUMENT` concentration is not a portfolio dimension — it is applied upstream by RiskMath
+`accounting.md §4.6` (`maxConcentrationBps`), and the portfolio model consumes the already-capped
+value.

@@ -9,6 +9,57 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-024 — Portfolio risk: maximum-binding-restriction caps, no diversification bonus, reference model first
+
+**Decision.** Portfolio risk (`spec/portfolio-risk-model.md`) is a pure reference model that
+consumes the existing single-instrument `RiskResult.cappedUsd18` and applies deterministic group
+caps. It adds no Solidity in Phase 04.
+
+- `PortfolioRecognizedValue ≤ Σ SingleInstrumentRecognizedValue`, always. **No diversification
+  bonus.** Correlation may increase stress or reduce recognition; it never creates value.
+- Grouping uses the Phase 01 identity model — `underlyingReferenceId`, `issuerId`,
+  `custodyGroupId`, `sectorGroupId`, `liquidityGroupId` — never a ticker. Two wrappers of NVIDIA
+  are 2× NVIDIA. Different issuers sharing a custodian still share custody risk.
+- Composition is **maximum binding restriction**: each position's scale is the `min` across
+  dimensions (and market session), each `groupAllowed` computed against the original base. No
+  stacking of penalties, no double-counting. Single-pass, fixed-point, permutation-invariant.
+- Missing metadata is conservative: unresolved values in a dimension share one `UNKNOWN_<dim>`
+  group with a cap `≤` the named cap — never treated as independent. Unknown information cannot
+  improve portfolio capacity.
+- `PortfolioRiskPolicy` and every `RiskGroupRef` are versioned; a cap change is a new policy
+  version and a new `RiskEpoch`, never a silent recomputation. A `PortfolioRiskSnapshot` pins
+  every input.
+- **Correlation model choice**: deterministic group caps + optional named stress scenarios, not a
+  live covariance engine (Phase 04 brief constraint 23). Group caps meet the launch safety
+  requirement more robustly; live statistical correlation is deferred.
+- The result carries structured `constraintBreakdown` and a `bindingConstraint` — never one
+  number.
+- The organisation-wide multi-domain portfolio view stays analytical read state; it is not
+  collateral for any one facility, and the one-home-domain rule (`I-75`) holds. A global dashboard
+  never turns X Layer holdings into Base borrowing power.
+
+**What it displaced.** The Product Lock's subtractive sketch
+(`PortfolioRecognized = Σ − concentrationPenalty − correlationStress − sharedIssuerPenalty − …`),
+which over-penalises incoherently. And putting concentration tables / issuer groups / portfolio
+loops into the near-EIP-170 `ClearingHouse`.
+
+**Why it is not an RFC.** No trust boundary moves; no deployed contract changes; the layer only
+reduces recognised value and can never increase it. Consistent with D-108, D-021, D-104, D-106.
+
+**Evidence.** `packages/portfolio-risk` reference model + fixtures; a property campaign (upper
+bound, monotonic restriction, permutation invariance, missing-data asymmetry, duplicate
+prevention, no double-counted diversification, add-collateral coherence) and a mutation campaign
+(remove/alter group, stale-marked-fresh, wrong sector, duplicate, cap > 100%, reordering, closed
+marked open, shared issuer marked independent, policy change without epoch movement).
+`spec/invariants.md` I-86…I-93. Forge suite unchanged; no new production claim.
+
+**Consequence.** A future Base or institutional facility consumes a frozen, adversarially-tested
+portfolio engine. On-chain enforcement placement is decided in the Phase 04 report on evidence
+(EIP-170 / trust boundary / gas / migration), and the answer is an additive component, never the
+old deployment.
+
+---
+
 ## D-023 — Corporate-action accounting: reference model first, deployed core untouched, B20 ≠ xStocks
 
 **Decision.** Corporate-action accounting (`spec/corporate-action-model.md`) is a provider-neutral

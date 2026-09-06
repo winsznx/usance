@@ -394,8 +394,11 @@ to classify their own change.
 
 Stated so nobody mistakes silence for coverage.
 
-- **Not a correlation model.** Concentration is per asset against a total. Two assets that always
-  move together are two independent lines in the sum.
+- **Not a correlation model at the single-instrument level.** Concentration here is per asset
+  against a total; two assets that always move together are two independent lines in this sum. The
+  **portfolio layer** (`spec/portfolio-risk-model.md`, D-024) adds shared underlying / issuer /
+  custody / sector / liquidity caps on top of this result. It only ever reduces, and it consumes
+  `RiskResult.cappedUsd18` — it does not change anything in this document.
 - **Not a time model.** The exit curve has no urgency axis, and there is no liquidation-horizon
   parameter anywhere.
 - **Not a market model.** Nothing reads a pool, a book, or a quote at decision time. Every
