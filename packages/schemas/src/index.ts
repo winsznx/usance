@@ -4,6 +4,7 @@ export * from "./canonical";
 export * from "./ids";
 export * from "./instrument";
 export * from "./domain";
+export * from "./corporate-action";
 export * from "./evidence";
 export * from "./passport";
 export * from "./facility";

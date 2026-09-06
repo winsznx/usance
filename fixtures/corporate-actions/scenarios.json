@@ -1,0 +1,74 @@
+{
+  "$comment": "Corporate-action reference-model scenarios. 'synthetic' entries are for exhaustive edge testing; 'derived' entries encode mechanics from authoritative B20/xStocks documentation (see capability-registry.json sources). No synthetic value is presented as an observed issuer event.",
+  "schemaVersion": 1,
+  "constants": { "WAD": "1000000000000000000" },
+  "scenarios": [
+    {
+      "id": "b20-2for1-split",
+      "provenance": "derived",
+      "family": "B20",
+      "note": "B20 keeps balanceOf raw; a 2-for-1 split lifts the WAD multiplier from 1.0 to 2.0. Chainlink B20 feed price = underlyingShare x multiplier, so with FACTOR_IN_PRICE the value is rawBalance x feedPrice and is preserved because the underlying share price halves.",
+      "accountingMode": "EXTERNALLY_SCALED",
+      "priceConvention": "FACTOR_IN_PRICE",
+      "decimals": 18,
+      "before": { "factorWad": "1000000000000000000", "underlyingSharePriceUsd18": "200000000000000000000" },
+      "after": { "factorWad": "2000000000000000000", "underlyingSharePriceUsd18": "100000000000000000000" },
+      "rawBalance": "3000000000000000000",
+      "expectedValueBeforeUsd18": "600000000000000000000",
+      "expectedValueAfterUsd18": "600000000000000000000"
+    },
+    {
+      "id": "xstocks-2for1-reverse-split",
+      "provenance": "derived",
+      "family": "XSTOCKS_TRACKER_CERT",
+      "note": "xStocks docs example: a 2-for-1 reverse split moves the multiplier 4.032 -> 2.016. balanceOf() (adjusted) halves. Economic value is preserved because the underlying share price doubles.",
+      "accountingMode": "REBASING_BALANCE",
+      "priceConvention": "FACTOR_IN_QUANTITY",
+      "decimals": 18,
+      "before": { "factorWad": "4032000000000000000", "adjustedBalance": "4032000000000000000", "underlyingSharePriceUsd18": "50000000000000000000" },
+      "after": { "factorWad": "2016000000000000000", "adjustedBalance": "2016000000000000000", "underlyingSharePriceUsd18": "100000000000000000000" },
+      "expectedValueBeforeUsd18": "201600000000000000000",
+      "expectedValueAfterUsd18": "201600000000000000000"
+    },
+    {
+      "id": "b20-dividend-reinvested",
+      "provenance": "derived",
+      "family": "B20",
+      "note": "A dividend lifts the B20 multiplier as cash is reinvested into shares. Raw balance unchanged; economic exposure (and the feed price) rises.",
+      "accountingMode": "EXTERNALLY_SCALED",
+      "priceConvention": "FACTOR_IN_PRICE",
+      "decimals": 18,
+      "before": { "factorWad": "1000000000000000000", "underlyingSharePriceUsd18": "100000000000000000000" },
+      "after": { "factorWad": "1010000000000000000", "underlyingSharePriceUsd18": "100000000000000000000" },
+      "rawBalance": "1000000000000000000",
+      "expectedValueBeforeUsd18": "100000000000000000000",
+      "expectedValueAfterUsd18": "101000000000000000000"
+    },
+    {
+      "id": "synthetic-6dp-token-odd-multiplier",
+      "provenance": "synthetic",
+      "note": "6-decimal token, non-round multiplier, to exercise conservative rounding.",
+      "accountingMode": "EXTERNALLY_SCALED",
+      "priceConvention": "FACTOR_IN_QUANTITY",
+      "decimals": 6,
+      "factorWad": "1333333333333333333",
+      "rawBalance": "1000001",
+      "priceUsd18": "1000000000000000000",
+      "note2": "effective = floor(1000001 * 1.333.. ) = 1333334 (units, 6dp). value = floor(1333334 * 1e18 / 1e6) = 1333334000000000000 (usd18 for 1.333334 tokens at $1)."
+    },
+    {
+      "id": "synthetic-multi-user-then-split",
+      "provenance": "synthetic",
+      "note": "Two depositors before a split, one after; used by conservation.test.",
+      "accountingMode": "SHARE_BASED_CUSTODY",
+      "decimals": 18,
+      "deposits": [
+        { "account": "A", "raw": "100000000000000000000", "beforeAction": true },
+        { "account": "B", "raw": "300000000000000000000", "beforeAction": true }
+      ],
+      "rebaseToAbsolute": "800000000000000000000",
+      "rebaseProvenance": "SPLIT-2026-Q3",
+      "lateDeposit": { "account": "C", "raw": "200000000000000000000" }
+    }
+  ]
+}
