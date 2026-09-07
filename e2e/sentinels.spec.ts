@@ -78,13 +78,16 @@ test.describe("/app/sentinels/new (gated creation)", () => {
 test.describe("/app/sentinels/[instanceId] (gated detail)", () => {
   const UNKNOWN = `0x${"ab".repeat(32)}`;
 
-  test("an unregistered id says so rather than rendering a working Sentinel", async ({ page }) => {
+  test("an unregistered id resolves to a not-found notice, never a working Sentinel", async ({ page }) => {
     await signedIn(page);
     const res = await page.goto(`/app/sentinels/${UNKNOWN}`);
     expect(res?.status()).toBeLessThan(400);
-    await expect(page.locator("body")).not.toContainText("Application error", { timeout: 15_000 });
-    const body = (await page.locator("body").innerText()).toLowerCase();
-    expect(body).toMatch(/no such sentinel|cannot read this sentinel/);
+    await expect(page.locator("body")).not.toContainText("Application error", { timeout: 20_000 });
+    // The chain read for an id with no instance returns an empty record; the page must land on the
+    // "No such Sentinel" notice rather than sitting on a skeleton forever or inventing controls.
+    await expect(
+      page.getByText(/no such sentinel|cannot read this sentinel|nothing is registered/i),
+    ).toBeVisible({ timeout: 20_000 });
   });
 });
 

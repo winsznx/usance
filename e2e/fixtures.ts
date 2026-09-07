@@ -33,9 +33,14 @@ export interface ProofRecord {
   newRiskBlocked?: { hash: string };
 }
 
-export const passport = read<ProofRecord>("proof/passport-franklin-fobxx-2026-v1.json");
+// Moved to proof/historical/ in Phase 05 (superseded core). Kept null so the tests that assert
+// their receipts skip with a stated reason rather than asserting against a retired deployment.
+// null on purpose: these proofs were moved to proof/historical/ in Phase 05 because they
+// described a superseded core deployment. The receipt-navigation tests skip with a stated
+// reason rather than asserting against a receipt the current product no longer surfaces.
+export const passport: ProofRecord | null = null;
 export const riskScenario = read<ProofRecord>("proof/live-risk-scenario.json");
-export const liquidation = read<ProofRecord>("proof/live-liquidation.json");
+export const liquidation: ProofRecord | null = null;
 
 export const FULL_TX_HASH = /^0x[0-9a-fA-F]{64}$/;
 

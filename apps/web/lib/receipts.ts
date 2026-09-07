@@ -1,9 +1,14 @@
 import { receiptIdFor, type UsanceReceipt } from "@usance/evidence";
-import liveLiquidation from "../../../proof/live-liquidation.json";
 import liveRiskScenario from "../../../proof/live-risk-scenario.json";
 import liveSentinel from "../../../proof/live-sentinel.json";
 import liveDelegated from "../../../proof/live-delegated.json";
-import passportFranklin from "../../../proof/passport-franklin-fobxx-2026-v1.json";
+
+/**
+ * The liquidation proof and the Franklin FOBXX Passport proof described a superseded core
+ * deployment and were moved to `proof/historical/` in Phase 05 (see `proof/claims.json._note`).
+ * They are deliberately not surfaced as current receipts — the current 1952 deployment has no
+ * liquidation module attached and no Franklin instrument.
+ */
 
 /**
  * Receipts backing the public proof explorer.
@@ -22,7 +27,7 @@ import passportFranklin from "../../../proof/passport-franklin-fobxx-2026-v1.jso
  * route). A new proof file has to be added to this list — the cost of losing the directory scan.
  */
 const PROOF_RECORDS: ReadonlyArray<Record<string, unknown>> = [
-  liveLiquidation, liveRiskScenario, liveSentinel, liveDelegated, passportFranklin,
+  liveRiskScenario, liveSentinel, liveDelegated,
 ] as unknown as Array<Record<string, unknown>>;
 
 let cache: UsanceReceipt[] | null = null;

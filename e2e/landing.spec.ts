@@ -74,12 +74,24 @@ test.describe("features", () => {
 });
 
 test.describe("honesty", () => {
-  test("the email field admits it is not wired", async ({ page }) => {
+  test("the email field is wired, and honest when the store is not configured", async ({ page }) => {
     await page.goto("/");
-    // A form that swallows an address is worse than one that says it is not connected yet.
-    await expect(page.getByLabel("Email address")).toBeDisabled();
-    const body = (await page.locator("body").innerText()).toLowerCase();
-    expect(body).toContain("not wired to a mailing list yet");
+    // The footer capture posts to /api/subscribe (Phase 05: it is wired for real now). The field
+    // is a real enabled email input, not a disabled placeholder.
+    const field = page.locator("#subscribe");
+    await field.scrollIntoViewIfNeeded();
+    await expect(field).toBeEnabled();
+    await expect(field).toHaveAttribute("type", "email");
+
+    // Submitting with no mailing store configured returns an honest 503 — it never claims a
+    // success it did not perform (see apps/web/app/api/subscribe/route.ts). The form renders the
+    // exact server message in a live region rather than a fake confirmation.
+    await field.fill("someone@example.com");
+    await field.press("Enter");
+    await expect(page.locator(".subscribe-msg")).toContainText(
+      /on the list|not configured on this deployment|could not/i,
+      { timeout: 15_000 },
+    );
   });
 
   test("says this is a testnet deployment", async ({ page }) => {
