@@ -528,7 +528,22 @@ contract InstitutionalFacility is Authorized, ReentrancyGuard {
         uint256 requiredUnits,
         FacilityDecision calldata policyD,
         FacilityDecision calldata authorityD
-    ) public onlyBorrower inStatus(Status.ACTIVE) nonReentrant {
+    ) external onlyBorrower nonReentrant {
+        _openSubstitution(requestId, replacementAdapter, requiredUnits, policyD, authorityD);
+    }
+
+    /// @dev The body, with no reentrancy guard of its own so `substituteAtomic` can hold one
+    ///      guard across the whole request → commit → release sequence.
+    function _openSubstitution(
+        bytes32 requestId,
+        address replacementAdapter,
+        uint256 requiredUnits,
+        FacilityDecision calldata policyD,
+        FacilityDecision calldata authorityD
+    ) internal {
+        if (status != Status.ACTIVE) {
+            revert WrongStatus(status, Status.ACTIVE);
+        }
         if (substitutionPaused) revert SubstitutionPaused();
         if (_substitution.state != SubState.NONE) revert SubstitutionAlreadyActive();
         if (requiredUnits == 0) revert ZeroAmount();
@@ -562,7 +577,11 @@ contract InstitutionalFacility is Authorized, ReentrancyGuard {
 
     /// @notice Pull the replacement into custody. REQUESTED -> REPLACEMENT_COMMITTING, and, when
     ///         the adapter settles synchronously, straight on to REPLACEMENT_COMMITTED.
-    function commitReplacement() public onlyOperatorOrBorrower nonReentrant {
+    function commitReplacement() external onlyOperatorOrBorrower nonReentrant {
+        _commitReplacement();
+    }
+
+    function _commitReplacement() internal {
         if (substitutionPaused) revert SubstitutionPaused();
         _requireSub(SubState.REQUESTED);
         Substitution storage s = _substitution;
@@ -626,9 +645,9 @@ contract InstitutionalFacility is Authorized, ReentrancyGuard {
         uint256 requiredUnits,
         FacilityDecision calldata policyD,
         FacilityDecision calldata authorityD
-    ) external onlyBorrower {
-        requestSubstitution(requestId, replacementAdapter, requiredUnits, policyD, authorityD);
-        commitReplacement();
+    ) external onlyBorrower nonReentrant {
+        _openSubstitution(requestId, replacementAdapter, requiredUnits, policyD, authorityD);
+        _commitReplacement();
         if (_substitution.state != SubState.REPLACEMENT_COMMITTED) {
             // Nothing irreversible happened: the old collateral is still locked and the
             // two-phase path (reconcileCommitment -> releaseOld) takes over.

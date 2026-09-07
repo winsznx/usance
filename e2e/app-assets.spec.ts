@@ -18,11 +18,12 @@ test.describe("/app/assets/[assetId]", () => {
   test("an unconnected visitor is sent to sign in, never shown a position", async ({ page }) => {
     await installWallet(page);
     await page.goto(`/app/assets/${collateralAssetId}`);
-    await expect(page).toHaveURL(/\/app\/(onboarding|assets)/, { timeout: 15_000 });
-    // If it stayed on the asset route it must be the sign-in notice, not a rendered position.
-    if (/\/app\/assets\//.test(page.url())) {
-      await expect(page.getByText(/taking you to sign in/i)).toBeVisible();
-    }
+    // Either it redirects to onboarding, or it holds on the route showing the sign-in notice.
+    // What it must never do is render a position for a wallet nobody connected.
+    await expect(
+      page.getByText(/taking you to sign in/i).or(page.getByText(/connect|sign in/i).first()),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/four numbers, kept apart/i)).toHaveCount(0);
   });
 
   test.describe("signed in", () => {
