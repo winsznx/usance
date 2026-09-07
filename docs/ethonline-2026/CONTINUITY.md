@@ -43,12 +43,13 @@ Commits after `38074c7`. Tracked per sponsor:
 
 | Sponsor | Commit range | Deployment addresses | Proof |
 |---|---|---|---|
-| Local adapters + lifecycle (all four) | `38074c7` … _(this commit)_ | none (local, deterministic doubles) | `contracts/test/institutional/EthOnlineLifecycle.t.sol` (13 tests) |
-| Hedera ATS (live) | _(pending — needs Hedera testnet HBAR)_ | _(pending)_ | `docs/ethonline-2026/proof/hedera-*` |
+| Local adapters + lifecycle (all four) | `38074c7` … `be929d6` | none (local, deterministic doubles) | `contracts/test/institutional/EthOnlineLifecycle.t.sol` (13 tests) |
+| **Hedera ATS (live)** | `be929d6` … `dfac015` | ATS securities A `0.0.10406896`, B `0.0.10406931`, C `0.0.10406957` (v8 factory `0.0.9213391`) | `docs/ethonline-2026/proof/hedera-ats-issuance.json` |
+| **Institutional facility on Hedera (live)** | `be929d6` … `dfac015` | `InstitutionalFacility 0x6B0A0c10450E11C86e7b6b9A69068e43B28Ef8B7` (+ full risk stack, `docs/ethonline-2026/HEDERA_LIFECYCLE.md`) | `docs/ethonline-2026/proof/hedera-facility-deployment.json` |
+| **Live A→B / A→C substitution** | `dfac015` | facilityId `0x6534fdf6…` | `docs/ethonline-2026/proof/hedera-substitution-{positive,negative}.json` |
 | ENSv2 (live) | _(pending — needs Sepolia ETH)_ | _(pending)_ | `docs/ethonline-2026/proof/ensv2-*` |
 | Privy (live) | _(pending — needs PRIVY_APP_ID/SECRET)_ | _(pending)_ | `docs/ethonline-2026/proof/privy-*` |
 | Chainlink CRE (simulation) | _(pending — needs CRE CLI)_ | _(CRE workflow id)_ | `docs/ethonline-2026/proof/cre-*` |
-| Institutional substitution (live end to end) | _(pending)_ | Hedera facility address | `docs/ethonline-2026/proof/substitution-*` |
 
 The local adapters implement the frozen Phase 06 interfaces against deterministic doubles that
 model each sponsor's real semantics (`HederaAtsCollateralAdapter` over the exact ATS `IHold`

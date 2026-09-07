@@ -1,5 +1,5 @@
 {
-  "$generatedAt": "2026-09-07T13:12:14.321Z",
+  "$generatedAt": "2026-09-07T13:13:55.848Z",
   "mode": "negative",
   "network": "hedera-testnet",
   "chainId": 296,
@@ -8,23 +8,49 @@
     {
       "name": "privy: submit org approval",
       "ok": true,
-      "tx": "0x56601dd8a828e2c78c448cdf7ee10b3ccc740a0a22c16908abd16b483458b8fa",
-      "hashscan": "https://hashscan.io/testnet/transaction/0x56601dd8a828e2c78c448cdf7ee10b3ccc740a0a22c16908abd16b483458b8fa"
+      "tx": "0x7b196dc5c9f4a74f87cc442e277d4eddcfd569a6c4db7f6d0624f43977e7e5d0",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x7b196dc5c9f4a74f87cc442e277d4eddcfd569a6c4db7f6d0624f43977e7e5d0"
     },
     {
       "name": "cre: submit ALLOW verdict",
       "ok": true,
-      "tx": "0xbce8e71315d4fbf8ddaa173cbb6f7123f0c71ddb568a3e3949f3f2533767a8ec",
-      "hashscan": "https://hashscan.io/testnet/transaction/0xbce8e71315d4fbf8ddaa173cbb6f7123f0c71ddb568a3e3949f3f2533767a8ec"
+      "tx": "0xecba38818fca42f7bf61785cc25d1032d27ddb79d6d9d9c6b6adcf1f1d7502b8",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xecba38818fca42f7bf61785cc25d1032d27ddb79d6d9d9c6b6adcf1f1d7502b8"
     },
     {
-      "name": "borrower: approve adapter C on the replacement ATS token",
-      "ok": false,
+      "name": "borrower: approve adapter C — refused (IsPaused)",
+      "ok": true,
+      "reverted": true,
       "error": "The contract function \"approve\" reverted with the following signature:\n0x1309a563"
+    },
+    {
+      "name": "borrower: requestSubstitution (C)",
+      "ok": true,
+      "tx": "0x5f51d382ed81c0a521447e1117aed41b92a8ac6de1302eb40440f8b8f1ed1f87",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x5f51d382ed81c0a521447e1117aed41b92a8ac6de1302eb40440f8b8f1ed1f87"
+    },
+    {
+      "name": "borrower: commitReplacement — refused (paused C rejected by the adapter)",
+      "ok": true,
+      "reverted": true,
+      "error": "The contract function \"commitReplacement\" reverted with the following signature:\n0x5afab9b8"
+    },
+    {
+      "name": "borrower: cancelSubstitution",
+      "ok": true,
+      "tx": "0x753c7e134c8e8d7db0784aa2e4149acc31a7d81e0e44975b0d41308995921e7a",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x753c7e134c8e8d7db0784aa2e4149acc31a7d81e0e44975b0d41308995921e7a"
     }
   ],
+  "currentCollateralAdapter": "0xC5E77C98165633c1B093b8bf76d1b923856dFf42",
   "collateralBefore": {
-    "A": "0",
+    "current": "150000",
     "C": "0"
-  }
+  },
+  "collateralAfter": {
+    "current": "150000",
+    "C": "0"
+  },
+  "facilityStatusAfter": 2,
+  "result": "REFUSED — series C is paused; the current collateral stayed committed and the facility stayed ACTIVE"
 }

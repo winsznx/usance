@@ -155,37 +155,56 @@ async function main() {
     await step("lender: activate", () => tx(C.InstitutionalFacility, A.facility, "activate", [d, d]));
   }
 
-  out.collateralBefore = { A: (await committedOf(C.AdapterA)).toString(), [REP]: (await committedOf(repAdapter)).toString() };
+  // The facility's CURRENT collateral (adapter + committed amount) is what must stay secured.
+  const curAdapter = (await readFac("collateral")).adapter;
+  const curCommittedBefore = (await committedOf(curAdapter)).toString();
+  out.currentCollateralAdapter = curAdapter;
+  out.collateralBefore = { current: curCommittedBefore, [REP]: (await committedOf(repAdapter)).toString() };
   save();
 
   const requestId = keccak256(Buffer.from(`ETHONLINE-SUB-${mode}-${Date.now()}`));
   const d = await makeDecision("SUBSTITUTE", repAssetId, repRef, requestId);
   await authorizeAndAllow(d);
 
+  if (mode === "negative") {
+    // Series C is paused. Even the ERC-20 approve reverts (IsPaused) — an authoritative ATS
+    // lifecycle control. The substitution can be requested but never committed, and the current
+    // collateral is never released.
+    try {
+      await tx(M.atsSecurities.C.evm, A.erc20, "approve", [repAdapter, 400_000n]);
+      out.steps.push({ name: "borrower: approve adapter C (expected IsPaused revert)", ok: false, note: "did not revert" });
+    } catch (e) {
+      out.steps.push({ name: "borrower: approve adapter C — refused (IsPaused)", ok: true, reverted: true, error: e?.shortMessage || e?.message });
+    }
+    await step("borrower: requestSubstitution (C)", () => tx(C.InstitutionalFacility, A.facility, "requestSubstitution", [requestId, repAdapter, UNITS, d, d]));
+    let committed = false;
+    try {
+      await tx(C.InstitutionalFacility, A.facility, "commitReplacement", []);
+      committed = true;
+      out.steps.push({ name: "borrower: commitReplacement (should have reverted)", ok: false });
+    } catch (e) {
+      out.steps.push({ name: "borrower: commitReplacement — refused (paused C rejected by the adapter)", ok: true, reverted: true, error: e?.shortMessage || e?.message });
+    }
+    save();
+    await step("borrower: cancelSubstitution", () => tx(C.InstitutionalFacility, A.facility, "cancelSubstitution", []));
+    const curCommittedAfter = (await committedOf(curAdapter)).toString();
+    const st = Number(await readFac("status"));
+    out.collateralAfter = { current: curCommittedAfter, C: (await committedOf(repAdapter)).toString() };
+    out.facilityStatusAfter = st;
+    out.result =
+      !committed && curCommittedAfter === curCommittedBefore && st === 2
+        ? "REFUSED — series C is paused; the current collateral stayed committed and the facility stayed ACTIVE"
+        : "UNEXPECTED";
+    save();
+    console.log(`\n${out.result}`);
+    return;
+  }
+
   // approve the replacement adapter on the replacement ATS token (ERC-20 allowance for the hold)
   await step(`borrower: approve adapter ${REP} on the replacement ATS token`, () =>
     tx(M.atsSecurities[REP].evm, A.erc20, "approve", [repAdapter, 400_000n]));
 
   await step("borrower: requestSubstitution", () => tx(C.InstitutionalFacility, A.facility, "requestSubstitution", [requestId, repAdapter, UNITS, d, d]));
-
-  if (mode === "negative") {
-    // C is paused -> commitReplacement must revert; the old collateral stays committed.
-    let reverted = false;
-    try {
-      await tx(C.InstitutionalFacility, A.facility, "commitReplacement", []);
-    } catch (e) {
-      reverted = true;
-      out.steps.push({ name: "borrower: commitReplacement (expected to fail)", ok: true, reverted: true, error: e?.shortMessage || e?.message });
-    }
-    save();
-    out.collateralAfter = { A: (await committedOf(C.AdapterA)).toString(), C: (await committedOf(repAdapter)).toString() };
-    out.result = reverted && out.collateralAfter.A === out.collateralBefore.A
-      ? "REFUSED — series C is paused; old collateral A remained committed"
-      : "UNEXPECTED";
-    save();
-    console.log(`\n${out.result}`);
-    return;
-  }
 
   await step("borrower/operator: commitReplacement", () => tx(C.InstitutionalFacility, A.facility, "commitReplacement", []));
   out.collateralMid = { A: (await committedOf(C.AdapterA)).toString(), B: (await committedOf(repAdapter)).toString() };
