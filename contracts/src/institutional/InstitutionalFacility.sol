@@ -533,6 +533,10 @@ contract InstitutionalFacility is Authorized, ReentrancyGuard {
         if (_substitution.state != SubState.NONE) revert SubstitutionAlreadyActive();
         if (requiredUnits == 0) revert ZeroAmount();
         if (requestId == bytes32(0)) revert DecisionUnbound("requestId");
+        // A substitution is a swap to a *different* custody position. Allowing the same adapter
+        // would let the committed-replacement check be satisfied by the collateral already in
+        // custody, and the release would then drain it. A same-asset top-up is not this operation.
+        if (replacementAdapter == _collateral.adapter) revert DecisionUnbound("replacementAdapter");
         _accrue();
 
         Substitution storage s = _substitution;
