@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {Notice} from "@/components/primitives";
 import { AppShell } from "@/components/app-shell";
+import { SupplyForm, WithdrawControls } from "@/components/earn-actions";
 import { activeChain } from "@/lib/deployments";
 import { connect, detectProvider, WalletError } from "@/lib/wallet";
+import { connectedAccount } from "@/lib/actions";
 import type { LenderPosition, VaultView } from "@/lib/vault";
 
 /**
@@ -42,6 +44,16 @@ export default function PositionsPage() {
       setError((e as Error).message);
     }
   }, []);
+
+  // A visitor who has already signed in on another page should not have to reconnect here.
+  useEffect(() => {
+    void connectedAccount().then((a) => {
+      if (a) {
+        setAddress(a);
+        void load(a);
+      }
+    });
+  }, [load]);
 
   const doConnect = useCallback(async () => {
     try {
@@ -96,7 +108,7 @@ export default function PositionsPage() {
             There is nothing to read here.
           </Notice>
         ) : (
-          <Position data={data} />
+          <Position data={data} reload={() => address && void load(address)} />
         )}
       </div>
     </AppShell>
@@ -110,81 +122,76 @@ function fmt(v: string | bigint, decimals: number): string {
   return `${whole.toLocaleString()}.${frac}`;
 }
 
-function Position({ data }: { data: Loaded }) {
+function Position({ data, reload }: { data: Loaded; reload: () => void }) {
   const { vault, position } = data;
   const d = vault.decimals;
   const sym = vault.settlementSymbol;
   const queued = position.requests.filter((r) => !r.claimed);
+  const requestRows = position.requests.map((r) => ({
+    id: r.id,
+    amount: `${fmt(r.amount, d)} ${sym}`,
+    funded: fmt(r.funded, d),
+    claimed: r.claimed,
+    claimable: r.claimable,
+  }));
 
-  if (BigInt(position.shares) === 0n && queued.length === 0) {
-    return (
-      <Notice
-        title="You have not supplied to this vault"
-        action={<Link className="btn btn-primary" href="/earn">See the vault</Link>}
-      >
-        Nothing to show yet.
-      </Notice>
-    );
-  }
+  const empty = BigInt(position.shares) === 0n && queued.length === 0;
 
   return (
     <div className="stack" style={{ gap: 18 }}>
       <div className="card">
-        <div className="grid-2" style={{ gap: 14 }}>
-          <div className="panel">
-            <div className="stat-label">Your position</div>
-            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
-              {fmt(position.value, d)} {sym}
-            </div>
-          </div>
-          <div className="panel">
-            <div className="stat-label">Withdrawable now</div>
-            <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
-              {fmt(position.withdrawableNow, d)} {sym}
-            </div>
-          </div>
-        </div>
-
-        {BigInt(position.withdrawableNow) < BigInt(position.value) ? (
-          <div style={{ marginTop: 16 }}>
-            {/*
-              The honest version of "insufficient liquidity". It names the cause, the remedy, and
-              the consequence of taking the remedy — rather than greying out a button.
-            */}
-            <Notice tone="warn" title="Part of your capital is lent out">
-              You can withdraw {fmt(position.withdrawableNow, d)} {sym} immediately. The rest is
-              financing borrowers and comes back as they repay. You can queue for it. Your shares
-              are burned when you do, which fixes your claim at today&rsquo;s value and stops it
-              earning from that moment.
-            </Notice>
-          </div>
-        ) : null}
+        <div className="micro" style={{ marginBottom: 12 }}>Supply capital</div>
+        <SupplyForm onDone={reload} />
       </div>
 
-      {queued.length > 0 ? (
+      {empty ? (
+        <Notice title="You have not supplied to this vault yet">
+          Supply above, or{" "}
+          <Link href="/earn" style={{ textDecoration: "underline" }}>see the vault</Link> first.
+        </Notice>
+      ) : (
         <div className="card">
-          <div className="micro" style={{ marginBottom: 12 }}>In the withdrawal queue</div>
-          {queued.map((r) => (
-            <div key={r.id} style={{ padding: "12px 0", borderTop: "1px solid var(--hairline)" }}>
-              <div className="row-between">
-                <span className="caption">Request #{r.id}</span>
-                <span className="tag">{r.claimable ? "Ready to claim" : "Waiting"}</span>
-              </div>
-              <div className="row-between" style={{ marginTop: 6 }}>
-                <span className="caption tnum">
-                  {fmt(r.funded, d)} of {fmt(r.amount, d)} {sym} funded
-                </span>
-                <span className="caption">
-                  requested {new Date(r.requestedAt * 1000).toISOString().slice(0, 10)}
-                </span>
+          <div className="micro" style={{ marginBottom: 12 }}>Withdraw</div>
+          <WithdrawControls requests={requestRows} onDone={reload} />
+        </div>
+      )}
+      {!empty ? (
+        <div className="card">
+          <div className="grid-2" style={{ gap: 14 }}>
+            <div className="panel">
+              <div className="stat-label">Your position</div>
+              <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
+                {fmt(position.value, d)} {sym}
               </div>
             </div>
-          ))}
-          <p className="caption" style={{ margin: "14px 0 0" }}>
-            The queue is paid in the order requests were made and takes priority over new lending.
-            A request can be cancelled while it is still waiting; cancelling reissues shares at
-            today&rsquo;s value, because leaving the queue means taking the risk back on.
-          </p>
+            <div className="panel">
+              <div className="stat-label">Withdrawable now</div>
+              <div className="tnum" style={{ fontSize: 24, marginTop: 6 }}>
+                {fmt(position.withdrawableNow, d)} {sym}
+              </div>
+            </div>
+          </div>
+
+          {BigInt(position.withdrawableNow) < BigInt(position.value) ? (
+            <div style={{ marginTop: 16 }}>
+              <Notice tone="warn" title="Part of your capital is lent out">
+                You can withdraw {fmt(position.withdrawableNow, d)} {sym} immediately. The rest is
+                financing borrowers and comes back as they repay. Queueing burns your shares now,
+                which fixes your claim at today&rsquo;s value and stops it earning from that moment.
+              </Notice>
+            </div>
+          ) : null}
+
+          {queued.length > 0 ? (
+            <p className="caption" style={{ margin: "14px 0 0" }}>
+              The queue is paid in the order requests were made and takes priority over new lending.
+              Requested dates:{" "}
+              {queued
+                .map((r) => `#${r.id} ${new Date(r.requestedAt * 1000).toISOString().slice(0, 10)}`)
+                .join(", ")}
+              .
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>

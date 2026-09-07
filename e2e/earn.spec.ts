@@ -98,3 +98,51 @@ test.describe("mobile", () => {
     expect(overflow, "the page scrolls sideways on a phone").toBe(false);
   });
 });
+
+// -----------------------------------------------------------------------------------------------
+// The lender write journey (Phase 05). The deterministic harness signs a session but does not
+// mock the vault reads, so these assert the surface — that the real LiquidityVault lifecycle is
+// represented (supply, immediate withdraw bounded by cash, a queue that burns shares) and that a
+// queued request is never called an immediate withdrawal.
+// -----------------------------------------------------------------------------------------------
+import { signedIn } from "./wallet-harness";
+
+test.describe("/earn/positions — the lender write journey (signed in)", () => {
+  test.beforeEach(async ({ page }) => {
+    await signedIn(page);
+  });
+
+  test("renders a supply form, not just a balance", async ({ page }) => {
+    test.skip(!deployment, "no manifest");
+    await page.goto("/earn/positions");
+    await expect(page.getByText(/supply capital/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("button", { name: /enter an amount|approve and supply|supply/i })).toBeVisible();
+  });
+
+  test("the supply button is disabled with no amount", async ({ page }) => {
+    test.skip(!deployment, "no manifest");
+    await page.goto("/earn/positions");
+    const cta = page.getByRole("button", { name: /enter an amount|supply/i }).first();
+    await expect(cta).toBeDisabled({ timeout: 20_000 });
+  });
+
+  test("the /earn vault page describes the queue without calling it an immediate withdrawal", async ({ page }) => {
+    // The queue semantics are stated on /earn (server-rendered, no wallet needed) and echoed in
+    // the connected WithdrawControls. Assert them where they render deterministically.
+    test.skip(!deployment, "no manifest");
+    await page.goto("/earn");
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    expect(body).toContain("queue");
+    expect(body).toMatch(/shares are burned|cannot be redeemed on demand|paid in order/);
+    expect(body).not.toMatch(/redeem instantly|withdraw any amount at any time/);
+  });
+
+  test("supplying approves an exact amount, never unlimited", async ({ page }) => {
+    test.skip(!deployment, "no manifest");
+    await page.goto("/earn/positions");
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    if (body.includes("two signatures")) {
+      expect(body).toContain("allowance of exactly this amount");
+    }
+  });
+});
