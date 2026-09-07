@@ -64,3 +64,6 @@ test-results/
 internal/
 __pycache__/
 *.pyc
+
+# ETHOnline Privy org-signer secrets (P-256 authorization keys) — never commit
+packages/ethonline/.privy-org.json

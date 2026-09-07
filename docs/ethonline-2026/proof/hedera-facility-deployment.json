@@ -96,5 +96,8 @@
     "recallGracePeriod": "604800",
     "maturityGracePeriod": "259200"
   },
-  "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee"
+  "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee",
+  "privyOrgApprover": "0xAfdD4312ef4D5F9fd3085F50a4aE4C1F67970d43",
+  "privyWalletId": "xaiohupaiqzxqdk9a8hkgtha",
+  "privyKeyQuorumId": "mvoortbd9hvtdo2beafjkdjj"
 }

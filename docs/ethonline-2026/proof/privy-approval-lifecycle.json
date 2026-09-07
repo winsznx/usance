@@ -1,0 +1,111 @@
+{
+  "$generatedAt": "2026-09-07T23:10:04.097Z",
+  "what": "the FacilityDecision organisational approval signer is a real Privy server wallet under a two-key quorum",
+  "privy": {
+    "walletAddress": "0xAfdD4312ef4D5F9fd3085F50a4aE4C1F67970d43",
+    "walletId": "xaiohupaiqzxqdk9a8hkgtha",
+    "keyQuorumId": "mvoortbd9hvtdo2beafjkdjj",
+    "authorizationThreshold": 2
+  },
+  "hedera": {
+    "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee",
+    "facility": "0x6B0A0c10450E11C86e7b6b9A69068e43B28Ef8B7",
+    "authorityVerifier": "0xF31eab8D779808b10E51682d69e45755e4f68003"
+  },
+  "ens": {
+    "name": "usance-institutional.eth",
+    "digest": "0x7cd9fd471a1559739b850769e64bd95fc77fb5629daf8576b5e0b059ba7df935"
+  },
+  "steps": [
+    {
+      "name": "sepolia: re-grant the EAC role (prior run had revoked it)",
+      "ok": true,
+      "tx": "0x91cc079d432335fde1536c6d796528585e742d29a51aa5b677f1fd5f4ec227f2",
+      "chain": "sepolia",
+      "block": 11657278,
+      "etherscan": "https://sepolia.etherscan.io/tx/0x91cc079d432335fde1536c6d796528585e742d29a51aa5b677f1fd5f4ec227f2"
+    },
+    {
+      "name": "sepolia: ENS EAC role is live",
+      "ok": true,
+      "hasRoles": true
+    },
+    {
+      "name": "hedera: configureFacility(orgApprover = Privy wallet)",
+      "ok": true,
+      "tx": "0x7f2a545d1d5067e1df0380bfac5e90d943d5444671558bf28f8a782fd3e37f06",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x7f2a545d1d5067e1df0380bfac5e90d943d5444671558bf28f8a782fd3e37f06"
+    },
+    {
+      "name": "hedera: submitApproval with a NON-Privy signature — refused (WrongSigner)",
+      "ok": true,
+      "reverted": true,
+      "error": "The contract function \"submitApproval\" reverted."
+    },
+    {
+      "name": "privy: signSecp256k1 with ONE quorum key — refused by Privy (threshold 2)",
+      "ok": true,
+      "refused": true,
+      "error": "401 {\"error\":\"Number of signatures in `privy-authorization-signature` header does not match the wallet's authorization threshold.\"}"
+    },
+    {
+      "name": "borrower: approve adapter B on the replacement ATS token",
+      "ok": true,
+      "tx": "0x3ca4142b4cbe0942482562ec4949d4e4b0f9e1af032efb6c84030895658b887f",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x3ca4142b4cbe0942482562ec4949d4e4b0f9e1af032efb6c84030895658b887f"
+    },
+    {
+      "name": "privy: submit the dual-key org approval",
+      "ok": true,
+      "tx": "0xc5cf9f786d79e5845f7b1b2f5683ce3443580fc75ffd5e7270a396579c757c51",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xc5cf9f786d79e5845f7b1b2f5683ce3443580fc75ffd5e7270a396579c757c51"
+    },
+    {
+      "name": "cre: submit ALLOW verdict",
+      "ok": true,
+      "tx": "0x238bd7d6190afe24b478a4beb1807e65059dfb43838a55e4a3c3f210778b8cb5",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x238bd7d6190afe24b478a4beb1807e65059dfb43838a55e4a3c3f210778b8cb5"
+    },
+    {
+      "name": "borrower: requestSubstitution",
+      "ok": true,
+      "tx": "0xf4d60844da73a200cb69f3db7bd53ceb3fb8310e3925f783546d50c607c7921b",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xf4d60844da73a200cb69f3db7bd53ceb3fb8310e3925f783546d50c607c7921b"
+    },
+    {
+      "name": "commitReplacement (replacement held while old collateral still held)",
+      "ok": true,
+      "tx": "0x933f821270ed992630c2e19c78b94fb9d0d28c40eb4ff7094c24b49b4844c01f",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x933f821270ed992630c2e19c78b94fb9d0d28c40eb4ff7094c24b49b4844c01f"
+    },
+    {
+      "name": "borrower: releaseOld",
+      "ok": true,
+      "tx": "0x2c18ec141cbbad1d881b614b8e3cae0d206f344b5e853c290918144a91b35a22",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x2c18ec141cbbad1d881b614b8e3cae0d206f344b5e853c290918144a91b35a22"
+    }
+  ],
+  "configuredOrgApprover": "0xAfdD4312ef4D5F9fd3085F50a4aE4C1F67970d43",
+  "negativeControls": {
+    "nonPrivySignatureRejectedOnChain": true,
+    "singleKeyRejectedByPrivy": true
+  },
+  "positive": {
+    "from": "A",
+    "to": "B",
+    "decisionHash": "0x19567e518ba22599fcb3abf37f5af4edace562a1e0dad09dad5dd23d6683bf23",
+    "privySignatureRecoversTo": "0xAfdD4312ef4D5F9fd3085F50a4aE4C1F67970d43",
+    "matchesOrgApprover": true,
+    "committedMid": {
+      "A": "150000",
+      "B": "150000"
+    },
+    "committedAfter": {
+      "A": "0",
+      "B": "150000"
+    },
+    "facilityStatusAfter": 2,
+    "result": "SUCCESS — B committed before A released; facility stayed ACTIVE; approval came from the Privy two-key quorum"
+  },
+  "result": "PASS — a non-Privy signature is refused on chain, one quorum key is refused by Privy, and a real substitution completed only under a dual-key Privy approval"
+}

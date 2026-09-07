@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@hashgraph/asset-tokenization-sdk": "8.0.0",
+    "@privy-io/node": "0.34.0",
     "reflect-metadata": "^0.2.2",
     "ethers": "^6.15.0",
     "@hashgraph/sdk": "2.64.5"

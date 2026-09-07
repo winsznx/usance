@@ -1,0 +1,17 @@
+{
+  "$generatedAt": "2026-09-07T23:07:36.968Z",
+  "what": "the organisation's Privy-controlled FacilityDecision approval signer",
+  "provider": "Privy server wallets (@privy-io/node)",
+  "appId": "cmtrksso902dw0elb1rkj8pdk",
+  "keyQuorumId": "mvoortbd9hvtdo2beafjkdjj",
+  "authorizationThreshold": 2,
+  "approverPublicKeys": [
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMQ77Xobljq2iYaPANfjZh1xCrltJWim/vmtRs24Vs5EGHtih88GEFlKJVr15gYEPsyawztLgd824MHBK0LTkyQ==",
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEt5f2r5/tJ3h89Nx8Ey4WBRGYEqMKnIMcBR34PILjmNBvejZRMIm1otGrvlrCzepFlkbUuaMgIsN3wrdDis9/gg=="
+  ],
+  "walletId": "xaiohupaiqzxqdk9a8hkgtha",
+  "walletAddress": "0xAfdD4312ef4D5F9fd3085F50a4aE4C1F67970d43",
+  "chainType": "ethereum",
+  "control": "a raw secp256k1 signature from walletAddress is produced only when both quorum keys authorize the raw_sign request; this address is the EthOnlineAuthorityVerifier orgApprover",
+  "secretsFile": "packages/ethonline/.privy-org.json (gitignored)"
+}
