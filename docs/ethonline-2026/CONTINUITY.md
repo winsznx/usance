@@ -43,11 +43,17 @@ Commits after `38074c7`. Tracked per sponsor:
 
 | Sponsor | Commit range | Deployment addresses | Proof |
 |---|---|---|---|
-| Hedera ATS | _(pending)_ | _(pending — Hedera testnet)_ | `docs/ethonline-2026/proof/hedera-*` |
-| ENSv2 | _(pending)_ | _(pending — Sepolia names/resources)_ | `docs/ethonline-2026/proof/ensv2-*` |
-| Privy | _(pending)_ | _(pending — Privy wallet id)_ | `docs/ethonline-2026/proof/privy-*` |
-| Chainlink CRE | _(pending)_ | _(CRE workflow id)_ | `docs/ethonline-2026/proof/cre-*` |
-| Institutional substitution (end to end) | _(pending)_ | Hedera facility address | `docs/ethonline-2026/proof/substitution-*` |
+| Local adapters + lifecycle (all four) | `38074c7` … _(this commit)_ | none (local, deterministic doubles) | `contracts/test/institutional/EthOnlineLifecycle.t.sol` (13 tests) |
+| Hedera ATS (live) | _(pending — needs Hedera testnet HBAR)_ | _(pending)_ | `docs/ethonline-2026/proof/hedera-*` |
+| ENSv2 (live) | _(pending — needs Sepolia ETH)_ | _(pending)_ | `docs/ethonline-2026/proof/ensv2-*` |
+| Privy (live) | _(pending — needs PRIVY_APP_ID/SECRET)_ | _(pending)_ | `docs/ethonline-2026/proof/privy-*` |
+| Chainlink CRE (simulation) | _(pending — needs CRE CLI)_ | _(CRE workflow id)_ | `docs/ethonline-2026/proof/cre-*` |
+| Institutional substitution (live end to end) | _(pending)_ | Hedera facility address | `docs/ethonline-2026/proof/substitution-*` |
+
+The local adapters implement the frozen Phase 06 interfaces against deterministic doubles that
+model each sponsor's real semantics (`HederaAtsCollateralAdapter` over the exact ATS `IHold`
+surface, foundry keys for the Privy / CRE signers, `MockAtsSecurityToken`). The live testnet
+lifecycle follows once the `TESTNET_RESOURCE_PLAN.md` resources are supplied.
 
 ## Prize eligibility notes
 
