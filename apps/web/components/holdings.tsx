@@ -76,7 +76,12 @@ export function Holdings({ assets }: { assets: Holding[] }) {
               return (
                 <tr key={a.assetId}>
                   <th scope="row">
-                    <OnChain kind="address" value={a.assetId} label="asset id" copyable={false} />
+                    <Link href={`/app/assets/${a.assetId}`} style={{ textDecoration: "underline" }}>
+                      {a.symbol ?? "View asset"}
+                    </Link>
+                    <span className="caption" style={{ display: "block", color: "var(--stone)", marginTop: 2 }}>
+                      <OnChain kind="address" value={a.assetId} label="asset id" copyable={false} />
+                    </span>
                     <Advanced>
                       <span className="caption" style={{ display: "block", color: "var(--stone)", marginTop: 2 }}>
                         bound by {bound}
