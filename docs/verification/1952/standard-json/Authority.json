@@ -1,0 +1,45 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "src/core/Authority.sol": {
+      "content": "// SPDX-License-Identifier: BUSL-1.1\npragma solidity 0.8.28;\n\n/// @title Authority\n/// @notice The single place that answers \"who may do this\". Kept deliberately small and\n///         readable: an authorization model nobody can hold in their head is one nobody audits.\n///\n/// @dev Separation of powers is the point (spec/threat-model.md §Protocol):\n///\n///      GOVERNANCE  — may change long-term policy, but only through a timelock when the change\n///                    increases risk. Holds the right to grant and revoke every other role.\n///      GUARDIAN    — may restrict, immediately, and may do nothing else. There is no guardian\n///                    call anywhere in the protocol that increases an LTV, mints debt, moves\n///                    collateral or redirects a withdrawal (invariant I-25).\n///      ADMISSION   — may commit Passports and register assets. Held by the evidence pipeline's\n///                    settlement key, never by a model.\n///      CLEARING    — internal role held by ClearingHouse so vaults will act on its behalf.\n///      LIQUIDATOR  — may run liquidation routes, which can only reduce risk.\ncontract Authority {\n    bytes32 public constant GOVERNANCE = keccak256(\"USANCE_GOVERNANCE\");\n    bytes32 public constant GUARDIAN = keccak256(\"USANCE_GUARDIAN\");\n    bytes32 public constant ADMISSION = keccak256(\"USANCE_ADMISSION\");\n    bytes32 public constant CLEARING = keccak256(\"USANCE_CLEARING\");\n    bytes32 public constant LIQUIDATOR = keccak256(\"USANCE_LIQUIDATOR\");\n\n    mapping(bytes32 role => mapping(address account => bool)) public hasRole;\n\n    event RoleGranted(bytes32 indexed role, address indexed account, address indexed by);\n    event RoleRevoked(bytes32 indexed role, address indexed account, address indexed by);\n\n    error NotAuthorized(bytes32 role, address account);\n\n    modifier only(bytes32 role) {\n        if (!hasRole[role][msg.sender]) revert NotAuthorized(role, msg.sender);\n        _;\n    }\n\n    constructor(address governance) {\n        hasRole[GOVERNANCE][governance] = true;\n        emit RoleGranted(GOVERNANCE, governance, msg.sender);\n    }\n\n    function grantRole(bytes32 role, address account) external only(GOVERNANCE) {\n        hasRole[role][account] = true;\n        emit RoleGranted(role, account, msg.sender);\n    }\n\n    function revokeRole(bytes32 role, address account) external only(GOVERNANCE) {\n        hasRole[role][account] = false;\n        emit RoleRevoked(role, account, msg.sender);\n    }\n\n    function requireRole(bytes32 role, address account) external view {\n        if (!hasRole[role][account]) revert NotAuthorized(role, account);\n    }\n}\n\n/// @notice Mixin for contracts guarded by a shared Authority.\nabstract contract Authorized {\n    Authority public immutable authority;\n\n    error Unauthorized(bytes32 role);\n\n    constructor(Authority authority_) {\n        authority = authority_;\n    }\n\n    modifier onlyRole(bytes32 role) {\n        if (!authority.hasRole(role, msg.sender)) revert Unauthorized(role);\n        _;\n    }\n}\n"
+    }
+  },
+  "settings": {
+    "remappings": [
+      "forge-std/=../lib/forge-std/src/",
+      "@openzeppelin/contracts/=../lib/openzeppelin-contracts/contracts/"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "useLiteralContent": false,
+      "bytecodeHash": "none",
+      "appendCBOR": false
+    },
+    "outputSelection": {
+      "*": {
+        "": [
+          "ast"
+        ],
+        "*": [
+          "abi",
+          "evm.bytecode.object",
+          "evm.bytecode.sourceMap",
+          "evm.bytecode.linkReferences",
+          "evm.deployedBytecode.object",
+          "evm.deployedBytecode.sourceMap",
+          "evm.deployedBytecode.linkReferences",
+          "evm.deployedBytecode.immutableReferences",
+          "evm.methodIdentifiers",
+          "metadata"
+        ]
+      }
+    },
+    "evmVersion": "cancun",
+    "viaIR": false,
+    "libraries": {}
+  }
+}

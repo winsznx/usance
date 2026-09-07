@@ -312,11 +312,12 @@ Current: **16/34 canonical routes**,
 - [x] Bytecode drift gate
 - [x] Manifest digest in artifacts
 
-## AF. Explorer verification
+## AF. Explorer verification — `MANUAL_ACTION_REQUIRED`
 
-- [ ] **P1** Standard-JSON verification for the current deployment
+- [x] Manual package generated: `scripts/gen-verification-package.mjs` → `docs/verification/1952/` (Standard JSON Input, constructor args, settings, expected bytecode hash per contract)
+- [ ] **P1** Submit each contract through `oklink.com/x-layer-testnet/verify-contract-preliminary` (OKLink API-key path not publicly reachable)
 - [ ] **P1** `verified: true` only after explorer read-back
-- [ ] **P2** `make verify-explorer`
+- [ ] **P2** `make verify-explorer` once the API-key path is restored
 
 ## AG. Clean room
 
