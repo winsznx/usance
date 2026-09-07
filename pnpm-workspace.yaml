@@ -14,3 +14,10 @@ allowBuilds:
   bufferutil: false # optional ws speedup, not required
   utf-8-validate: false # optional ws speedup, not required
   workerd: true # Cloudflare Workers runtime — wrangler/OpenNext build + deploy. Local tooling, not request-time.
+  '@mattrglobal/node-bbs-signatures': set this to true or false
+  '@reown/appkit': set this to true or false
+  protobufjs: set this to true or false
+  secp256k1: set this to true or false
+
+patchedDependencies:
+  '@hashgraph/asset-tokenization-sdk@8.0.0': patches/@hashgraph__asset-tokenization-sdk@8.0.0.patch

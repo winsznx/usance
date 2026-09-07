@@ -1,0 +1,59 @@
+{
+  "$generatedAt": "2026-09-07T12:49:15.810Z",
+  "network": "hedera-testnet",
+  "chainId": 296,
+  "standard": "ERC-1400 (ATS equity, controllable, transfer-restrictable via pause)",
+  "atsFactory": "0.0.9213391",
+  "atsResolver": "0.0.9212226",
+  "equityConfigId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "equityConfigVersion": 1,
+  "operator": {
+    "accountId": "0.0.10405071",
+    "evmAddress": "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1"
+  },
+  "borrower": {
+    "accountId": "0.0.10405071",
+    "evmAddress": "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1"
+  },
+  "series": {
+    "A": {
+      "name": "Usance ETHOnline Collateral A",
+      "symbol": "USNCA",
+      "isin": "USUSANCEA010",
+      "securityId": "0.0.10406896",
+      "hashscan": "https://hashscan.io/testnet/token/0.0.10406896",
+      "createTx": "0x5c8a0c4a2b8f81a611a3b865f0b385527a739e9701dba0487c79d3058a9baef8",
+      "createTxHashscan": "https://hashscan.io/testnet/transaction/0x5c8a0c4a2b8f81a611a3b865f0b385527a739e9701dba0487c79d3058a9baef8",
+      "issueTx": "0x7d72cff10baa47bea8683b0007f5700260a60e66a03f6322e6aa8e74a1d6c841",
+      "issued": "10000000",
+      "eligible": true,
+      "pausedTx": null
+    },
+    "B": {
+      "name": "Usance ETHOnline Collateral B",
+      "symbol": "USNCB",
+      "isin": "USUSANCEB026",
+      "securityId": "0.0.10406931",
+      "hashscan": "https://hashscan.io/testnet/token/0.0.10406931",
+      "createTx": "0x076c56203cf07440eee9968cdf7857d704bf425b080bab0552a617443a0c3368",
+      "createTxHashscan": "https://hashscan.io/testnet/transaction/0x076c56203cf07440eee9968cdf7857d704bf425b080bab0552a617443a0c3368",
+      "issueTx": "0x723404156f4daae50ae0f0e19e28d5b55ce4a76a80f6031b10e053ac48d3878a",
+      "issued": "10000000",
+      "eligible": true,
+      "pausedTx": null
+    },
+    "C": {
+      "name": "Usance ETHOnline Collateral C",
+      "symbol": "USNCC",
+      "isin": "USUSANCEC032",
+      "securityId": "0.0.10406957",
+      "hashscan": "https://hashscan.io/testnet/token/0.0.10406957",
+      "createTx": "0x70b6628a3c31ea8b7c283f2bfd57717d99e4325e550cb638b3edafdee4099b1d",
+      "createTxHashscan": "https://hashscan.io/testnet/transaction/0x70b6628a3c31ea8b7c283f2bfd57717d99e4325e550cb638b3edafdee4099b1d",
+      "issueTx": "0x8a33b85c2bd3aa59d3fba6b7b6dadcf8b2eca912b945f9f191d777fa547723e4",
+      "issued": "10000000",
+      "eligible": false,
+      "pausedTx": "0x2c3572791668ef689dc0bf01074cc3a25bcf1f59a048c377ae38caed6495d741"
+    }
+  }
+}
