@@ -219,6 +219,32 @@ jobs:
         working-directory: contracts
         run: slither . --config-file ../.github/slither.config.json || true
 
+  browser:
+    name: Browser acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Restored in Phase 05: the e2e job was a placeholder when it was removed (821ad4f) because
+    # there was no Playwright suite. There is one now — it runs against the production build with
+    # a deterministic injected wallet (no extension, no mined transaction), so it is a real gate
+    # again. The primary capital paths should not regress without browser-level protection.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Build and run the browser acceptance suite
+        run: make test-e2e
+
   integrations:
     name: Live integration verification
     runs-on: ubuntu-latest

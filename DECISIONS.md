@@ -9,6 +9,41 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-025 — The live revolving-credit facility charges a zero origination fee; enforcement waits for a new facility
+
+**Decision.** The origination fee on the currently deployed revolving-credit facility is **zero and
+not enforceable**, and that is frozen. Non-zero origination-fee enforcement is specified as a
+requirement of the next production facility implementation (Phase 06 / 08), not retrofitted into
+the live core.
+
+**The finding (Phase 05, constraint 15).** `FeeController.originationFeeBps` is a settable
+parameter (default `0`, ceiling `MAX_ORIGINATION_FEE_BPS = 50` = 0.5%). `ClearingHouse.borrow()`
+**never reads it** — the only `FeeController` call on the `ClearingHouse` path is
+`splitLiquidationProceeds` on the liquidation route. On the deployed 1952 core the fee is `0`, and
+even if `GOVERNANCE` called `setOriginationFee`, borrowers would still pay nothing — a silent
+no-op.
+
+Can the live facility enforce a non-zero origination fee without changing its deployed financial
+core and without a bypass? **NO.**
+
+- A borrower calls `ClearingHouse.borrow()` directly. Any external "charge then borrow" wrapper is
+  bypassable by calling `borrow()` directly, and `borrow()` must not gain an `onlyWrapper` gate
+  (bytecode change + centralisation). A bypassable wrapper is not fee enforcement.
+- Correct enforcement means `borrow()` computes `fee = amount × originationFeeBps / BPS` and either
+  deducts it from proceeds or adds it to debt — a change to deployed bytecode and to the fee
+  conservation equation in `accounting.md §7`.
+
+**Consequence / hygiene.**
+- No product or doc currently claims borrowers pay an origination fee (`MASTER_COMPLETION_CHECKLIST`
+  correctly listed it as an open gap; that line is updated to point here).
+- `FeeController.setOriginationFee` remains callable but has no consumer — a latent footgun
+  recorded in `LIMITATIONS.md`. It is left as-is (no deployed-core change); the new facility that
+  consumes it is where a non-zero value becomes real, previewed to the borrower gross/net before
+  they sign (constraint 16).
+- Nothing in the deployed core changes.
+
+---
+
 ## D-024 — Portfolio risk: maximum-binding-restriction caps, no diversification bonus, reference model first
 
 **Decision.** Portfolio risk (`spec/portfolio-risk-model.md`) is a pure reference model that

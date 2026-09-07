@@ -47,7 +47,7 @@ Current: **16/34 canonical routes**,
 - [x] Liquidation settlement conservation equation
 - [x] repairPerDollar identity documented
 - [x] usd18 never enters a token-denominated book
-- [ ] **P1** Origination fee wired into borrow (FeeController exposes it; ClearingHouse ignores it)
+- [x] **RESOLVED (D-025)** Origination fee on the live revolving facility is frozen at zero and not enforceable without a deployed-core change; non-zero enforcement is a requirement of the next production facility (Phase 06/08). FeeController.setOriginationFee has no consumer — see LIMITATIONS.md.
 - [ ] **P2** Interest split verified end-to-end against vault NAV in a property test
 
 ## C. Risk

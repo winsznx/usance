@@ -130,3 +130,12 @@ Every asset used in a financial demonstration is labelled in its own metadata:
 
 They are never referred to as USDC, USDT, FOBXX, BENJI, OUSG, ARCOIN or xStock anywhere in this
 repository. `TestnetFixtures.sol` cannot be deployed on mainnet.
+
+## Origination fee is exposed but not enforced (D-025)
+
+`FeeController.originationFeeBps` is a settable parameter (default 0, ceiling 0.5%). The deployed
+`ClearingHouse.borrow()` does not read it, so on the live revolving-credit facility the origination
+fee is zero and cannot be made non-zero without changing deployed bytecode. `FeeController.setOriginationFee`
+remains callable by `GOVERNANCE` but has no consumer — setting it would be a silent no-op. Non-zero
+origination-fee enforcement is a requirement of the next production facility implementation
+(Phase 06/08), where it will be previewed to the borrower gross/net before signing.
