@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable claim ledger. A claim may only carry a proof level its evidence supports. LIVE_TESTNET requires a transaction hash a reader can check independently.",
-  "updatedAt": "2026-08-20",
+  "updatedAt": "2026-09-07",
   "proofLevels": [
     "SPECIFIED",
     "UNIT_TESTED",
@@ -8,6 +8,7 @@
     "LIVE_TESTNET",
     "LIVE_MAINNET",
     "EXTERNAL_INTEGRATION",
+    "BLOCKED_EXTERNAL",
     "NOT_YET_PROVEN"
   ],
   "chain": {
@@ -27,37 +28,36 @@
     },
     {
       "claim": "A Passport derived from a real issuer filing is committed onchain.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
-        "proof/passport-franklin-fobxx-2026-v1.json"
+        "proof/historical/passport-franklin-fobxx-2026-v1-52.json"
       ],
-      "detail": "Franklin Templeton SEC Form 497K, CIK 1786958."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; the record is retained as history at proof/historical/passport-franklin-fobxx-2026-v1-52.json with its original contract addresses and transactions unaltered. The current 1952 deployment has 2 registered assets (tUSTB, tUSD) and no Franklin instrument; the evidence-to-Passport pipeline that produced it is INTEGRATION_TESTED in services/evidence/test."
     },
     {
       "claim": "The committed Passport was verified by reading it back from the registry.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
-        "scripts/commit-passport.mjs"
+        "proof/historical/passport-franklin-fobxx-2026-v1-52.json"
       ],
-      "detail": "Version, assetId, evidenceRoot, claimsRoot, ACTIVE status and singleSource all compared against the candidate before any proof record was written."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; retained unaltered at proof/historical/passport-franklin-fobxx-2026-v1-52.json. The current 1952 deployment does not carry this Franklin commit. The evidence-ordering, readback and epoch-bump mechanics are UNIT/INTEGRATION_TESTED in services/evidence/test and contracts/test."
     },
     {
       "claim": "ERC-8021 builder attribution is present on Usance X Layer writes.",
       "proofLevel": "LIVE_TESTNET",
       "evidence": [
-        "proof/passport-franklin-fobxx-2026-v1.json"
+        "proof/live-delegated.json",
+        "proof/live-sentinel.json"
       ],
-      "detail": "Decoded back out of each submitted transaction's calldata, not assumed from the helper."
+      "detail": "ERC-8021 builder-code suffix decoded back out of each submitted transaction's calldata on the current 1952 deployment (delegated repay and the autonomous Sentinel repay), not assumed from the helper."
     },
     {
       "claim": "A risk epoch transition occurred onchain.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x32ecee8c05fbddaa64d33063bea0b0f5cd410f40295e9fb107b81d1de741dafe"
+        "proof/historical/passport-franklin-fobxx-2026-v1-52.json"
       ],
-      "detail": "RiskEpoch is 5 on the current deployment, advanced by the committed Passport."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; retained unaltered at proof/historical/passport-franklin-fobxx-2026-v1-52.json. The current 1952 deployment does not carry this Franklin commit. The evidence-ordering, readback and epoch-bump mechanics are UNIT/INTEGRATION_TESTED in services/evidence/test and contracts/test."
     },
     {
       "claim": "Collateral deposited onchain is recognised at a conservative value the protocol derives, not at market value.",
@@ -95,12 +95,11 @@
     },
     {
       "claim": "A Passport cannot be committed onchain citing evidence that was never filed.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x826f39c546f0238d49f7229bf298f7607d19cc329de025895a4ea5e0e7a294b9",
-        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358"
+        "proof/historical/passport-franklin-fobxx-2026-v1-52.json"
       ],
-      "detail": "The deployed PassportRegistry checks every cited evidence id and recomputes the Merkle root. Evidence landed in block 38597280, the Passport in 38597284; reversing that order is a revert, not a convention."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; retained unaltered at proof/historical/passport-franklin-fobxx-2026-v1-52.json. The current 1952 deployment does not carry this Franklin commit. The evidence-ordering, readback and epoch-bump mechanics are UNIT/INTEGRATION_TESTED in services/evidence/test and contracts/test."
     },
     {
       "claim": "Four independent implementations of the risk pipeline agree to the wei.",
@@ -112,12 +111,11 @@
     },
     {
       "claim": "A Passport built from one extraction path is capped and cannot claim corroboration.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x3f78f5b7c30448474adfbeee95357a0108a18f2c15db19e02640b0678ead5358",
-        "proof/passport-franklin-fobxx-2026-v1.json"
+        "proof/historical/passport-franklin-fobxx-2026-v1-52.json"
       ],
-      "detail": "singleSource because ChainGPT could not complete the extraction over a dense filing. The corroborator counts paths that produced a reading, not paths attempted."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; the record is retained as history at proof/historical/passport-franklin-fobxx-2026-v1-52.json with its original contract addresses and transactions unaltered. singleSource capping is UNIT_TESTED in services/evidence/test/pipeline.test.ts."
     },
     {
       "claim": "A claim conflict cannot commit a Passport.",
@@ -188,12 +186,11 @@
     },
     {
       "claim": "Liquidation is progressive and routed on expected recovery.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
-        "proof/live-liquidation.json"
+        "proof/historical/live-liquidation-2684f427b4.json"
       ],
-      "detail": "Mined on X Layer testnet. An account walked NORMAL to NO_NEW_RISK to MARGIN_CALL as the collateral price fell, then 521.869 of 1000 tUSTB was seized \u2014 bounded by the close factor \u2014 retiring $390.59 of $791.46 debt and shrinking the breach from $85.77 to $63.46. The position was not closed and the account correctly remained MARGIN_CALL, because seizing collateral removes borrowing capacity as well as debt. Account state was never set directly."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; the record is retained as history at proof/historical/live-liquidation-2684f427b4.json with its original contract addresses and transactions unaltered. The current 1952 deployment has NO liquidation module attached (deployments/1952.json lists no liquidationManager). LiquidationManager, DirectSettlementRoute and the keeper economics are UNIT_TESTED in contracts/test/Liquidation.t.sol and LiquidatorEconomics.t.sol. Re-attaching the module to the current core (scripts/deploy-liquidation.mjs) and re-mining is deferred to the production hardening phase."
     },
     {
       "claim": "Generated verification artifacts prove they describe the current world.",
@@ -205,21 +202,19 @@
     },
     {
       "claim": "A single liquidation does not always cure a breach, and the protocol says so before acting.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
-        "proof/live-liquidation.json"
+        "proof/historical/live-liquidation-2684f427b4.json"
       ],
-      "detail": "Mined on X Layer testnet. The planner reported curesTheBreach=false and a $1,977.80 debt-to-cure against $791.46 of actual debt before acting, then the liquidation seized 521.869 tUSTB, retired $390.59, shrank the breach from $85.77 to $63.46, and correctly left the account MARGIN_CALL. Seizing collateral removes borrowing capacity as well as debt, so repair per dollar is 1-(1+t)m \u2014 about 0.05 at these parameters."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; the record is retained as history at proof/historical/live-liquidation-2684f427b4.json with its original contract addresses and transactions unaltered. The current 1952 deployment has NO liquidation module attached (deployments/1952.json lists no liquidationManager). LiquidationManager, DirectSettlementRoute and the keeper economics are UNIT_TESTED in contracts/test/Liquidation.t.sol and LiquidatorEconomics.t.sol. Re-attaching the module to the current core (scripts/deploy-liquidation.mjs) and re-mining is deferred to the production hardening phase."
     },
     {
       "claim": "A cured account cannot be liquidated.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
-        "proof/live-liquidation.json"
+        "proof/historical/live-liquidation-2684f427b4.json"
       ],
-      "detail": "After repaying to NORMAL, a liquidation with identical arguments to the one that had just succeeded was refused. Eligibility is recomputed from live inputs on every call, so the same code path that authorised the first refuses the replay."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; the record is retained as history at proof/historical/live-liquidation-2684f427b4.json with its original contract addresses and transactions unaltered. The current 1952 deployment has NO liquidation module attached (deployments/1952.json lists no liquidationManager). LiquidationManager, DirectSettlementRoute and the keeper economics are UNIT_TESTED in contracts/test/Liquidation.t.sol and LiquidatorEconomics.t.sol. Re-attaching the module to the current core (scripts/deploy-liquidation.mjs) and re-mining is deferred to the production hardening phase."
     },
     {
       "claim": "A liquidation route refuses to price a seizure off a stale oracle.",
@@ -272,13 +267,11 @@
     },
     {
       "claim": "Third-party liquidators are paid an explicit incentive out of liquidation proceeds.",
-      "proofLevel": "LIVE_TESTNET",
+      "proofLevel": "NOT_YET_PROVEN",
       "evidence": [
-        "0x7bfc13796e0d316bded113184252003114ef79d05c0683736c8b05a8846e822e",
-        "proof/live-liquidation.json",
-        "contracts/test/LiquidatorEconomics.t.sol"
+        "proof/historical/live-liquidation-2684f427b4.json"
       ],
-      "detail": "Mined on X Layer testnet by keeper 0xac575403, an address distinct from the borrower and holding only the LIQUIDATOR role. Of 413.320249 tUSD of route proceeds, the keeper received 20.666012 (5.000%), the treasury 0xDd280E77 received 2.066601 (0.500%), and 390.587636 (94.500%) retired debt. The three destinations account for every unit, measured by onchain balance delta. Before this the whole amount retired the borrower's own debt, so no third party had any reason to liquidate anything."
+      "detail": "Proven LIVE_TESTNET on a now-superseded deployment; the record is retained as history at proof/historical/live-liquidation-2684f427b4.json with its original contract addresses and transactions unaltered. The current 1952 deployment has NO liquidation module attached (deployments/1952.json lists no liquidationManager). LiquidationManager, DirectSettlementRoute and the keeper economics are UNIT_TESTED in contracts/test/Liquidation.t.sol and LiquidatorEconomics.t.sol. Re-attaching the module to the current core (scripts/deploy-liquidation.mjs) and re-mining is deferred to the production hardening phase."
     },
     {
       "claim": "Protocol fees are bounded by constants that governance cannot raise.",
@@ -397,5 +390,6 @@
       ],
       "detail": "Mined on X Layer testnet at block 38767411. The Sentinel engine observed the account through live viem adapters, compiled a risk-reducing REPAY, checked ProtocolAllows \u2227 MandateAllows against the live epoch and mandate state, and the bounded agent executor 0xCe805513 \u2014 distinct from the owner 0xBA813263 \u2014 submitted the repayment through DelegationGateway. The owner's debt fell 0.02913 -> 0.01913 tUSD and no human sent the transaction (run 0xc29b11e6, instance 0xb7124e96). New borrowing was separately refused with AccountNotHealthy because the testnet mock feeds are stale, which is why a standing debt was reduced rather than freshly created: REPAY is risk-reducing and remains available while new risk is gated. The loop is also proven offline in engine.test.ts."
     }
-  ]
+  ],
+  "_note": "2026-09-07 (Phase 05): live-liquidation.json and passport-franklin-fobxx-2026-v1.json described a superseded core deployment and were moved to proof/historical/ unaltered. The claims they backed are downgraded to NOT_YET_PROVEN for the current deployment with the historical evidence cited. live-delegated.json and live-sentinel.json were confirmed to describe the CURRENT deployment (check-proof-currency was over-flagging their bounded-agent EOA as a retired contract). check-proof-currency passes."
 }

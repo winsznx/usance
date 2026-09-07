@@ -44,6 +44,42 @@ if (existsSync(liqPath)) {
 const proofDir = resolve(repoRoot, "proof");
 let failures = 0;
 
+// Addresses that are participants, not protocol contracts. A proof records who did the thing
+// (an owner, a bounded agent executor, a keeper) alongside which contracts it happened on; a
+// participant EOA is not expected to appear in the deployment manifest and flagging it as a
+// "retired contract" is a false positive the gate hit on every delegated-authority record.
+const EOA_ROLE_KEYS = new Set([
+  "owner",
+  "agent",
+  "keeper",
+  "liquidator",
+  "deployer",
+  "treasury",
+  "account",
+  "from",
+  "executor",
+  "signer",
+  "beneficiary",
+  "payer",
+  "recipient",
+]);
+
+function collectRoleAddresses(node, out) {
+  if (Array.isArray(node)) {
+    for (const v of node) collectRoleAddresses(v, out);
+    return;
+  }
+  if (node && typeof node === "object") {
+    for (const [k, v] of Object.entries(node)) {
+      if (typeof v === "string" && EOA_ROLE_KEYS.has(k) && /^0x[0-9a-fA-F]{40}$/.test(v)) {
+        out.add(v.toLowerCase());
+      } else {
+        collectRoleAddresses(v, out);
+      }
+    }
+  }
+}
+
 for (const file of readdirSync(proofDir).filter((f) => f.endsWith(".json") && f !== "claims.json")) {
   const raw = readFileSync(resolve(proofDir, file), "utf8");
   const doc = JSON.parse(raw);
@@ -57,9 +93,13 @@ for (const file of readdirSync(proofDir).filter((f) => f.endsWith(".json") && f 
   const cited = [
     ...new Set([...raw.matchAll(/0x[0-9a-fA-F]{40}(?![0-9a-fA-F])/g)].map((m) => m[0].toLowerCase())),
   ];
-  const account = String(doc.account ?? "").toLowerCase();
 
-  const retired = cited.filter((a) => !known.has(a) && a !== account && a !== `0x${"0".repeat(40)}`);
+  const roleAddresses = new Set();
+  collectRoleAddresses(doc, roleAddresses);
+
+  const retired = cited.filter(
+    (a) => !known.has(a) && !roleAddresses.has(a) && a !== `0x${"0".repeat(40)}`,
+  );
   if (retired.length > 0) {
     console.error(`FAIL ${file}`);
     console.error(`     cites ${retired.length} address(es) not in the current deployment:`);

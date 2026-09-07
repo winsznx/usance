@@ -50,5 +50,10 @@
       "cause": "0x562d2a51d9749591a7935fea1e28f4e4a73aed107b2540293b47acb37de3c85a",
       "causedBy": "passport v1"
     }
-  ]
+  ],
+  "$superseded": {
+    "archivedAt": "2026-09-07T03:06:30.747Z",
+    "reason": "the contracts this record was produced against were replaced by a later deployment",
+    "note": "Still true of the deployment it ran on. Kept rather than overwritten because a proof record that stops being current does not stop being accurate, and repointing the claims that cite it would rewrite history to match the present."
+  }
 }

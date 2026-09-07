@@ -32,9 +32,17 @@ interface ProofTx {
 
 function proofFiles(): Array<{ name: string; doc: Record<string, unknown> }> {
   if (!existsSync(PROOF_DIR)) return [];
-  return readdirSync(PROOF_DIR)
-    .filter((f) => f.endsWith(".json") && f !== "claims.json")
-    .map((name) => ({ name, doc: JSON.parse(readFileSync(resolve(PROOF_DIR, name), "utf8")) }));
+  const out: Array<{ name: string; doc: Record<string, unknown> }> = [];
+  // Current records, plus the immutable archive: a claim downgraded to historical still cites a
+  // real transaction, and that transaction lives in proof/historical/ now — not "dangling".
+  for (const dir of [PROOF_DIR, resolve(PROOF_DIR, "historical")]) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith(".json") || f === "claims.json") continue;
+      out.push({ name: f, doc: JSON.parse(readFileSync(resolve(dir, f), "utf8")) });
+    }
+  }
+  return out;
 }
 
 function allTransactions(doc: Record<string, unknown>): ProofTx[] {
