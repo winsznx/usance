@@ -1,0 +1,168 @@
+{
+  "$generatedAt": "2026-09-07T16:07:00.914Z",
+  "what": "real ENSv2 Sepolia EAC delegation wired into the live Hedera institutional facility",
+  "hedera": {
+    "network": "hedera-testnet",
+    "chainId": 296,
+    "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee",
+    "facility": "0x6B0A0c10450E11C86e7b6b9A69068e43B28Ef8B7",
+    "authorityVerifier": "0xF31eab8D779808b10E51682d69e45755e4f68003"
+  },
+  "ens": {
+    "name": "usance-institutional.eth",
+    "ensv2Contract": "0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2",
+    "resource": "0x167907432aa259f1aa12bae6694a339f338148f53dea1f92d020493f00000000",
+    "labelhash": "0x167907432aa259f1aa12bae6694a339f338148f53dea1f92d020493fffceefa9",
+    "roleBitmap": "0x1100000",
+    "roleNames": [
+      "ROLE_SET_SUBREGISTRY (1<<20)",
+      "ROLE_SET_RESOLVER (1<<24)"
+    ],
+    "delegate": "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1",
+    "authorityEvidenceDigest": "0x7cd9fd471a1559739b850769e64bd95fc77fb5629daf8576b5e0b059ba7df935",
+    "registrationTx": "0x15e3f49d5efeff01e91b79b6dcbac8e5a0d2a3ce1df47f67e4c29f1cd9b13731",
+    "grantTx": "0x308f946bb135ec1a6ac1661f85919a40aafb918b7ad88868225f8eadae0c8208"
+  },
+  "steps": [
+    {
+      "name": "sepolia: delegate holds the EAC role",
+      "ok": true,
+      "hasRoles": true,
+      "resource": "0x167907432aa259f1aa12bae6694a339f338148f53dea1f92d020493f00000000"
+    },
+    {
+      "name": "hedera: configureFacility with the REAL ENS evidence digest",
+      "ok": true,
+      "tx": "0xebbea1783f332b4dcd362273b8e9fe8c6b1ff76b03fe0c824c9b188d3d64bba2",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xebbea1783f332b4dcd362273b8e9fe8c6b1ff76b03fe0c824c9b188d3d64bba2"
+    },
+    {
+      "name": "manifest: ensDigest updated to the real digest",
+      "ok": true
+    },
+    {
+      "name": "borrower: approve adapter A on the replacement ATS token",
+      "ok": true,
+      "tx": "0x71d6d88e6ea7282f5f00112e86182c58d41e2e6d18ac924aa1ba710adc41581b",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x71d6d88e6ea7282f5f00112e86182c58d41e2e6d18ac924aa1ba710adc41581b"
+    },
+    {
+      "name": "privy: submit org approval (signed over the REAL ENS digest)",
+      "ok": true,
+      "tx": "0xb202957b1bffbdbe042437323c6f4d77f45747fb608fb3b309531ef71a84c5fc",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xb202957b1bffbdbe042437323c6f4d77f45747fb608fb3b309531ef71a84c5fc"
+    },
+    {
+      "name": "cre: submit ALLOW verdict",
+      "ok": true,
+      "tx": "0xca9a8929720873cf22afafac0e1379645d2d3a2eb91bc35da2baac742fb6ffff",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xca9a8929720873cf22afafac0e1379645d2d3a2eb91bc35da2baac742fb6ffff"
+    },
+    {
+      "name": "borrower: requestSubstitution",
+      "ok": true,
+      "tx": "0xd813b310dfe2a4bd0c50d1d76acf607736e10ead265cfd39cd69ece805369e68",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xd813b310dfe2a4bd0c50d1d76acf607736e10ead265cfd39cd69ece805369e68"
+    },
+    {
+      "name": "commitReplacement (replacement committed while old collateral still held)",
+      "ok": true,
+      "tx": "0xe9576b3b67587a12106cfdc6f5f7565c2a7f25ccdcc554d68772962ff39dde5d",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xe9576b3b67587a12106cfdc6f5f7565c2a7f25ccdcc554d68772962ff39dde5d"
+    },
+    {
+      "name": "releaseOld (old collateral returned to the borrower)",
+      "ok": true,
+      "tx": "0x71c1007cb1f95b2dd3aa2850b6f39bbd739e06214931ab2cf579d72113eab236",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x71c1007cb1f95b2dd3aa2850b6f39bbd739e06214931ab2cf579d72113eab236"
+    },
+    {
+      "name": "sepolia: revoke the EAC role from the delegate",
+      "ok": true,
+      "tx": "0x5bc85b62af1286eee627c25e0abcb3200383fe1492dc5fc060c14721820b2f11",
+      "chain": "sepolia",
+      "block": 11655232,
+      "etherscan": "https://sepolia.etherscan.io/tx/0x5bc85b62af1286eee627c25e0abcb3200383fe1492dc5fc060c14721820b2f11"
+    },
+    {
+      "name": "hedera: authorityV.revokeEnsRole(facilityId)",
+      "ok": true,
+      "tx": "0xe1bc06e978368cdec962983e9b784d8e5e9107dd5586439136a6bd0ffd6a8966",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xe1bc06e978368cdec962983e9b784d8e5e9107dd5586439136a6bd0ffd6a8966"
+    },
+    {
+      "name": "hedera: submitApproval for a NEW decision — refused (EnsRoleIsRevoked)",
+      "ok": true,
+      "reverted": true,
+      "error": "The contract function \"submitApproval\" reverted."
+    }
+  ],
+  "configuredAuthority": {
+    "orgApprover": "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1",
+    "expectedEnsDigest": "0x7cd9fd471a1559739b850769e64bd95fc77fb5629daf8576b5e0b059ba7df935",
+    "ensRoleRevoked": false,
+    "configured": true
+  },
+  "positive": {
+    "from": "B",
+    "to": "A",
+    "unitsRequested": "150000",
+    "committedBefore": {
+      "B": "150000",
+      "A": "0"
+    },
+    "decisionHash": "0xb9a18b9c955b361686b26812c6e39befd972785f45092ee728593bf4b4aeb1e3",
+    "committedMid": {
+      "B": "150000",
+      "A": "150000"
+    },
+    "committedAfter": {
+      "B": "0",
+      "A": "150000"
+    },
+    "facilityStatusAfter": 2,
+    "result": "SUCCESS — A committed before B released; facility stayed ACTIVE; org approval was signed over the real ENS digest"
+  },
+  "historical": {
+    "completedSubstitutionsOnChain": [
+      {
+        "proof": "hedera-substitution-positive.json",
+        "releaseOldTx": "0x954e32ffa2d88fb6947574ae1804f886f728bebf34940112af88b35bb5611cc8"
+      },
+      {
+        "proof": "hedera-substitution-negative.json",
+        "note": "refused — series C paused",
+        "requestTx": "0x5f51d382ed81c0a521447e1117aed41b92a8ac6de1302eb40440f8b8f1ed1f87"
+      },
+      {
+        "proof": "this file",
+        "decisionHash": "0xb9a18b9c955b361686b26812c6e39befd972785f45092ee728593bf4b4aeb1e3",
+        "series": "A"
+      }
+    ],
+    "stateBeforeRevoke": {
+      "facilityStatus": 2,
+      "collateralSeries": "A",
+      "collateralCommitted": "150000"
+    },
+    "stateAfterRevoke": {
+      "facilityStatus": 2,
+      "collateralSeries": "A",
+      "collateralCommitted": "150000"
+    },
+    "notRolledBack": true
+  },
+  "revoke": {
+    "sepoliaTx": "0x5bc85b62af1286eee627c25e0abcb3200383fe1492dc5fc060c14721820b2f11",
+    "etherscan": "https://sepolia.etherscan.io/tx/0x5bc85b62af1286eee627c25e0abcb3200383fe1492dc5fc060c14721820b2f11",
+    "hasRolesAfter": false,
+    "pinnedSepoliaBlock": 11655232,
+    "pinnedSepoliaBlockHash": "0x14ef87b682524f311759a5ef76d11a47ec40a365b9e8271076579d95dc7c45b3"
+  },
+  "newSubstitutionRefused": {
+    "submitApprovalReverted": true,
+    "authorityVerifyReturns": false,
+    "decisionHash": "0x2cc8a5bada01a72803f21829b4cd095a8b6870b215fce8238368f63924bf8b3a"
+  },
+  "result": "PASS — real ENS delegation gated a live substitution; revoking it on Sepolia blocked the next one; the completed substitution stayed on chain"
+}

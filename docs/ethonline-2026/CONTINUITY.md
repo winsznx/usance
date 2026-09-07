@@ -47,7 +47,7 @@ Commits after `38074c7`. Tracked per sponsor:
 | **Hedera ATS (live)** | `be929d6` … `dfac015` | ATS securities A `0.0.10406896`, B `0.0.10406931`, C `0.0.10406957` (v8 factory `0.0.9213391`) | `docs/ethonline-2026/proof/hedera-ats-issuance.json` |
 | **Institutional facility on Hedera (live)** | `be929d6` … `dfac015` | `InstitutionalFacility 0x6B0A0c10450E11C86e7b6b9A69068e43B28Ef8B7` (+ full risk stack, `docs/ethonline-2026/HEDERA_LIFECYCLE.md`) | `docs/ethonline-2026/proof/hedera-facility-deployment.json` |
 | **Live A→B / A→C substitution** | `dfac015` | facilityId `0x6534fdf6…` | `docs/ethonline-2026/proof/hedera-substitution-{positive,negative}.json` |
-| ENSv2 (live) | _(pending — needs Sepolia ETH)_ | _(pending)_ | `docs/ethonline-2026/proof/ensv2-*` |
+| **ENSv2 (live)** | `dfac015` … | name `usance-institutional.eth` on ENSv2 `ETHRegistry` Sepolia `0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2`; EAC `ROLE_SET_SUBREGISTRY|ROLE_SET_RESOLVER` granted to `0x06622c6a…04C1` and revoked (`docs/ethonline-2026/ENS_AUTHORITY.md`) | `docs/ethonline-2026/proof/ensv2-authority.json`, `ens-authority-lifecycle.json` |
 | Privy (live) | _(pending — needs PRIVY_APP_ID/SECRET)_ | _(pending)_ | `docs/ethonline-2026/proof/privy-*` |
 | Chainlink CRE (simulation) | _(pending — needs CRE CLI)_ | _(CRE workflow id)_ | `docs/ethonline-2026/proof/cre-*` |
 

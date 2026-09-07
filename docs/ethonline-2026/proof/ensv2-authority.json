@@ -1,0 +1,113 @@
+{
+  "$generatedAt": "2026-09-07T15:58:38.203Z",
+  "network": "sepolia",
+  "chainId": 11155111,
+  "ensv2": {
+    "source": "contracts-v2@97a57293 / docs addresses/sepolia.md (deployed 2026-07-30)",
+    "ethRegistrar": "0xa88553F454b77203B0D036A05c894d555EAAa2Cc",
+    "ethRegistry": "0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2",
+    "mockUsdc": "0x768F42455A2D082E23ceeF7d51e5787C82d67a39"
+  },
+  "steps": [
+    {
+      "name": "mint MockUSDC",
+      "ok": true,
+      "tx": "0x0a2c66bb0438fa10df26375f1f49c57fbaddde0da83931327a03194aa91cbe2f",
+      "block": 11655187,
+      "etherscan": "https://sepolia.etherscan.io/tx/0x0a2c66bb0438fa10df26375f1f49c57fbaddde0da83931327a03194aa91cbe2f"
+    },
+    {
+      "name": "approve MockUSDC to the registrar",
+      "ok": true,
+      "tx": "0xb34c628d4f4444d89686e14f1f0b7831638db6695e2f9810d18fa1b6b12f9677",
+      "block": 11655189,
+      "etherscan": "https://sepolia.etherscan.io/tx/0xb34c628d4f4444d89686e14f1f0b7831638db6695e2f9810d18fa1b6b12f9677"
+    },
+    {
+      "name": "commit",
+      "ok": true,
+      "tx": "0x36c6257de7b9a52a1e6fed8d27f018db41e8d1604054f42f51e4b19966502dda",
+      "block": 11655190,
+      "etherscan": "https://sepolia.etherscan.io/tx/0x36c6257de7b9a52a1e6fed8d27f018db41e8d1604054f42f51e4b19966502dda"
+    },
+    {
+      "name": "register .eth name",
+      "ok": true,
+      "tx": "0x15e3f49d5efeff01e91b79b6dcbac8e5a0d2a3ce1df47f67e4c29f1cd9b13731",
+      "block": 11655197,
+      "etherscan": "https://sepolia.etherscan.io/tx/0x15e3f49d5efeff01e91b79b6dcbac8e5a0d2a3ce1df47f67e4c29f1cd9b13731"
+    },
+    {
+      "name": "grant the resource-scoped EAC role to the delegate",
+      "ok": true,
+      "tx": "0x308f946bb135ec1a6ac1661f85919a40aafb918b7ad88868225f8eadae0c8208",
+      "block": 11655198,
+      "etherscan": "https://sepolia.etherscan.io/tx/0x308f946bb135ec1a6ac1661f85919a40aafb918b7ad88868225f8eadae0c8208"
+    }
+  ],
+  "owner": "0xA82c78819961cea5975dF10856499ED522c7ca59",
+  "name": "usance-institutional.eth",
+  "delegate": "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1",
+  "labelhash": "0x167907432aa259f1aa12bae6694a339f338148f53dea1f92d020493fffceefa9",
+  "registerPrice": {
+    "base": "8000021",
+    "premium": "0",
+    "total": "8000021",
+    "token": "MockUSDC"
+  },
+  "commitmentWindow": {
+    "minAgeSeconds": 60,
+    "maxAgeSeconds": 86400
+  },
+  "secret": "0x0ff0c511f4a450146a3ad9ad98ae4a8bcf199719b64b218b79d60f10b10aa4f8",
+  "commitment": "0xaa3e836fc99daa088e4b89d54a22ce4ad7b349eb678fa285057a14350ed0f795",
+  "registerGasEstimate": "229740",
+  "tokenIdSnapshot": "10164721286700803000220638628346608061770653977502517179021157759793542201344",
+  "resource": "0x167907432aa259f1aa12bae6694a339f338148f53dea1f92d020493f00000000",
+  "expiry": 1820332848,
+  "roleBitmap": "0x1100000",
+  "roleNames": [
+    "ROLE_SET_SUBREGISTRY (1<<20)",
+    "ROLE_SET_RESOLVER (1<<24)"
+  ],
+  "delegateHasRole": true,
+  "delegateEffectiveRoles": "0x1100000",
+  "authorityEvidence": {
+    "name": "usance-institutional.eth",
+    "canonicalHierarchy": "usance-institutional.eth (2LD, registered directly in the ENSv2 ETHRegistry)",
+    "ensv2Contract": "0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2",
+    "ensv2Version": "ENSv2-beta-sepolia / contracts-v2@97a57293",
+    "resource": "0x167907432aa259f1aa12bae6694a339f338148f53dea1f92d020493f00000000",
+    "requiredRole": "0x1100000",
+    "requiredRoleNames": [
+      "ROLE_SET_SUBREGISTRY (1<<20)",
+      "ROLE_SET_RESOLVER (1<<24)"
+    ],
+    "resolvedAccount": "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1",
+    "sepoliaBlock": 11655198,
+    "sepoliaBlockHash": "0xac144621218e4304d3ab88c48f5afbcc3ea53a08fe808a1759ef7101d0798186",
+    "sepoliaBlockTimestamp": 1788796860,
+    "decisionTimestamp": 1788796862,
+    "freshnessRule": "the evidence is valid while hasRoles(resource, roleBitmap, resolvedAccount) is true AND the pinned block is within Sepolia's safe reorg depth; re-checked before any release"
+  },
+  "authorityEvidenceDigest": "0x7cd9fd471a1559739b850769e64bd95fc77fb5629daf8576b5e0b059ba7df935",
+  "digestPreimage": {
+    "abiTypes": "string, string, address, string, uint256, uint256, address, uint256",
+    "values": [
+      "USANCE_ENS_AUTHORITY_V1",
+      "usance-institutional.eth",
+      "0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2",
+      "ENSv2-beta-sepolia / contracts-v2@97a57293",
+      "<resource as uint256>",
+      "<roleBitmap 0x1100000 as uint256>",
+      "0x06622c6a328cc0a54C906Fde66Bc597B7FA904C1",
+      "<Sepolia grant block 11655198>"
+    ],
+    "hash": "keccak256(abi.encode(...)) — recomputable from ensv2-authority.json fields"
+  },
+  "grantTx": "0x308f946bb135ec1a6ac1661f85919a40aafb918b7ad88868225f8eadae0c8208",
+  "revokeTx": "0x5bc85b62af1286eee627c25e0abcb3200383fe1492dc5fc060c14721820b2f11",
+  "revokedAtSepoliaBlock": 11655232,
+  "hasRolesAfterRevoke": false,
+  "lifecycleProof": "ens-authority-lifecycle.json"
+}
