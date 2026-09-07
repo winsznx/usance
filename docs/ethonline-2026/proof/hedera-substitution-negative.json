@@ -1,0 +1,30 @@
+{
+  "$generatedAt": "2026-09-07T13:12:14.321Z",
+  "mode": "negative",
+  "network": "hedera-testnet",
+  "chainId": 296,
+  "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee",
+  "steps": [
+    {
+      "name": "privy: submit org approval",
+      "ok": true,
+      "tx": "0x56601dd8a828e2c78c448cdf7ee10b3ccc740a0a22c16908abd16b483458b8fa",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x56601dd8a828e2c78c448cdf7ee10b3ccc740a0a22c16908abd16b483458b8fa"
+    },
+    {
+      "name": "cre: submit ALLOW verdict",
+      "ok": true,
+      "tx": "0xbce8e71315d4fbf8ddaa173cbb6f7123f0c71ddb568a3e3949f3f2533767a8ec",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xbce8e71315d4fbf8ddaa173cbb6f7123f0c71ddb568a3e3949f3f2533767a8ec"
+    },
+    {
+      "name": "borrower: approve adapter C on the replacement ATS token",
+      "ok": false,
+      "error": "The contract function \"approve\" reverted with the following signature:\n0x1309a563"
+    }
+  ],
+  "collateralBefore": {
+    "A": "0",
+    "C": "0"
+  }
+}

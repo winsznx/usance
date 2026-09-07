@@ -26,6 +26,12 @@ import {IAtsHold} from "./IAtsHold.sol";
 ///      replacement whose holder fails the ATS KYC / allow-list / freeze check cannot be committed
 ///      and the substitution cannot release the old collateral.
 contract HederaAtsCollateralAdapter is ICollateralAdapter {
+    /// @dev ATS rejects `expirationTimestamp == 0` (`WrongExpirationTimestamp`), so the hold is
+    ///      created with an expiry a century out — longer than any facility's life. Before that
+    ///      the holder still cannot reclaim (only the escrow releases or executes); the far date
+    ///      is a formality the ATS validator demands, not a real exit for the borrower.
+    uint256 internal constant HOLD_DURATION = 36_500 days;
+
     IAtsHold public immutable token;
     bytes32 public immutable partition;
     bytes32 internal immutable _instrumentRef;
@@ -144,7 +150,7 @@ contract HederaAtsCollateralAdapter is ICollateralAdapter {
             from,
             IAtsHold.Hold({
                 amount: units,
-                expirationTimestamp: 0, // never expires => the holder cannot reclaim
+                expirationTimestamp: block.timestamp + HOLD_DURATION, // a century out; the holder still cannot reclaim before then
                 escrow: address(this),
                 to: holdDestination,
                 data: abi.encode("USANCE_FACILITY_COMMIT", facility, from)

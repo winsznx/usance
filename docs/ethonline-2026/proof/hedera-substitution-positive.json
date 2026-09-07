@@ -1,0 +1,101 @@
+{
+  "$generatedAt": "2026-09-07T13:10:31.919Z",
+  "mode": "positive",
+  "network": "hedera-testnet",
+  "chainId": 296,
+  "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee",
+  "steps": [
+    {
+      "name": "lender: approve settlement",
+      "ok": true,
+      "tx": "0x725a15fd4fc1a027d94c56972e68a9c56cda6984ab5b5a496be30c3e75c6116f",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x725a15fd4fc1a027d94c56972e68a9c56cda6984ab5b5a496be30c3e75c6116f"
+    },
+    {
+      "name": "lender: fund",
+      "ok": true,
+      "tx": "0x523fa1a4b04fefafe4a6e7bf39c48e92a12c2eb1f122e802c9d297ce65ea664d",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x523fa1a4b04fefafe4a6e7bf39c48e92a12c2eb1f122e802c9d297ce65ea664d"
+    },
+    {
+      "name": "borrower: approve adapter A on the ATS token",
+      "ok": true,
+      "tx": "0xbe1251b7d3e3dee37a5ac865499ef637c955fb4315a9581a60338eea1c4403a3",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xbe1251b7d3e3dee37a5ac865499ef637c955fb4315a9581a60338eea1c4403a3"
+    },
+    {
+      "name": "borrower: commit initial collateral A",
+      "ok": true,
+      "tx": "0xac201d6de8e08af5f8d6443494f76a5eac501eeb0f458e9b641d839ab9f30a70",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xac201d6de8e08af5f8d6443494f76a5eac501eeb0f458e9b641d839ab9f30a70"
+    },
+    {
+      "name": "privy: submit org approval",
+      "ok": true,
+      "tx": "0x5ee1fc02f014b5913d37308f4fbd2a261c39327abba0d51b2e056126fa78a03c",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x5ee1fc02f014b5913d37308f4fbd2a261c39327abba0d51b2e056126fa78a03c"
+    },
+    {
+      "name": "cre: submit ALLOW verdict",
+      "ok": true,
+      "tx": "0xda1f451cc931a9e42d2ab3daa2b33d1e2106eb32be71c93c02d98976313a3f6e",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xda1f451cc931a9e42d2ab3daa2b33d1e2106eb32be71c93c02d98976313a3f6e"
+    },
+    {
+      "name": "lender: activate",
+      "ok": true,
+      "tx": "0x14a8ae7fb898bd2869f246c916e6dbd98e3489f86a342548c5bf7660796c388a",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x14a8ae7fb898bd2869f246c916e6dbd98e3489f86a342548c5bf7660796c388a"
+    },
+    {
+      "name": "privy: submit org approval",
+      "ok": true,
+      "tx": "0x45a75f8bb1f99cb38727ebf1bc1b62d4f32498c0d8ece6d173dc90b8d78aec6d",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x45a75f8bb1f99cb38727ebf1bc1b62d4f32498c0d8ece6d173dc90b8d78aec6d"
+    },
+    {
+      "name": "cre: submit ALLOW verdict",
+      "ok": true,
+      "tx": "0x43051fc2f2c1fe7b74658ce716f3e894a4bcbbd24d78dd99dd1795343f1fca2c",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x43051fc2f2c1fe7b74658ce716f3e894a4bcbbd24d78dd99dd1795343f1fca2c"
+    },
+    {
+      "name": "borrower: approve adapter B on the replacement ATS token",
+      "ok": true,
+      "tx": "0xb29f037224fee3b97ca444561dd35753c5034c3185b94af3f7d6668daf059a54",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xb29f037224fee3b97ca444561dd35753c5034c3185b94af3f7d6668daf059a54"
+    },
+    {
+      "name": "borrower: requestSubstitution",
+      "ok": true,
+      "tx": "0x2804b798fa1bb3e50b0f1951319a6c4c09e8782b8f935574369f3e67c04ff68b",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x2804b798fa1bb3e50b0f1951319a6c4c09e8782b8f935574369f3e67c04ff68b"
+    },
+    {
+      "name": "borrower/operator: commitReplacement",
+      "ok": true,
+      "tx": "0x1d6e3cb517ad5f1ae9c2950d13a0d29718cb2c5315dbe4df36c5f7988b4329d1",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x1d6e3cb517ad5f1ae9c2950d13a0d29718cb2c5315dbe4df36c5f7988b4329d1"
+    },
+    {
+      "name": "borrower: releaseOld",
+      "ok": true,
+      "tx": "0x954e32ffa2d88fb6947574ae1804f886f728bebf34940112af88b35bb5611cc8",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x954e32ffa2d88fb6947574ae1804f886f728bebf34940112af88b35bb5611cc8"
+    }
+  ],
+  "collateralBefore": {
+    "A": "150000",
+    "B": "0"
+  },
+  "collateralMid": {
+    "A": "150000",
+    "B": "150000"
+  },
+  "collateralAfter": {
+    "A": "0",
+    "B": "150000"
+  },
+  "facilityStatusAfter": 2,
+  "result": "SUCCESS — B committed before A released; facility stayed ACTIVE"
+}
