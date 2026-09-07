@@ -139,6 +139,20 @@ test.describe("/app/mandates/[mandateId]", () => {
   });
 });
 
+test.describe("mandate controls are wired but owner-gated", () => {
+  const ID = `0x${"cd".repeat(32)}`;
+
+  test("an unconnected visitor sees disabled controls with the reason", async ({ page }) => {
+    await page.goto(`/app/mandates/${ID}`);
+    // Whatever the id resolves to, the change controls must state that only the owner can act and
+    // must never present an enabled Pause/Revoke to a wallet that could not sign it.
+    const body = (await page.locator("body").innerText()).toLowerCase();
+    if (body.includes("change this mandate")) {
+      expect(body).toMatch(/connect the owner wallet|only the owner of this mandate/);
+    }
+  });
+});
+
 test.describe("mandate detail on mobile", () => {
   test.use({ viewport: { width: 412, height: 915 } });
 

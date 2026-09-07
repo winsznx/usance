@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { activeChain, loadDeployment } from "@/lib/deployments";
 import { MANDATE_ACTIONS, WITHDRAWAL_IS_NOT_DELEGABLE } from "@/lib/mandate";
 import { loadMandate, type MandateDetail } from "@/lib/mandate-read";
+import { MandateControls } from "@/components/mandate-controls";
 
 /**
  * `/app/mandates/[mandateId]` — everything a signature actually granted.
@@ -137,25 +138,15 @@ function Detail({ mandate, explorer }: { mandate: MandateDetail; explorer?: stri
         </p>
       </div>
 
-      {mandate.status === "REVOKED" ? (
-        <Notice tone="stop" title="Revocation is final">
-          There is no un-revoke function anywhere in the registry. Authorising this agent again means
-          signing a new mandate with a new nonce.
-        </Notice>
-      ) : (
-        <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-          <button className="btn btn-ghost btn-lg" disabled>
-            {mandate.status === "PAUSED" ? "Resume" : "Pause"}
-          </button>
-          <button className="btn btn-lg" disabled style={{ borderColor: "var(--stop)", color: "var(--stop)" }}>
-            Revoke
-          </button>
-          <span className="caption" style={{ alignSelf: "center" }}>
-            Not wired to a wallet yet. These would submit transactions, and a disabled control is
-            more honest than one that does nothing.
-          </span>
-        </div>
-      )}
+      <div className="card">
+        <div className="micro" style={{ marginBottom: 12 }}>Change this mandate</div>
+        <MandateControls
+          mandateId={mandate.mandateId}
+          owner={mandate.owner}
+          registry={mandate.registry}
+          status={mandate.status}
+        />
+      </div>
     </div>
   );
 }
