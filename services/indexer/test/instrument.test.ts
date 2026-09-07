@@ -27,11 +27,16 @@ describe("the committed instrument-bindings artifact", () => {
     if (manifest.testnetFixtures?.collateralAssetId) {
       wanted.set(manifest.testnetFixtures.collateralAssetId.toLowerCase(), "1952 testnetFixtures");
     }
-    for (const f of readdirSync(resolve(repoRoot, "proof"))) {
-      if (!f.endsWith(".json")) continue;
-      const doc = JSON.parse(readFileSync(resolve(repoRoot, "proof", f), "utf8"));
-      if (typeof doc.assetId === "string" && /^0x[0-9a-fA-F]{64}$/.test(doc.assetId)) {
-        wanted.set(doc.assetId.toLowerCase(), `proof/${f}`);
+    // Current records and archived ones. A binding must keep resolving the assetId of a proof
+    // that has been superseded and moved to proof/historical/, since the point of the binding is
+    // to keep that historical evidence readable without editing it.
+    for (const dir of ["proof", "proof/historical"]) {
+      for (const f of readdirSync(resolve(repoRoot, dir))) {
+        if (!f.endsWith(".json")) continue;
+        const doc = JSON.parse(readFileSync(resolve(repoRoot, dir, f), "utf8"));
+        if (typeof doc.assetId === "string" && /^0x[0-9a-fA-F]{64}$/.test(doc.assetId)) {
+          wanted.set(doc.assetId.toLowerCase(), `${dir}/${f}`);
+        }
       }
     }
 
