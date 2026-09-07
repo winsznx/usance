@@ -9,6 +9,58 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-027 — ETHOnline sponsors are adapters over the Phase 06 facility; the facility stays the only financial authority
+
+**Decision.** Phase 07 wires Hedera Asset Tokenization Studio, ENSv2, Privy and Chainlink CRE into
+the institutional collateral-substitution lifecycle as **adapters over the frozen Phase 06
+interfaces** (`ICollateralAdapter`, `IAuthorityVerifier`, `IPolicyVerifier`), not as changes to
+`InstitutionalFacility`. New Solidity: `HederaAtsCollateralAdapter` (over the ATS **Hold** facet),
+`EthOnlineAuthorityVerifier` (ENSv2 EAC evidence digest + a Privy-signed org approval bound to the
+exact `FacilityDecision`), `EthOnlinePolicyVerifier` (a Chainlink-CRE-signed confidential lender
+verdict). The bounded facility's home domain is **Hedera testnet** (chain 296, Cancun EVM). ENSv2
+(Sepolia) is external authority evidence; Privy is organisational signing; CRE is external policy
+computation. None becomes an alternate facility-state domain (I-75 / §2).
+
+**Why.** The ETHOnline hero operation is "replace eligible collateral without unwinding an active
+financing facility". Phase 06 built that mechanism provider-neutrally on purpose. Retrofitting any
+sponsor into the facility would re-open its trust model. The Phase 07 brief §43 forbids widening
+the interfaces for provider convenience — and no widening was needed: the ATS Hold maps to
+`commit`/`committedOf`/`release` cleanly, and the decision structs already carry every field a
+Privy/CRE attestation must bind.
+
+**Evidence.**
+- The ATS commitment is a **native** primitive: `IHoldByPartition.createHoldFromByPartition` with
+  no expiry, the adapter as `escrow`, a facility-fixed `to`. The holder cannot move or reclaim held
+  units; only the adapter, driven by the facility, can release or execute them. No invented
+  `lock()` (§4). `committedOf` reads `getHoldForByPartition` — authoritative ATS state, measured
+  delta on `commit` (I-33 / I-106).
+- ATS compliance is load-bearing: `commit` runs `canTransferByPartition` first, so an ineligible
+  replacement (a per-partition transfer restriction) cannot be committed and the old collateral is
+  never released (I-101, `test_ineligibleAtsAssetCannotReleaseTheOldCollateral`).
+- ENS and Privy stay distinct facts (§18, I-102): the verifier checks a pinned ENS EAC evidence
+  digest **and** recovers the Privy signer over the full decision hash. Revoking the ENS role
+  blocks a pending substitution's release (I-98 re-check) but not a completed one (I-108, §33).
+- CRE is not the risk engine (§20): the verifier only carries the ALLOW/DENY verdict; the
+  facility's `_assertReleasable` still runs asset identity, committed amount, oracle freshness,
+  RiskEpoch and coverage. Absence/DENY/expiry fail closed, never default ALLOW (I-105, §27).
+- 13 Forge tests over deterministic sponsor doubles (`MockAtsSecurityToken` + the real adapter, a
+  foundry key for the Privy signer, a foundry key for the CRE reporter). The canonical A→B
+  substitution completes with B committed before A released and the facility ACTIVE throughout; the
+  negative cases (ineligible ATS asset, CRE DENY, missing Privy approval, ENS revoked mid-flight,
+  wrong-key signature, stale nonce, expired approval) each leave the old collateral secured.
+- The Hedera-cannot-read-Sepolia limit (§13) is stated plainly in
+  `docs/ethonline-2026/CAPABILITY_MATRIX.md`: the ENS observation is pinned by an Usance relayer
+  (a liveness trust, not a safety one — the Privy signature covers the ENS digest, so the relayer
+  cannot forge an approval). No "trustless ENS verification on Hedera" language anywhere.
+
+**Consequence.** `spec/ethonline-institutional.md` frozen. `spec/invariants.md` gains `I-101…I-108`.
+The Phase 06 interfaces are unchanged. Nothing is deployed until the external resources in
+`docs/ethonline-2026/TESTNET_RESOURCE_PLAN.md` are supplied; the live testnet lifecycle,
+HashScan/Sepolia evidence and per-sponsor proof levels follow then. `docs/ethonline-2026/`
+(CAPABILITY_MATRIX, CONTINUITY, TESTNET_RESOURCE_PLAN) is the competition-facing record.
+
+---
+
 ## D-026 — The institutional secured-term facility is a new implementation, not a ClearingHouse change
 
 **Decision.** Phase 06 builds `InstitutionalFacility` (+ `FacilityValuation`, the adapter/verifier

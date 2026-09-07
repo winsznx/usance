@@ -246,3 +246,32 @@ sponsor adapters and testnet lifecycle. The verifiers exercised here are determi
 (`contracts/test/institutional/mocks/`), clearly non-production; Phase 07 implements
 `IAuthorityVerifier` (ENSv2 / Privy) and `IPolicyVerifier` (Chainlink CRE) against the same
 interfaces.
+
+---
+
+## ETHOnline institutional adapters (I-101…I-108)
+
+Introduced with the Phase 07 sponsor integration (`spec/ethonline-institutional.md`,
+`DECISIONS.md` D-027). New adapters — `HederaAtsCollateralAdapter` (over ATS Hold), the
+`EthOnlineAuthorityVerifier` (ENSv2 EAC evidence + a Privy-signed org approval) and the
+`EthOnlinePolicyVerifier` (a Chainlink-CRE-signed confidential verdict) — implement the **frozen**
+Phase 06 interfaces unchanged. Proofs are Forge tests in
+`contracts/test/institutional/EthOnlineLifecycle.t.sol` (13) over deterministic doubles that model
+each sponsor's real semantics.
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-101 | A sponsor failure cannot release the old collateral. If the ATS Hold cannot be created, the ENS role is absent/revoked, the Privy approval is missing, or the CRE verdict is absent/DENY/expired, the substitution cannot reach `OLD_RELEASED` and the old collateral stays committed. | ENFORCED | `test_ineligibleAtsAssetCannotReleaseTheOldCollateral`, `test_creDenyBlocksTheSubstitution`, `test_missingPrivyApprovalBlocksTheSubstitution`, `test_removal_hedera_noReplacementCommitmentMeansNoRelease`, `test_removal_cre_absentVerdictCannotDefaultAllow`. |
+| I-102 | ENS role evidence and Privy org approval are independently required. The `EthOnlineAuthorityVerifier` checks the pinned ENS EAC evidence digest **and** recovers the Privy signer over the exact `FacilityDecision` hash; neither substitutes for the other. | ENFORCED | `test_privyApprovalWithAWrongEnsDigestIsRejected`, `test_missingPrivyApprovalBlocksTheSubstitution`, `test_noFallbackSigner_wrongKeyIsRejected`; the verifier's `submitApproval` requires both. |
+| I-103 | An external decision must bind the exact request. A Privy approval or a CRE verdict for facility A / collateral B / requestId R cannot authorise a different facility, collateral, requestId, epoch or policy version — the signed message is the full decision hash, and `verify` re-checks the `DecisionBinding` and a strictly-monotone per-(facility, operation) nonce. | ENFORCED | `test_privyApprovalForAnotherReplacementCannotAuthorizeThisOne`, `test_replayedPrivyApprovalAcrossFacilitiesFails`, `test_aStaleNonceApprovalCannotBeResubmitted`. |
+| I-104 | Stale external evidence cannot increase privilege. An expired decision is rejected at submission (`DecisionExpired` / `VerdictExpired`) and again at `verify` (expiry re-checked); a lower-or-equal nonce is rejected (`StaleNonce`). | ENFORCED | `test_expiredPrivyApprovalIsRejectedAtSubmission`, `test_aStaleNonceApprovalCannotBeResubmitted`; restates I-98 over the sponsor evidence path. |
+| I-105 | Confidential-policy absence or unknown defaults restrictive. `EthOnlinePolicyVerifier.verify` returns false when no verdict is present, when the verdict is DENY, or when it has expired — never a default ALLOW. | ENFORCED | `test_removal_cre_absentVerdictCannotDefaultAllow`, `test_creDenyBlocksTheSubstitution`; the `verify` guard is `!v.present \|\| !v.allow \|\| v.expiry <= now`. |
+| I-106 | The ATS observed commitment is authoritative for the collateral amount. `HederaAtsCollateralAdapter.committedOf` sums live held amounts from `getHoldForByPartition` (on-chain ATS state), never a cached number; `commit` credits the measured held-balance delta (I-33), not the requested amount; `reconcile` returns `UNKNOWN` when the ATS state is inconclusive, which releases nothing (I-97). | ENFORCED | `test_substitutionAtoBSucceedsAndFacilityStaysActive` (committedOf drives `_assertReleasable`), `test_removal_hedera_noReplacementCommitmentMeansNoRelease`. |
+| I-107 | No external integration can set facility debt or status directly. The ATS adapter and both verifiers hold no role on `InstitutionalFacility`; they are read/attestation seams. The facility's `_assertReleasable` still runs the deterministic public checks (asset identity, committed amount, oracle freshness, RiskEpoch, coverage) after every external decision passes. | ENFORCED (by construction) | The adapters take no `Authority` role; `InstitutionalFacility` reads them through `ICollateralAdapter` / `IAuthorityVerifier` / `IPolicyVerifier` only. `test_substitutionAtoBSucceedsAndFacilityStaysActive` shows the facility, not a sponsor, finalising the release. |
+| I-108 | A completed historical substitution is immutable evidence despite future identity/policy changes. Revoking the ENS EAC role after a substitution released the old collateral does not rewrite that substitution; it only blocks a **new**, now-unauthorised request from reaching release. | ENFORCED | `test_ensRoleRevokedMidFlightBlocksReleaseButNotAHistoricalOne`; restates §33. |
+
+Phase 07 deploys to Hedera testnet + Sepolia + provider infra once the external resources in
+`docs/ethonline-2026/TESTNET_RESOURCE_PLAN.md` are supplied. Until then the sponsor doubles are
+deterministic and clearly non-production (`contracts/test/institutional/mocks/`,
+`MockAtsSecurityToken`). Proof level per sponsor is tracked in
+`docs/ethonline-2026/CAPABILITY_MATRIX.md`.
