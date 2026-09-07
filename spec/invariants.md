@@ -221,3 +221,28 @@ Vitest in `packages/portfolio-risk/test/*`.
 `INSTRUMENT` concentration is not a portfolio dimension — it is applied upstream by RiskMath
 `accounting.md §4.6` (`maxConcentrationBps`), and the portfolio model consumes the already-capped
 value.
+
+---
+
+## Institutional facility (I-94…I-100)
+
+Introduced with the institutional secured-term facility (`spec/institutional-facility-model.md`,
+`DECISIONS.md` D-026). A **new** `FacilityImplementation`, deployed by nobody in Phase 06: the
+deployed revolving-credit core is untouched. Proofs are Forge tests in
+`contracts/test/institutional/*` — 34 unit tests plus a 4-property stateful invariant campaign.
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-94 | A `TERM_SECURED_CREDIT` facility has one authoritative home domain and one authoritative financial-state owner. `facilityId` is `keccak256(abi.encode("USANCE_FACILITY_V1", "TERM_SECURED_CREDIT", homeDomainId, controller, discriminator))`; there is no `setHomeDomain`, `setBorrower`, `setLender` or `setController`, so any of those is a different facility. | ENFORCED | `test_facilityIdIsDerivedFromTypeDomainControllerDiscriminator`; every identity field is a `constructor` immutable (`InstitutionalFacility.sol`). |
+| I-95 | Old collateral never becomes releasable until a valid replacement has been committed **and** the facility is still safe after the replacement. `_releaseOldCollateral` is internal with exactly two callers (`releaseOld`, `substituteAtomic`), both gated by `_assertReleasable`, which checks: state `REPLACEMENT_COMMITTED`, request identity, exact replacement instrument, fresh epoch/policy (or the verifier's risk-reducing carve-out), fresh non-revoked authority, `adapter.committedOf ≥ requiredUnits` re-read now, and post-swap coverage from a fresh oracle. | ENFORCED | `test_oldCollateralCannotBeReleasedBeforeAReplacementIsCommitted`, `test_releaseIsRefusedWhenReplacementIsInsufficient`, `test_atomicSubstitutionSwapsCollateralAndReturnsTheOld`, `test_twoPhaseSubstitutionThroughAnAsyncAdapter`; `invariant_noReleaseWithoutCommittedReplacement`, `invariant_collateralIsAlwaysHeldWhileLive`. |
+| I-96 | Exactly one substitution is live per facility. A second `requestSubstitution` while one is open is refused; a duplicate `requestId`, a replayed `commitReplacement`, a duplicate adapter response and a worker retry are idempotent by the single-slot state check. The replacement adapter must differ from the current collateral adapter (a same-adapter "swap" would satisfy the committed-replacement check against the collateral already in custody — found by the fuzz campaign). | ENFORCED | `test_onlyOneSubstitutionCanBeActive`, `test_substitutionCannotReuseTheCurrentCollateralAdapter`, `test_aSubstitutionCannotBeReplayedAfterConsumption`, `test_releaseOldRejectsAMismatchedRequestId`. |
+| I-97 | Unknown external commitment state releases nothing. While `SubState ∈ {REQUESTED, REPLACEMENT_COMMITTING, COMMITMENT_UNKNOWN}` the old collateral stays locked; a `reconcileCommitment` that returns `UNKNOWN` keeps it locked, and `settle` is refused while any commitment is unknown. Restates I-23 / I-64 over collateral commitment. | ENFORCED | `test_unknownCommitmentKeepsTheOldCollateralLocked`; `invariant_collateralIsAlwaysHeldWhileLive`. |
+| I-98 | Stale or revoked authority, stale policy version, or a moved `RiskEpoch` blocks a release. Authority expiry and `authorityVerifier.isRevoked(decisionHash)` are re-checked at release time, not only at request time. A moved epoch is tolerated only if `policyVerifier.permitsCurrentEpoch` returns true and a guardian has not set the unsafe-release brake. | ENFORCED | `test_staleAuthorityBlocksRelease`, `test_revokedAuthorityBlocksRelease`, `test_movedEpochBlocksReleaseUnlessTheVerifierPermitsIt`, `test_guardianUnsafeReleaseBlockDisablesTheCarveOut`. |
+| I-99 | Fee conservation: `principalDrawn == borrowerProceeds + feeCharged`, in settlement-token units, charged once on the single activation path. The fee rounds up and the proceeds are the residual, so no unit is invented. No second activation route exists. | ENFORCED | `test_activationDisbursesProceedsAndFeeAndConserves`, `test_zeroOriginationFeeStillConserves`; `invariant_feeConservation`; `FacilityMath.originationSplit`. |
+| I-100 | Settlement cannot finalise with unresolved debt or unresolved external capital state. `settle` reverts `OutstandingDebt` while `outstanding() > 0` and `SubstitutionPending` / `CommitmentUnknownOutstanding` while either is live. Only the controller marks `SETTLED`; the indexer never does. A guardian cannot mark it settled, forgive debt, widen a limit or seize collateral to any recipient — the guardian surface is four restrictions and nothing else. | ENFORCED | `test_settleRefusesWhileDebtIsOutstanding`, `test_maturityWithUnpaidDebtDefaultsAndRoutesCollateralToTheLender`, `test_lenderRecallThenRepayReachesSettled`, `test_guardianCannotForgiveDebtOrWidenOrSeize`, `test_noReleaseFunctionTakesARecipient`. |
+
+Phase 06 deploys nothing. Proof level: `UNIT_TESTED` + `INTEGRATION_TESTED`. Live proof is Phase 07's
+sponsor adapters and testnet lifecycle. The verifiers exercised here are deterministic TEST doubles
+(`contracts/test/institutional/mocks/`), clearly non-production; Phase 07 implements
+`IAuthorityVerifier` (ENSv2 / Privy) and `IPolicyVerifier` (Chainlink CRE) against the same
+interfaces.

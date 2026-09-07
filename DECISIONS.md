@@ -9,6 +9,51 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-026 — The institutional secured-term facility is a new implementation, not a ClearingHouse change
+
+**Decision.** Phase 06 builds `InstitutionalFacility` (+ `FacilityValuation`, the adapter/verifier
+interfaces, `FacilityMath`) as a **new** `FacilityImplementation` under
+`contracts/src/institutional/`. `facilityType = TERM_SECURED_CREDIT` in the frozen
+`spec/facility-model.md §4` vocabulary. It is bilateral: one borrower, one lender, one settlement
+asset, one principal, a maturity, exactly one active collateral commitment, and a safe path to swap
+that commitment. Nothing is deployed. Proof level `UNIT_TESTED` + `INTEGRATION_TESTED`.
+
+**Why.** The Product Lock hero operation is "replace eligible collateral without unwinding the
+active facility". `ClearingHouse` is a revolving line with pooled lenders, ~86 bytes of EIP-170
+headroom, and it is live. Retrofitting bilateral counterparties, a facility lifecycle, and a
+collateral-substitution state machine into it would change deployed bytecode and its authority
+model, both forbidden. The multi-domain spec (`facility-model.md §1`, D-022) already anticipated a
+"separate `InstitutionalFacilityController` (Phase 06)".
+
+**Evidence.**
+- The flagship safety property (I-95) is structural: `_releaseOldCollateral` is internal with
+  exactly two callers, both gated by `_assertReleasable`, which re-checks commitment amount,
+  authority freshness, epoch/policy freshness and post-swap coverage. A stateful fuzz campaign over
+  random request/commit/reconcile/release/repay/warp sequences holds it, and caught one real bug (a
+  same-adapter "swap" that drained collateral — fixed).
+- The origination fee gap D-025 identified in the live facility is closed here correctly:
+  `principalDrawn == borrowerProceeds + feeCharged`, charged once on the single activation path,
+  ceiling `MAX_ORIGINATION_FEE_BPS = 50`, asserted as an invariant.
+- Provider-neutral: `ICollateralAdapter`, `IAuthorityVerifier`, `IPolicyVerifier` carry no vendor
+  type. Decisions bind to an exact `(facilityId, operation, subject, requestId, epoch,
+  policyVersion, expiry, nonce)` — never a bare boolean. Phase 07 (Hedera ATS, ENSv2, Privy,
+  Chainlink CRE) implements these interfaces; it does not reshape the mechanism.
+- Contract size: `InstitutionalFacility` runtime 21,036 bytes (3,540 headroom under EIP-170). The
+  spec's `§12` split of the substitution machinery into a separate module is deferred: measured,
+  not aesthetic, and there is meaningful headroom. `FacilityValuation` is split out so
+  `RiskMath.valueAsset` runs in its own contract frame (the deployed core is not compiled with
+  `via_ir`, and the 13-field substitution struct's auto-getter plus the value math together
+  overflowed the stack).
+
+**Consequence.** `spec/institutional-facility-model.md` is frozen. `spec/invariants.md` gains
+`I-94…I-100`. `usanceReceiptSchema` gains ten institutional `receiptKind` values (additive; every
+existing receipt still re-derives byte-for-byte). No deployed contract changes: `ClearingHouse`,
+`CollateralVault`, `FinancingEngine`, `LiquidityVault`, `FeeController`, `EmergencyController` and
+every registry are untouched in bytecode, storage, interface and role. Phase 07 wires the real
+adapters and takes it to a testnet lifecycle for live proof.
+
+---
+
 ## D-025 — The live revolving-credit facility charges a zero origination fee; enforcement waits for a new facility
 
 **Decision.** The origination fee on the currently deployed revolving-credit facility is **zero and

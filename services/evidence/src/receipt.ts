@@ -33,6 +33,20 @@ export const receiptKindSchema = z.enum([
   "SENTINEL_RUN_EXECUTED",
   "SENTINEL_RUN_BLOCKED",
   "SENTINEL_RUN_NO_ACTION",
+  // Institutional secured-term facility (Phase 06, spec/institutional-facility-model.md §9). The
+  // same family so /proof shows the facility lifecycle beside the evidence and authority mechanics.
+  // Each binds facilityId (workflowId), homeDomain, the operation / requestId (intentId), the
+  // borrower (accountId), the collateral assetId(s) and the policy / authority decision hashes.
+  "FACILITY_CREATED",
+  "FACILITY_ACTIVATED",
+  "COLLATERAL_COMMITTED",
+  "SUBSTITUTION_REQUESTED",
+  "SUBSTITUTION_REJECTED",
+  "REPLACEMENT_COMMITTED",
+  "COLLATERAL_RELEASED",
+  "FACILITY_REPAID",
+  "FACILITY_SETTLED",
+  "FACILITY_DEFAULTED",
 ]);
 export type ReceiptKind = z.infer<typeof receiptKindSchema>;
 
