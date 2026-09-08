@@ -85,7 +85,9 @@ contract BasePortfolioLifecycleTest is Test {
         p.capBps = caps;
         p.sessionFactorBps = [uint16(10000), 7500, 7500, 5000, 3000];
         p.maxCollateralInstruments = 8;
-        policyReg.publishPolicy(POLICY_ID, p, 1, PortfolioRiskPolicyRegistry.PolicyStatus.CANARY_PROVISIONAL, 0, 0);
+        policyReg.publishPolicy(
+            POLICY_ID, p, 1, PortfolioRiskPolicyRegistry.PolicyStatus.CANARY_PROVISIONAL, 0, 0
+        );
 
         // risk groups: distinct underlyings, shared issuer + custody, distinct sectors
         _grp(nvdaId, 0, "u-nvda");

@@ -48,7 +48,10 @@ interface IBaseOracleAdapter {
     ///         (`FACTOR_IN_PRICE`: already includes the multiplier).
     /// @return updatedAt the source `updatedAt`
     /// @return live true only when fresh for the current market session AND not paused-for-action
-    function priceUsd18(bytes32 instrumentId) external view returns (uint256 priceUsd18, uint64 updatedAt, bool live);
+    function priceUsd18(bytes32 instrumentId)
+        external
+        view
+        returns (uint256 priceUsd18, uint64 updatedAt, bool live);
 
     /// @return isTestOnly true for a `TEST_ONLY` price source (Sepolia synthetic instruments)
     function isTestOnly() external view returns (bool);

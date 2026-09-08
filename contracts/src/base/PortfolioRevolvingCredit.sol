@@ -112,15 +112,21 @@ contract PortfolioRevolvingCredit {
     bytes32[] public admittedInstruments;
     mapping(bytes32 instrumentId => AdmittedInstrument) internal _admitted;
 
-    event CollateralAdmitted(bytes32 indexed instrumentId, address adapter, address oracle, uint16 recognitionBps);
+    event CollateralAdmitted(
+        bytes32 indexed instrumentId, address adapter, address oracle, uint16 recognitionBps
+    );
     event CollateralCommitted(bytes32 indexed instrumentId, address indexed from, uint256 measuredRaw);
     event Funded(uint256 amountUsd18);
     event Activated(uint256 portfolioRecognizedUsd18, bytes32 snapshotDigest);
     event Drawn(uint256 amountUsdc, uint256 feeUsd18, uint256 debtAfterUsd18, bytes32 snapshotDigest);
     event Repaid(uint256 amountUsdc, uint256 debtAfterUsd18);
-    event CollateralWithdrawn(bytes32 indexed instrumentId, uint256 raw, uint256 portfolioRecognizedAfterUsd18);
+    event CollateralWithdrawn(
+        bytes32 indexed instrumentId, uint256 raw, uint256 portfolioRecognizedAfterUsd18
+    );
     event Settled();
-    event Liquidated(bytes32 indexed instrumentId, uint256 raw, uint256 proceedsUsd18, uint256 debtAfterUsd18);
+    event Liquidated(
+        bytes32 indexed instrumentId, uint256 raw, uint256 proceedsUsd18, uint256 debtAfterUsd18
+    );
 
     error NotGovernance();
     error NotBorrower();
@@ -146,7 +152,11 @@ contract PortfolioRevolvingCredit {
         if (t.originationFeeBps > MAX_ORIGINATION_FEE_BPS) revert FeeTooHigh(t.originationFeeBps);
         facilityId = keccak256(
             abi.encode(
-                "USANCE_FACILITY_V1", "PORTFOLIO_REVOLVING_CREDIT", t.homeDomainId, address(this), t.discriminator
+                "USANCE_FACILITY_V1",
+                "PORTFOLIO_REVOLVING_CREDIT",
+                t.homeDomainId,
+                address(this),
+                t.discriminator
             )
         );
         governance = t.governance;
@@ -393,7 +403,11 @@ contract PortfolioRevolvingCredit {
 
     /// @dev Builds the engine positions from the admitted set, subtracting `deltaRaw` from
     ///      `deltaInstrument` (a withdrawal simulation). Runs the pure `PortfolioRiskEngine`.
-    function _recomputeWithDelta(bytes32 deltaInstrument, uint256 deltaRaw) internal view returns (Snap memory out) {
+    function _recomputeWithDelta(bytes32 deltaInstrument, uint256 deltaRaw)
+        internal
+        view
+        returns (Snap memory out)
+    {
         uint256 n = admittedInstruments.length;
         PortfolioRiskEngine.Position[] memory pos = new PortfolioRiskEngine.Position[](n);
         bool allLive = true;
@@ -402,7 +416,11 @@ contract PortfolioRevolvingCredit {
         (uint32 polVersion,,,,,) = policyReg.meta(policyId);
         bytes32 acc = keccak256(
             abi.encode(
-                "USANCE_BASE_PORTFOLIO_SNAPSHOT_V1", facilityId, policyId, polVersion, policyReg.portfolioRiskEpoch()
+                "USANCE_BASE_PORTFOLIO_SNAPSHOT_V1",
+                facilityId,
+                policyId,
+                polVersion,
+                policyReg.portfolioRiskEpoch()
             )
         );
 
@@ -412,7 +430,8 @@ contract PortfolioRevolvingCredit {
             if (id == deltaInstrument) {
                 rawCredited = rawCredited > deltaRaw ? rawCredited - deltaRaw : 0;
             }
-            (PortfolioRiskEngine.Position memory p, bool live, bytes32 chunk) = _buildPosition(id, rawCredited);
+            (PortfolioRiskEngine.Position memory p, bool live, bytes32 chunk) =
+                _buildPosition(id, rawCredited);
             pos[i] = p;
             if (!live) allLive = false;
             acc = keccak256(abi.encode(acc, chunk));
@@ -442,7 +461,8 @@ contract PortfolioRevolvingCredit {
             uint8 feedStatus = a.adapter.snapshot().feedStatus;
             live = oracleLive && feedStatus == 0;
             mv = (rawCredited * price) / (10 ** a.decimals);
-            chunk = keccak256(abi.encode(id, rawCredited, price, updatedAt, a.adapter.factorWad(), feedStatus));
+            chunk =
+                keccak256(abi.encode(id, rawCredited, price, updatedAt, a.adapter.factorWad(), feedStatus));
         }
         bytes32[5] memory g = policyReg.groupsOf(id);
         (bytes32 liqGroup, uint256 depth,) = a.liquidity.observe(id, mv);

@@ -104,7 +104,8 @@ contract BaseB20InstrumentAdapter is IInstrumentAdapter {
 
     function _probePending() internal view returns (uint256 pending, uint64 activationAt) {
         (bool okE, bytes memory dataE) = address(token).staticcall(abi.encodeWithSelector(SEL_EFFECTIVE_AT));
-        (bool okN, bytes memory dataN) = address(token).staticcall(abi.encodeWithSelector(SEL_NEW_UI_MULTIPLIER));
+        (bool okN, bytes memory dataN) =
+            address(token).staticcall(abi.encodeWithSelector(SEL_NEW_UI_MULTIPLIER));
         if (okE && okN && dataE.length == 32 && dataN.length == 32) {
             activationAt = uint64(abi.decode(dataE, (uint256)));
             pending = abi.decode(dataN, (uint256));

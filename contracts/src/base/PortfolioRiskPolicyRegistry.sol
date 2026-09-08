@@ -49,7 +49,9 @@ contract PortfolioRiskPolicyRegistry {
     uint64 public portfolioRiskEpoch = 1;
 
     event PolicyPublished(bytes32 indexed policyId, uint32 version, PolicyStatus status, uint64 epoch);
-    event RiskGroupRefSet(bytes32 indexed instrumentId, uint8 indexed dimension, bytes32 groupId, uint64 epoch);
+    event RiskGroupRefSet(
+        bytes32 indexed instrumentId, uint8 indexed dimension, bytes32 groupId, uint64 epoch
+    );
     event EpochBumped(uint64 epoch, bytes32 reason);
 
     error NotGovernance();

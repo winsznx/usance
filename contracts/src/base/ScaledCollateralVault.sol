@@ -44,7 +44,9 @@ contract ScaledCollateralVault {
 
     event FacilityBound(address indexed facility);
     event InstrumentRegistered(bytes32 indexed instrumentId, address token);
-    event Deposited(bytes32 indexed instrumentId, address indexed account, uint256 requested, uint256 measured);
+    event Deposited(
+        bytes32 indexed instrumentId, address indexed account, uint256 requested, uint256 measured
+    );
     event Withdrawn(bytes32 indexed instrumentId, address indexed account, uint256 raw);
     event LiquidationTransfer(bytes32 indexed instrumentId, address indexed account, address to, uint256 raw);
     event SurplusObserved(bytes32 indexed instrumentId, uint256 surplusRaw);
@@ -116,7 +118,10 @@ contract ScaledCollateralVault {
     }
 
     /// @notice Move raw units to a liquidation route. The facility gates unsafe-state + freshness.
-    function liquidationTransfer(bytes32 instrumentId, address account, address to, uint256 raw) external onlyFacility {
+    function liquidationTransfer(bytes32 instrumentId, address account, address to, uint256 raw)
+        external
+        onlyFacility
+    {
         _debit(instrumentId, account, raw);
         Instrument memory inst = instrument[instrumentId];
         if (!inst.token.transfer(to, raw)) revert TransferFailed();
@@ -135,7 +140,11 @@ contract ScaledCollateralVault {
     }
 
     /// @notice Economic quantity for an account, given a pinned factor. `spec/corporate-action-model.md §1`.
-    function effectiveOf(bytes32 instrumentId, address account, uint256 factorWad) external view returns (uint256) {
+    function effectiveOf(bytes32 instrumentId, address account, uint256 factorWad)
+        external
+        view
+        returns (uint256)
+    {
         return (creditedRaw[instrumentId][account] * factorWad) / 1e18;
     }
 

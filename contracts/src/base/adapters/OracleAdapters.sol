@@ -53,12 +53,17 @@ contract ChainlinkTotalReturnOracleAdapter is IBaseOracleAdapter {
         if (msg.sender != governance) revert NotGovernance();
         if (feedOf[instrumentId].registered) revert FeedAlreadyRegistered(instrumentId);
         uint8 d = IAggregatorV3(feed).decimals();
-        feedOf[instrumentId] =
-            FeedCfg({feed: IAggregatorV3(feed), feedDecimals: d, openBoundSeconds: openBoundSeconds, registered: true});
+        feedOf[instrumentId] = FeedCfg({
+            feed: IAggregatorV3(feed), feedDecimals: d, openBoundSeconds: openBoundSeconds, registered: true
+        });
         emit FeedRegistered(instrumentId, feed, d, openBoundSeconds);
     }
 
-    function priceUsd18(bytes32 instrumentId) external view returns (uint256 price, uint64 updatedAt, bool live) {
+    function priceUsd18(bytes32 instrumentId)
+        external
+        view
+        returns (uint256 price, uint64 updatedAt, bool live)
+    {
         FeedCfg memory c = feedOf[instrumentId];
         if (!c.registered) revert FeedNotRegistered(instrumentId);
         (, int256 answer,, uint256 rawUpdatedAt,) = c.feed.latestRoundData();
@@ -119,7 +124,11 @@ contract TestOnlyOracleAdapter is IBaseOracleAdapter {
         emit PriceSet(instrumentId, priceUsd18_, updatedAt_);
     }
 
-    function priceUsd18(bytes32 instrumentId) external view returns (uint256 price, uint64 updatedAt, bool live) {
+    function priceUsd18(bytes32 instrumentId)
+        external
+        view
+        returns (uint256 price, uint64 updatedAt, bool live)
+    {
         Px memory p = px[instrumentId];
         if (!p.set) revert PriceNotSet(instrumentId);
         price = p.priceUsd18;
