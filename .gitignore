@@ -74,3 +74,5 @@ packages/ethonline/.cre-reporter.json
 packages/ethonline/usance-cre/*.env
 packages/ethonline/usance-cre/**/binary.wasm
 packages/ethonline/usance-cre/**/*.wasm.br
+
+packages/portfolio-risk/dist/

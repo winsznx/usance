@@ -84,8 +84,16 @@ test-differential: ## Prove Solidity and TypeScript agree with the frozen fixtur
 	  exit 1; \
 	fi
 	@rm -f .fixtures.committed.tmp
+	@echo "→ checking portfolio-risk fixtures still match the TS reference"
+	@cp fixtures/portfolio/portfolio-scenarios.json .pfix.committed.tmp
+	@node scripts/gen_portfolio_fixtures.mjs > /dev/null
+	@if ! cmp -s fixtures/portfolio/portfolio-scenarios.json .pfix.committed.tmp; then \
+	  echo ""; echo "FAIL: committed portfolio fixtures disagree with the TS reference / generator."; \
+	  rm -f .pfix.committed.tmp; exit 1; \
+	fi
+	@rm -f .pfix.committed.tmp
 	@echo "→ Solidity conformance"
-	@cd $(CONTRACTS) && forge test --match-contract RiskMathConformance
+	@cd $(CONTRACTS) && forge test --match-contract "RiskMathConformance|PortfolioRiskConformance"
 	@echo "→ TypeScript conformance"
 	@pnpm --filter @usance/domain test
 	@echo "→ Rust conformance"

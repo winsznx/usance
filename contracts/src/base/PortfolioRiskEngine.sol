@@ -85,11 +85,7 @@ library PortfolioRiskEngine {
     /// @notice `spec/portfolio-risk-model.md §4`. `positions` MUST be the facility's admitted set on
     ///         its home domain (I-87) and free of duplicate instrumentIds — this function does not
     ///         filter or dedupe.
-    function evaluate(Position[] memory positions, Policy memory policy)
-        internal
-        pure
-        returns (Result memory r)
-    {
+    function evaluate(Position[] memory positions, Policy memory policy) internal pure returns (Result memory r) {
         uint256 n = positions.length;
         if (n > policy.maxCollateralInstruments) {
             revert TooManyInstruments(n, policy.maxCollateralInstruments);
@@ -133,8 +129,7 @@ library PortfolioRiskEngine {
 
         // positionScale = min(sessionScale, min over dimensions); track binding dimension
         for (uint256 i = 0; i < n; i++) {
-            uint256 scale =
-                _mulDivDown(_min(BPS, policy.sessionFactorBps[positions[i].marketSession]), WAD, BPS);
+            uint256 scale = _mulDivDown(_min(BPS, policy.sessionFactorBps[positions[i].marketSession]), WAD, BPS);
             uint8 binding = scale < WAD ? B_SESSION : B_NONE;
             for (uint256 d = 0; d < DIMS; d++) {
                 uint256 s = dimScale[d * n + i];
@@ -283,14 +278,9 @@ library PortfolioRiskEngine {
         }
     }
 
-    function _sessionOnly(Position[] memory positions, Policy memory policy)
-        private
-        pure
-        returns (uint256 only)
-    {
+    function _sessionOnly(Position[] memory positions, Policy memory policy) private pure returns (uint256 only) {
         for (uint256 i = 0; i < positions.length; i++) {
-            uint256 sScale =
-                _mulDivDown(_min(BPS, policy.sessionFactorBps[positions[i].marketSession]), WAD, BPS);
+            uint256 sScale = _mulDivDown(_min(BPS, policy.sessionFactorBps[positions[i].marketSession]), WAD, BPS);
             only += _mulDivDown(positions[i].singleRecognizedUsd18, sScale, WAD);
         }
     }

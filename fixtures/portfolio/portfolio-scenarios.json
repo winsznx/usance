@@ -1,0 +1,1033 @@
+{
+  "$generated": "scripts/gen_portfolio_fixtures.mjs — DO NOT EDIT BY HAND",
+  "reference": "packages/portfolio-risk/src/evaluate.ts",
+  "wad": "1000000000000000000",
+  "bps": "10000",
+  "scenarioCount": 14,
+  "scenarios": [
+    {
+      "name": "A_single_instrument",
+      "positionCount": 1,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+          "singleRecognizedUsd18": "400000000000000000000",
+          "marketValueUsd18": "500000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xd614578a10829d1aad4320d12e24ebddc31977ebeea7325e6327f90dc58e1e19",
+            "0xe849e701e41bd99abcf341814af864414571f999606da71a048ba29329acb07a",
+            "0x6f1d4ab2c4d2555ea46eb37cf27bf00daeacc33a720b3d6a2c845dd88f83d4eb",
+            "0xfb47d930d3218360be526486199565eaa6a56e0172efe8be1c55331fb730e15d",
+            "0x9a157230dd8bfad6cd57748f5a6af220dbf2d99f847b76699789e8485829f4e6"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "140000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "400000000000000000000",
+        "portfolioMarketValueUsd18": "500000000000000000000",
+        "working": [
+          "140000000000000000000"
+        ],
+        "positionScaleWad": [
+          "350000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "B_two_independent_underlyings",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000002",
+          "singleRecognizedUsd18": "300000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0xdcc2ea2af0064df41c8572a580003a16ab00e49824f308da58a3d07f83ded967",
+            "0xfda58042ba79f13fe9a3a6fde7d9efb44844d07f5c10b30d2dccbde324ed8243",
+            "0x62c5d6f7fb2a9e7b254f714b5212f8cfa82a80b93709c06e835e4bec736c661d"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000003",
+          "singleRecognizedUsd18": "300000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0xdcc2ea2af0064df41c8572a580003a16ab00e49824f308da58a3d07f83ded967",
+            "0xff8d83835b27dc01ab118b34d25d6d2e857bc2dd13e33f6afcd705cedb8b8b88",
+            "0x4c5da05e0bd1b68d770a18a95bb7406d15936b70f9a302f50a84c5f161dab83b"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "300000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "600000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "150000000000000000000",
+          "150000000000000000000"
+        ],
+        "positionScaleWad": [
+          "500000000000000000",
+          "500000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "C_same_underlying_two_wrappers",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000004",
+          "singleRecognizedUsd18": "300000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x27ab82639d8d688deb5ea31a0dbed46a5ba332a815d737e57099ecdb3902a139",
+            "0x6974a768f744d1221c8d295e9fd846b26f757fc78c49896f4ea73cb0d9be747c",
+            "0x65d6c98117b2d09c5cb92aae899c3c947b9a9d0a66bc23cd856fdcd406880475",
+            "0xfd03f67e5a7192b1ac94242849647db971ef6695fead9a735a52591bb20b3ae9"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000005",
+          "singleRecognizedUsd18": "300000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x66b4c46f1f5953d214cf6fcbb9be72b12b7e4a5c6bc2ce7197f12d219423d148",
+            "0x59bd8c30ac613cf4f1e9457c8bec59622d3405bc5be7ee198672d9e6b5ebaf0e",
+            "0xc4e409d2594bffe3de68b52b79c0dedaff74edf034c39448f2467f2df1aaf129",
+            "0x45b357fd2b3b45535d8beae93c1bd5001266d0351ba9f1dde5cc388fb87af9ef"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "210000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "600000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "105000000000000000000",
+          "105000000000000000000"
+        ],
+        "positionScaleWad": [
+          "350000000000000000",
+          "350000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "D_same_issuer",
+      "positionCount": 3,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000006",
+          "singleRecognizedUsd18": "400000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0x807249924bb747fce5d50605a8d5761a24eec2b73932e46edb8900b2fdb8b2b3",
+            "0x517a1a3f655f14651dc8ab4bbf8c0880d3fd3116e40a3f2d103781f8e10c3cd2",
+            "0x58db045a92b616e5a8febc7057703fe11f2cbfe9b4b519ca6da8391d06b98628"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000007",
+          "singleRecognizedUsd18": "400000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0x4bcdf65db0f7447a125c15fc9203719c12dbf40a7672a345e337ec38e33eaa8c",
+            "0xcc36625e9cbc1ecba2fbf5038468e20b272b02b9874b333bb5640e40c1a80534",
+            "0x6e5a0d08cbff6f5cc5d3115eca48c761f411d19c4db16ff0da91f1b322549b07"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000008",
+          "singleRecognizedUsd18": "400000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x5480d4740314d9a5fa65eac6dab758c3c95d65be45311b45c3551575d760e7d8",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0xeb7ef74407531c5dfd9bcd51e645beca968d8314a68763963ee7200a7fd20ecc",
+            "0xdb20dfeed21df547902e80a25328b22b73071c665889a7125cbc183e73da1302",
+            "0x18fc7e8aa6f6289df1ce32514847dd0817f3d742b5f2396b5da88705f2c65db4"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "600000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1200000000000000000000",
+        "portfolioMarketValueUsd18": "300000000000000000000",
+        "working": [
+          "200000000000000000000",
+          "200000000000000000000",
+          "200000000000000000000"
+        ],
+        "positionScaleWad": [
+          "500000000000000000",
+          "500000000000000000",
+          "500000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "E_same_custodian",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000009",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0xe9070a0e46338c0f806693948911f914a1fe7013ccc9de7a49167f607d27fd79",
+            "0x453e8ffed6baf3080b831951be0a7d88609b41a64190eb73f6efef2c6a5f0acc",
+            "0x4c051551d301e246b89c53fee906bd76324cdb040504699917d7773efa75ff2a",
+            "0x8f72aae4475bd26b51da89547dbf1c3f2588fa8f3a09afa090695bead43340ac"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000000a",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0xc54774b6f9fe280a6fe1509dfa0d65a883b4cd80b6d09736d213611fb301799c",
+            "0x453e8ffed6baf3080b831951be0a7d88609b41a64190eb73f6efef2c6a5f0acc",
+            "0x077b9227b870cd15dece9a60f91b71c0bdfc2b4c79158aa256cc7a349d3f990f",
+            "0x19181d7330b55388f374b7865d197a92c3f354cd55d8bd0ce6805e04b7beca50"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "500000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "250000000000000000000",
+          "250000000000000000000"
+        ],
+        "positionScaleWad": [
+          "500000000000000000",
+          "500000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "F_same_sector",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000000b",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0xf9c2b04d4f2e316b43b7946c61724b4a5b679a49aec387d17ce7fdd6868bf16b",
+            "0x90616c11dea6829a8ae2bb7ec91b3c834cc199d88ff307e221731ba8b27b2f0c",
+            "0x413aeb1cb1b3f605ae4b408db9bef1c15607dacbe2cdd9aab76b3edb729933a9",
+            "0x654006b07d03bbf9cb56ecf50002c09379faa76c3541c2b059842ef382d3a516"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000000c",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x26679c568ac4e46a6321cf887bb7b568b774c87625d9c2ae109700480979178e",
+            "0xb23f2bc379b90d314bbb93b017c779774206eb3b458a317ac7769af784f8d258",
+            "0xc29887a0fb3908ad5d573a702845afad5cc029a8247a9013f5ef093fc6e99651",
+            "0x413aeb1cb1b3f605ae4b408db9bef1c15607dacbe2cdd9aab76b3edb729933a9",
+            "0xcc24f121d3c673390c27f98511d19eff1cc82d69e1a586b9a3e8fe31e0149b78"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "400000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "200000000000000000000",
+          "200000000000000000000"
+        ],
+        "positionScaleWad": [
+          "400000000000000000",
+          "400000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "G_mixed_session",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000000d",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0xe366d34b02f800c1d827902a4bc68b7795fede4e17ecca67c4b344984a72582c",
+            "0xe848cea8bdb2a0019d87f1350c49c0a2f55a2b86d8a6a2d93b20f25113e26b24",
+            "0x406037b5592a019d8d583de7acd2d172ff92a326417482a4333df3f9010a8e09",
+            "0xba73c070273ce0ac218a32ef5661432075e0186f655547b83cba4eff0987f3fa"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000000e",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 3,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x5496a536476607f0e0ffb75f51986a5fd6edab9136ddcb74803f699da590398d",
+            "0x6b98eb94586ea0be1eac0b631738b441f8ceeab1cfcb91a13f8ae20da4680ad7",
+            "0x88795fade5d923c475b40b7d785aecf9d4ac304d13279d0ae4b7085c0e446e2f",
+            "0x9dd769463b4b7531d320addfc3c6c52205c47159ea3fafc0bb1b7e3596009029"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "600000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "350000000000000000000",
+          "250000000000000000000"
+        ],
+        "positionScaleWad": [
+          "700000000000000000",
+          "500000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "H_missing_metadata",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000000f",
+          "singleRecognizedUsd18": "600000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+          ],
+          "liquidityDepthUsd18": "0"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000010",
+          "singleRecognizedUsd18": "400000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x0aa8fd84bfa7093d4ad20de2f3b5a74d16a47e745c6567bdb43d44402be6d2d1",
+            "0x29202cb37985b970bee96f08b04639e3b9964d6a09170f48c6dd61040793d238",
+            "0x515e21024bb798acf2656f6d6763eb34d99bca857430355039de2fa0298fbe2d",
+            "0xee11ea311524ec12b7dbe82222701a7eef9c54753754985c12941953f4059a0f"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "500000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "150000000000000000000",
+          "350000000000000000000"
+        ],
+        "positionScaleWad": [
+          "250000000000000000",
+          "875000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "I_shared_shallow_liquidity",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000011",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x09868643f527c79259e5850044d59848ee2aad2ae0648b639b8fa00645d30616",
+            "0x2324f60d3d7de2db63e80fe30189158cef5013dc61559b010168bf7a756ca2d5",
+            "0xf15455bbdcddb54efd2b070c608322e43f6017078ff4ef3e72f6e8d69deffd8c",
+            "0x16c59d382531ceb49aaf0acddec9fa9aefebcc5d0b78bee82073089450e8daff"
+          ],
+          "liquidityDepthUsd18": "150000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000012",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x31733a6745b2e56bd01b8b48b3c6598cd15436b3a4736b880a3cc36f9e23a8b2",
+            "0x132573b7a48ffacfa8250e60623fd2c84fd0a0fa0eb5c9f21a314f1d37cb3ee0",
+            "0x1ad4d7f17af1bdb11c090c1046a47ce96cf4201f83e46c8348789634f8ecf9bf",
+            "0x16c59d382531ceb49aaf0acddec9fa9aefebcc5d0b78bee82073089450e8daff"
+          ],
+          "liquidityDepthUsd18": "150000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "150000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "75000000000000000000",
+          "75000000000000000000"
+        ],
+        "positionScaleWad": [
+          "150000000000000000",
+          "150000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "J_stress_sector",
+      "positionCount": 2,
+      "stressCount": 1,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 3000,
+        "stressGroupIds": [
+          "0xfda58042ba79f13fe9a3a6fde7d9efb44844d07f5c10b30d2dccbde324ed8243"
+        ],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000013",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0xa60fb0f30dde1a98d617d747216a785e21f94523977a84411dc559b1d78e49ed",
+            "0xd96c00988fe17a554a4300f4ecf4441458e4d57c5b34fff8637e543a002c322d",
+            "0xfda58042ba79f13fe9a3a6fde7d9efb44844d07f5c10b30d2dccbde324ed8243",
+            "0x99d5072d439a4c7636caa6e2956e05ddef792709a0b18ad7fa6c7432228fb1b3"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000014",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0xf5a64a2fb55918b0f64ca6208f271c09d22a1816a32f531e6c5e03e9f933499b",
+            "0x1e950bf1e419a0e0f38043b2b408723a066b1d67f3c5fad71267d475147f58e6",
+            "0x3b241c0075c77232009c40ed33ec2b1e4093561422fa9655c944d88242651f18",
+            "0x1f43917d065926cf5bd6bbd21dcb1e387bc74471ad3cb316a0cf8c7e009251e0"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "595000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "350000000000000000000",
+          "350000000000000000000"
+        ],
+        "positionScaleWad": [
+          "700000000000000000",
+          "700000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "K_three_name_three_sector",
+      "positionCount": 3,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000015",
+          "singleRecognizedUsd18": "333000000000000000000",
+          "marketValueUsd18": "400000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0xf1a70723f32eebace09ac5fb86b3529ed7fbae14f956025dbecf71fd7f2f8c63",
+            "0xfda58042ba79f13fe9a3a6fde7d9efb44844d07f5c10b30d2dccbde324ed8243",
+            "0x9e90fb238470a1f774491260007a9c3db5f6f1c29d1893645c2aff9b1a141d9f"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000016",
+          "singleRecognizedUsd18": "333000000000000000000",
+          "marketValueUsd18": "400000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0xf1a70723f32eebace09ac5fb86b3529ed7fbae14f956025dbecf71fd7f2f8c63",
+            "0xff8d83835b27dc01ab118b34d25d6d2e857bc2dd13e33f6afcd705cedb8b8b88",
+            "0x903d89ce60e32701ea743dca8b0776bd91a6aad14e9cc9523845e048db3cd58c"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000017",
+          "singleRecognizedUsd18": "334000000000000000000",
+          "marketValueUsd18": "400000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x5480d4740314d9a5fa65eac6dab758c3c95d65be45311b45c3551575d760e7d8",
+            "0x76ec948a9207fdea26dcba91086bcdd181920ff52a539b0d1eb28e73b4cd92af",
+            "0xf1a70723f32eebace09ac5fb86b3529ed7fbae14f956025dbecf71fd7f2f8c63",
+            "0x56350981e73bdf97b77d75203fea38a6383ba84611dc109f6de132bd4d47f640",
+            "0x9f037c4f474d62b7bb380195081fb6fc7c3284b5f1d3f7e97f060f94cb3acd35"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "500000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "1200000000000000000000",
+        "working": [
+          "166500000000000000000",
+          "166500000000000000000",
+          "167000000000000000000"
+        ],
+        "positionScaleWad": [
+          "500000000000000000",
+          "500000000000000000",
+          "500000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "L_asymmetric_sizes",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000018",
+          "singleRecognizedUsd18": "900000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0x1d6605787659617543f393ea1d23e48b65a815fbea0fc161e67f317810250529",
+            "0x03e974039ce2bb67af4e80a8acb8810cf340c310c1b7406cca1a01acd58af397",
+            "0x9660f6573cd29da4a869e8672d4b12c1ac5515b74d4c06c38b0766d8c19dded1",
+            "0x9cd323bc661867544bd821cef6872a099dd2ce4765d4c8b77b80e1495b3cf78b"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x0000000000000000000000000000000000000000000000000000000000000019",
+          "singleRecognizedUsd18": "100000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 0,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0xa8d2207940d9f5e5988d3aad5bb442781d6ab5acc84204adb534c865eb428c07",
+            "0x71b563a47137c8d3caeb01ee2e69cfaf017f6f43e9935ee814520a1798644e5c",
+            "0xe095c6b4345860ad49a015623d27366c64662c1cc9243835e727d48610f245d4",
+            "0x893b060cf808cf24327249962b480a7eb77226b4bf4dae48af0c823b6e46c4d3"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "449999999999999999200",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "349999999999999999200",
+          "100000000000000000000"
+        ],
+        "positionScaleWad": [
+          "388888888888888888",
+          "1000000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "M_zero_base",
+      "positionCount": 1,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000001a",
+          "singleRecognizedUsd18": "0",
+          "marketValueUsd18": "0",
+          "marketSession": 0,
+          "groups": [
+            "0x31dcaea2701ad6ff1fea2bda5889d90e488267cfd36d45d51702e8d53506f2de",
+            "0xd7297172f626557b14dcc6198d0488eddf2d09f33a38e6cfbcb90c05a3054541",
+            "0x9ac47771ccbc984e9fa9c4c26505fab2d0d39e3d64c0470a445cbf284b9d59a5",
+            "0x4ed801bc9faaf423351f5896be8aa60dfbc3da524521916a8cfa78359d269bab",
+            "0xe50ccc7ff19942673d0d09146145625c319a7e045f57f07c841ca503da650f86"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "0",
+        "singleAssetRecognizedTotalUsd18": "0",
+        "portfolioMarketValueUsd18": "0",
+        "working": [
+          "0"
+        ],
+        "positionScaleWad": [
+          "1000000000000000000"
+        ]
+      }
+    },
+    {
+      "name": "N_session_pre_market",
+      "positionCount": 2,
+      "stressCount": 0,
+      "policy": {
+        "capBpsFlat": [
+          3500,
+          1500,
+          5000,
+          2000,
+          5000,
+          2000,
+          4000,
+          1500,
+          6000,
+          6000
+        ],
+        "sessionFactorBps": [
+          10000,
+          7500,
+          7500,
+          5000,
+          3000
+        ],
+        "maxCollateralInstruments": 8,
+        "stressHaircutBps": 0,
+        "stressGroupIds": [],
+        "stressSessions": []
+      },
+      "positions": [
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000001b",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 1,
+          "groups": [
+            "0xe108948b9667048232851f26a1427d3a908b22da622562906ca50ea536c2ecfb",
+            "0xcffe48413baf5b382a5de0fdd862fe984c1405c646963224a88a4f597cd4f7ba",
+            "0x45d7b5d076aba89ce83c79500d3111ef02c5a1a7c8ec2c1422c6a4bdb78065cf",
+            "0x2624bcaabf0f3e9252424b78ea19d23932c80f9d96f7f04c32d08ea622b78fc9",
+            "0x729b18061cc9b6596a9d9f54adc48e6bc7aac0f7ae93859dfcfa87ab89fb11a0"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        },
+        {
+          "instrumentId": "0x000000000000000000000000000000000000000000000000000000000000001c",
+          "singleRecognizedUsd18": "500000000000000000000",
+          "marketValueUsd18": "100000000000000000000",
+          "marketSession": 1,
+          "groups": [
+            "0x3a54a9a690616fbc26cfc409bf11f89d51f1d57a4ab2791fb86026cee74ed2f3",
+            "0x4e4b13f91bf887f37cd2a249c5cd2fdfc7b991cbbf44f982eb5b01023e5d5e92",
+            "0xc9b2d072ed258d899bcb4ef57119dd2458604bca3883a9b453fc59be3eeb6574",
+            "0x9cdac6774121bdd837882a458536b42f28c68452879854e69d681167e3044198",
+            "0x1a5ed5303ee5a309b762190aca62854aa532f38cd03e067351f4d7a3e5985a2f"
+          ],
+          "liquidityDepthUsd18": "10000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "portfolioRecognizedValueUsd18": "700000000000000000000",
+        "singleAssetRecognizedTotalUsd18": "1000000000000000000000",
+        "portfolioMarketValueUsd18": "200000000000000000000",
+        "working": [
+          "350000000000000000000",
+          "350000000000000000000"
+        ],
+        "positionScaleWad": [
+          "700000000000000000",
+          "700000000000000000"
+        ]
+      }
+    }
+  ]
+}
