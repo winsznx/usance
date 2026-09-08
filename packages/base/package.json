@@ -1,0 +1,13 @@
+{
+  "name": "@usance/base",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Base production domain: B20 characterization, portfolio-credit deploy + lifecycle tooling. Not part of the deployed X Layer core.",
+  "scripts": {
+    "typecheck": "echo \"base: live tooling, no typecheck\""
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  }
+}
