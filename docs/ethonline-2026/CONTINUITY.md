@@ -56,6 +56,20 @@ model each sponsor's real semantics (`HederaAtsCollateralAdapter` over the exact
 surface, foundry keys for the Privy / CRE signers, `MockAtsSecurityToken`). The live testnet
 lifecycle follows once the `TESTNET_RESOURCE_PLAN.md` resources are supplied.
 
+## Proof-language status (do not promote beyond the evidence)
+
+| Component | Status |
+|---|---|
+| Hedera ATS securities + Hold custody | `LIVE_TESTNET` (Hedera testnet, chain 296) |
+| ENSv2 EAC authority | `LIVE_TESTNET` (Sepolia, chain 11155111) |
+| Privy organizational control / two-key quorum | `LIVE` external integration (Privy production API) |
+| Chainlink CRE confidential workflow | `LIVE_SIMULATION` / qualifying `cre workflow simulate` path — **not** a deployed CRE network workflow |
+| Full institutional collateral substitution | `LIVE_TESTNET`, with the CRE policy input **simulation-attested** |
+
+CRE is never described as a live deployed-network workflow. Deploying to a CRE DON needs Chainlink
+deploy-access approval; the CLI simulation is the ETHOnline-qualifying path and the honest ceiling
+of the current evidence.
+
 ## Prize eligibility notes
 
 - **Hedera ATS $6,000** and **ENS $4,500** and **Privy $2,500** and **Chainlink $2,000** are
