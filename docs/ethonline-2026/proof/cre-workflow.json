@@ -1,0 +1,18 @@
+{
+  "$generatedAt": "2026-09-08T05:32:59.266Z",
+  "workflow": "packages/ethonline/usance-cre/lender-policy (CRE Confidential Workflow, Go, AWS Nitro TEE)",
+  "trigger": "http-trigger@1.0.0-alpha",
+  "sdk": "cre-sdk-go v1.19.0",
+  "workflowVersion": 1,
+  "policyCommitment": "0x0f5b4e3de26fee27c24c28d5f0767c687ec17c5a54dacf400b253f8d02d3f0b0",
+  "commitmentScheme": "keccak256(\"USANCE_CRE_LENDER_POLICY_V1\" || canonicalJSON(policy)) — computed in-enclave; only this hash is public",
+  "reporter": "0x41B8B4595dd0237Ac442e24C867B05d99ed01F9e",
+  "note": "the lender's private thresholds are a CRE secret; in production the workflow deploys to a DON and the forwarder carries the DON signature; here `cre workflow simulate` runs the TEE handler locally and a reporter key signs the verdict",
+  "probeVerdict": {
+    "Allow": true,
+    "DecisionHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "PolicyCommitment": "0x0f5b4e3de26fee27c24c28d5f0767c687ec17c5a54dacf400b253f8d02d3f0b0",
+    "ReasonCode": "0x454c494749424c45000000000000000000000000000000000000000000000000",
+    "WorkflowVersion": 1
+  }
+}

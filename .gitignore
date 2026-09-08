@@ -67,3 +67,10 @@ __pycache__/
 
 # ETHOnline Privy org-signer secrets (P-256 authorization keys) — never commit
 packages/ethonline/.privy-org.json
+
+# ETHOnline CRE — private lender policy + reporter key (never commit)
+packages/ethonline/.cre-lender-policy.json
+packages/ethonline/.cre-reporter.json
+packages/ethonline/usance-cre/*.env
+packages/ethonline/usance-cre/**/binary.wasm
+packages/ethonline/usance-cre/**/*.wasm.br

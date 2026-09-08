@@ -1,0 +1,124 @@
+{
+  "$generatedAt": "2026-09-08T05:32:47.883Z",
+  "what": "the Chainlink CRE confidential lender-policy workflow gates the live Hedera substitution",
+  "cre": {
+    "workflow": "packages/ethonline/usance-cre/lender-policy",
+    "type": "CRE Confidential Workflow (AWS Nitro TEE), HTTP-triggered",
+    "simulator": "cre workflow simulate",
+    "reporter": "0x41B8B4595dd0237Ac442e24C867B05d99ed01F9e",
+    "policyCommitment": "0x0f5b4e3de26fee27c24c28d5f0767c687ec17c5a54dacf400b253f8d02d3f0b0"
+  },
+  "hedera": {
+    "facilityId": "0x6534fdf67d36afeeb7118c7d81c7f4e06ab548735483ca249afcf12e6f75b1ee",
+    "facility": "0x6B0A0c10450E11C86e7b6b9A69068e43B28Ef8B7",
+    "policyVerifier": "0xe625239733dD5282C5D2953e87B39C6A27F56deC"
+  },
+  "steps": [
+    {
+      "name": "sepolia: ENS EAC role is live",
+      "ok": true,
+      "hasRoles": true
+    },
+    {
+      "name": "hedera: configureFacility(creReporter, policyCommitment)",
+      "ok": true,
+      "tx": "0x0080e90c0d210a9a92f2e18f0236d924045a1cf2af501229aaefa78ec0907e00",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x0080e90c0d210a9a92f2e18f0236d924045a1cf2af501229aaefa78ec0907e00"
+    },
+    {
+      "name": "borrower: approve replacement adapter on the ATS token",
+      "ok": true,
+      "tx": "0x8e10870dc2e51c29e921931f01a15842690095ccd345427f0c132adc147fb5e3",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x8e10870dc2e51c29e921931f01a15842690095ccd345427f0c132adc147fb5e3"
+    },
+    {
+      "name": "cre: submit ALLOW verdict (reporter-signed)",
+      "ok": true,
+      "tx": "0x65e6af194bd66bdfc6c3922a146fab67a6f40fde55f3ab29395f8ba1b4397224",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x65e6af194bd66bdfc6c3922a146fab67a6f40fde55f3ab29395f8ba1b4397224"
+    },
+    {
+      "name": "privy: submit dual-key org approval",
+      "ok": true,
+      "tx": "0xcdd008a44651796a5edba07ad8bce402379fb73312b801d4e33c60c16fbcd679",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xcdd008a44651796a5edba07ad8bce402379fb73312b801d4e33c60c16fbcd679"
+    },
+    {
+      "name": "borrower: requestSubstitution",
+      "ok": true,
+      "tx": "0xdc0f6ecf05cc8458d95d35677170b468fc4968168be1109f33494ff15de1f214",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xdc0f6ecf05cc8458d95d35677170b468fc4968168be1109f33494ff15de1f214"
+    },
+    {
+      "name": "commitReplacement (replacement held while old collateral still held)",
+      "ok": true,
+      "tx": "0xfbf650cb1557e238eeae46ef1d4ac35f2a4f9d433db77ed80fb386a740c42296",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xfbf650cb1557e238eeae46ef1d4ac35f2a4f9d433db77ed80fb386a740c42296"
+    },
+    {
+      "name": "borrower: releaseOld",
+      "ok": true,
+      "tx": "0xe522d1ec6710bcf54d5dc3edc940874104b7d92bca6fd547129c7489244b0426",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xe522d1ec6710bcf54d5dc3edc940874104b7d92bca6fd547129c7489244b0426"
+    },
+    {
+      "name": "cre: submit DENY verdict (reporter-signed)",
+      "ok": true,
+      "tx": "0xf87aaed2c2dc7f803cf1e6a7969959223d1bde39180bd7498b7c2d86e81979e2",
+      "hashscan": "https://hashscan.io/testnet/transaction/0xf87aaed2c2dc7f803cf1e6a7969959223d1bde39180bd7498b7c2d86e81979e2"
+    },
+    {
+      "name": "privy: submit dual-key org approval",
+      "ok": true,
+      "tx": "0x4abde6d5a50f2910b35b6077b336a0e171fe1cbd72230d4def03dbcb6ae022cb",
+      "hashscan": "https://hashscan.io/testnet/transaction/0x4abde6d5a50f2910b35b6077b336a0e171fe1cbd72230d4def03dbcb6ae022cb"
+    },
+    {
+      "name": "borrower: requestSubstitution on a CRE-denied candidate — refused (IPolicyVerifier.verify == false)",
+      "ok": true,
+      "reverted": true,
+      "error": "The contract function \"requestSubstitution\" reverted."
+    }
+  ],
+  "positive": {
+    "to": "A",
+    "decisionHash": "0x7318cc54934e868306c9edbc185cce57353b0f23f00b7e5320e4159586d1a754",
+    "verdict": {
+      "Allow": true,
+      "DecisionHash": "0x7318cc54934e868306c9edbc185cce57353b0f23f00b7e5320e4159586d1a754",
+      "PolicyCommitment": "0x0f5b4e3de26fee27c24c28d5f0767c687ec17c5a54dacf400b253f8d02d3f0b0",
+      "ReasonCode": "0x454c494749424c45000000000000000000000000000000000000000000000000",
+      "WorkflowVersion": 1
+    },
+    "committedMid": {
+      "B": "150000",
+      "A": "150000"
+    },
+    "committedAfter": {
+      "B": "0",
+      "A": "150000"
+    },
+    "facilityStatusAfter": 2,
+    "result": "SUCCESS — CRE ALLOW + Privy approval drove the substitution; replacement committed before old collateral released"
+  },
+  "negative": {
+    "to": "B",
+    "decisionHash": "0x744893b713df2211dedc93324da80dfe2127a18d8610436bc77decc1160621f2",
+    "verdict": {
+      "Allow": false,
+      "DecisionHash": "0x744893b713df2211dedc93324da80dfe2127a18d8610436bc77decc1160621f2",
+      "PolicyCommitment": "0x0f5b4e3de26fee27c24c28d5f0767c687ec17c5a54dacf400b253f8d02d3f0b0",
+      "ReasonCode": "0x4953535545525f434f4e43454e54524154494f4e000000000000000000000000",
+      "WorkflowVersion": 1
+    }
+  },
+  "historical": {
+    "stateAfterDeny": {
+      "facilityStatus": 2,
+      "collateralSeries": "A",
+      "collateralCommitted": "150000"
+    },
+    "notDisturbed": true
+  },
+  "result": "PASS — the CRE confidential workflow's ALLOW drove a real substitution and its DENY (on a private-policy breach) refused the next one; completed substitutions untouched"
+}

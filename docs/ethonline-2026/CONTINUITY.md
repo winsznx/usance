@@ -49,7 +49,7 @@ Commits after `38074c7`. Tracked per sponsor:
 | **Live A→B / A→C substitution** | `dfac015` | facilityId `0x6534fdf6…` | `docs/ethonline-2026/proof/hedera-substitution-{positive,negative}.json` |
 | **ENSv2 (live)** | `dfac015` … | name `usance-institutional.eth` on ENSv2 `ETHRegistry` Sepolia `0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2`; EAC `ROLE_SET_SUBREGISTRY|ROLE_SET_RESOLVER` granted to `0x06622c6a…04C1` and revoked (`docs/ethonline-2026/ENS_AUTHORITY.md`) | `docs/ethonline-2026/proof/ensv2-authority.json`, `ens-authority-lifecycle.json` |
 | **Privy (live)** | `a8eb0eb` … | server wallet `0xAfdD4312ef4D5F9fd3085F50a4aE4C1F67970d43` owned by key quorum `mvoortbd9hvtdo2beafjkdjj` (threshold 2); it is the `EthOnlineAuthorityVerifier` `orgApprover` (`docs/ethonline-2026/PRIVY_APPROVAL.md`) | `docs/ethonline-2026/proof/privy-org-signer.json`, `privy-approval-lifecycle.json` |
-| Chainlink CRE (simulation) | _(pending — needs CRE CLI)_ | _(CRE workflow id)_ | `docs/ethonline-2026/proof/cre-*` |
+| **Chainlink CRE (confidential workflow, simulation)** | `ca334e4` … | CRE Confidential Workflow `packages/ethonline/usance-cre/lender-policy` (AWS Nitro, `cre-sdk-go v1.19.0`); reporter `0x41B8B4595dd0237Ac442e24C867B05d99ed01F9e`; policy commitment `0x0f5b4e3d…d3f0b0` (`docs/ethonline-2026/CRE_POLICY.md`) | `docs/ethonline-2026/proof/cre-workflow.json`, `cre-policy-lifecycle.json` |
 
 The local adapters implement the frozen Phase 06 interfaces against deterministic doubles that
 model each sponsor's real semantics (`HederaAtsCollateralAdapter` over the exact ATS `IHold`

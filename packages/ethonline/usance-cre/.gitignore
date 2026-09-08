@@ -1,0 +1,6 @@
+*.env
+# build + simulation artifacts
+**/binary.wasm
+**/*.wasm
+**/*.wasm.br
+.sim-payload-*.json
