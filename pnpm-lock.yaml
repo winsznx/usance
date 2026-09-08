@@ -88,6 +88,12 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
 
+  packages/base:
+    dependencies:
+      viem:
+        specifier: ^2.21.0
+        version: 2.55.16(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+
   packages/chaingpt:
     dependencies:
       '@usance/schemas':
