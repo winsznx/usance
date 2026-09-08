@@ -1,0 +1,230 @@
+{
+  "$generatedAt": "2026-09-08T11:55:32.170Z",
+  "proofLevel": "LIVE_TESTNET",
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "note": "SYNTHETIC_TEST_B20 instruments + TEST_ONLY oracle + native test USDC. Not real Coinbase stock. Not real capital. Phase 13 owns the mainnet canary.",
+  "deployer": "0x4De408bD4DE481D11afb27aBcB47AEBc808897eb",
+  "contracts": {
+    "PortfolioRiskPolicyRegistry": "0x70616061140c08b7De091FD9eD2a703eD23522E1",
+    "ScaledCollateralVault": "0xd571fc8C6040703EE7E55BFf0D61dA07E0f92995",
+    "UsEquitySessionOracle": "0x2Db18AafD92A5AD227337Ef11569E5900B1fdE3f",
+    "TestOnlyOracleAdapter": "0x2ef87f3880B4d273a56CB0e8B4ab2cC42EF34DBf",
+    "StaticLiquidityObserver": "0xc6AC5F6D14E6c6F8a3D9d40D591F7EF471Aa9E08",
+    "BaseB20InstrumentAdapter_A": "0x5553519C0BBb2Fe795D9dFaD9A90dFeb1B27340c",
+    "BaseB20InstrumentAdapter_B": "0x6985C26bE1F995FBB7483b870058846857551e5d",
+    "PortfolioRevolvingCredit": "0x3cBDD73621e86B1D3EFc9622D0F540734841F0B4"
+  },
+  "instruments": {
+    "A": {
+      "token": "0xB200000000000000000000AB44Feb0D995173a71",
+      "instrumentId": "0x043c34da3b423297802820c8f52db8751238f5d77e41a04ffb81624b1f687bfa",
+      "symbol": "utALPHA",
+      "supply": "2000000000000",
+      "variant": "ASSET",
+      "label": "SYNTHETIC_TEST_B20"
+    },
+    "B": {
+      "token": "0xB2000000000000000000002636674033A60396e0",
+      "instrumentId": "0xccb903aa9150958d0f5e82792fe9022be5a1bd92fde6409e70e4ffcba7912e7d",
+      "symbol": "utBETA",
+      "supply": "2000000000000",
+      "variant": "ASSET",
+      "label": "SYNTHETIC_TEST_B20"
+    }
+  },
+  "steps": [
+    {
+      "name": "probe: B20 ASSET variant activated on Base Sepolia",
+      "ok": true,
+      "activationRegistry": "0x8453000000000000000000000000000000000001",
+      "b20Factory": "0xB20f000000000000000000000000000000000000"
+    },
+    {
+      "name": "issue SYNTHETIC_TEST_B20 series A (utALPHA)",
+      "ok": true,
+      "tx": "0x4c9769a3cdf65bd4d33ab7553da64ad07fc69e7599870bc97fd01b762f3efc15",
+      "token": "0xB200000000000000000000AB44Feb0D995173a71",
+      "basescan": "https://sepolia.basescan.org/tx/0x4c9769a3cdf65bd4d33ab7553da64ad07fc69e7599870bc97fd01b762f3efc15"
+    },
+    {
+      "name": "issue SYNTHETIC_TEST_B20 series B (utBETA)",
+      "ok": true,
+      "tx": "0xdd8b2853570e7259f136d23e69a049d8eece32036bd939a4f4cb35473595a015",
+      "token": "0xB2000000000000000000002636674033A60396e0",
+      "basescan": "https://sepolia.basescan.org/tx/0xdd8b2853570e7259f136d23e69a049d8eece32036bd939a4f4cb35473595a015"
+    },
+    {
+      "name": "deploy PortfolioRiskPolicyRegistry",
+      "ok": true,
+      "tx": "0x6d7a709bc16e3b4f8b1a61948b8964f5d7f154de3e5e40fd7110ff00174853aa",
+      "basescan": "https://sepolia.basescan.org/tx/0x6d7a709bc16e3b4f8b1a61948b8964f5d7f154de3e5e40fd7110ff00174853aa",
+      "address": "0x70616061140c08b7De091FD9eD2a703eD23522E1"
+    },
+    {
+      "name": "deploy ScaledCollateralVault",
+      "ok": true,
+      "tx": "0xc806fff9d90a534b6b342524f125147e571dfa1ca3e6a0e171b69f27b5d4261d",
+      "basescan": "https://sepolia.basescan.org/tx/0xc806fff9d90a534b6b342524f125147e571dfa1ca3e6a0e171b69f27b5d4261d",
+      "address": "0xd571fc8C6040703EE7E55BFf0D61dA07E0f92995"
+    },
+    {
+      "name": "deploy UsEquitySessionOracle",
+      "ok": true,
+      "tx": "0x43bfd7403945474d14efb519761a27f5420805539aad086dd2a1321b1d32f891",
+      "basescan": "https://sepolia.basescan.org/tx/0x43bfd7403945474d14efb519761a27f5420805539aad086dd2a1321b1d32f891",
+      "address": "0x2Db18AafD92A5AD227337Ef11569E5900B1fdE3f"
+    },
+    {
+      "name": "deploy TestOnlyOracleAdapter",
+      "ok": true,
+      "tx": "0xc5aaa474e288cf3ede0c92198cd66ebc668db795122421c7e9ca517fdda895a1",
+      "basescan": "https://sepolia.basescan.org/tx/0xc5aaa474e288cf3ede0c92198cd66ebc668db795122421c7e9ca517fdda895a1",
+      "address": "0x2ef87f3880B4d273a56CB0e8B4ab2cC42EF34DBf"
+    },
+    {
+      "name": "deploy StaticLiquidityObserver",
+      "ok": true,
+      "tx": "0x5f4adaa545c9c16493e4fac0e4aad16128cc6788afa27be74b68f72886e9da1a",
+      "basescan": "https://sepolia.basescan.org/tx/0x5f4adaa545c9c16493e4fac0e4aad16128cc6788afa27be74b68f72886e9da1a",
+      "address": "0xc6AC5F6D14E6c6F8a3D9d40D591F7EF471Aa9E08"
+    },
+    {
+      "name": "deploy BaseB20InstrumentAdapter_A",
+      "ok": true,
+      "tx": "0xa884e33557226949034383d2cb4ff5c67aa29c43d28f678f56b55c6c43814346",
+      "basescan": "https://sepolia.basescan.org/tx/0xa884e33557226949034383d2cb4ff5c67aa29c43d28f678f56b55c6c43814346",
+      "address": "0x5553519C0BBb2Fe795D9dFaD9A90dFeb1B27340c"
+    },
+    {
+      "name": "deploy BaseB20InstrumentAdapter_B",
+      "ok": true,
+      "tx": "0x0e4dfec74f9a6ee207d52de88e146973727e4d39ece7ae5010dd0f4a536627f5",
+      "basescan": "https://sepolia.basescan.org/tx/0x0e4dfec74f9a6ee207d52de88e146973727e4d39ece7ae5010dd0f4a536627f5",
+      "address": "0x6985C26bE1F995FBB7483b870058846857551e5d"
+    },
+    {
+      "name": "publish BaseCanaryPortfolioRiskPolicy (CANARY_PROVISIONAL)",
+      "ok": true,
+      "note": "policy already published on chain"
+    },
+    {
+      "name": "risk groups + register + price + liquidity for series A",
+      "ok": true,
+      "tx": "0xc936a52cfd48342c5acdb5d54e753deb9938566a31bf6f2cff81a798f863b593",
+      "block": 46550266,
+      "basescan": "https://sepolia.basescan.org/tx/0xc936a52cfd48342c5acdb5d54e753deb9938566a31bf6f2cff81a798f863b593"
+    },
+    {
+      "name": "risk groups + register + price + liquidity for series B",
+      "ok": true,
+      "tx": "0x5b1fd3eca9a49cbf543e8159d1d56b1447a4de422bee5a928118f30446aec416",
+      "block": 46550278,
+      "basescan": "https://sepolia.basescan.org/tx/0x5b1fd3eca9a49cbf543e8159d1d56b1447a4de422bee5a928118f30446aec416"
+    },
+    {
+      "name": "deploy PortfolioRevolvingCredit",
+      "ok": true,
+      "tx": "0x3c165dd95a6e4d32add472055b8a36b5792af2e2d59cc73869d6e4ce414de457",
+      "basescan": "https://sepolia.basescan.org/tx/0x3c165dd95a6e4d32add472055b8a36b5792af2e2d59cc73869d6e4ce414de457",
+      "address": "0x3cBDD73621e86B1D3EFc9622D0F540734841F0B4"
+    },
+    {
+      "name": "bind facility to the vault",
+      "ok": true,
+      "tx": "0x18f17ca29c7bdb31e574a04c5ddc115e4a8ba4cc4afc29f56f9d9a70bcc8bb74",
+      "block": 46550280,
+      "basescan": "https://sepolia.basescan.org/tx/0x18f17ca29c7bdb31e574a04c5ddc115e4a8ba4cc4afc29f56f9d9a70bcc8bb74"
+    },
+    {
+      "name": "admit series A as collateral",
+      "ok": true,
+      "tx": "0x6bf740c4cff7a7f93a78601e720a8223e639b05e11b7b325adb248bf6d8a6bf0",
+      "block": 46550282,
+      "basescan": "https://sepolia.basescan.org/tx/0x6bf740c4cff7a7f93a78601e720a8223e639b05e11b7b325adb248bf6d8a6bf0"
+    },
+    {
+      "name": "admit series B as collateral",
+      "ok": true,
+      "tx": "0x70a08865f9166a0c9f84c58a1858df71a006486ff55d55416df173404da18d87",
+      "block": 46550284,
+      "basescan": "https://sepolia.basescan.org/tx/0x70a08865f9166a0c9f84c58a1858df71a006486ff55d55416df173404da18d87"
+    },
+    {
+      "name": "lender: approve + fund facility with native test USDC",
+      "ok": true,
+      "tx": "0xfc20fe17c87cc9eb479d6e297718c38381a3b1ff3c012f77c99d31f3fb142437",
+      "block": 46550305,
+      "basescan": "https://sepolia.basescan.org/tx/0xfc20fe17c87cc9eb479d6e297718c38381a3b1ff3c012f77c99d31f3fb142437"
+    },
+    {
+      "name": "borrower: commit series A collateral",
+      "ok": true,
+      "tx": "0xe02499d7af867d8ea27c7fcec9d30e816a402389f0bf452deee0d0ee9f06522a",
+      "block": 46550342,
+      "basescan": "https://sepolia.basescan.org/tx/0xe02499d7af867d8ea27c7fcec9d30e816a402389f0bf452deee0d0ee9f06522a"
+    },
+    {
+      "name": "borrower: commit series B collateral",
+      "ok": true,
+      "tx": "0x2e71696f6cd1a9d4fbb905f77a40152aa11fdfd6cbcbae7848831f25875b32db",
+      "block": 46550346,
+      "basescan": "https://sepolia.basescan.org/tx/0x2e71696f6cd1a9d4fbb905f77a40152aa11fdfd6cbcbae7848831f25875b32db"
+    },
+    {
+      "name": "lender: activate",
+      "ok": true,
+      "tx": "0x2923df2d8b2c5fb02e60e0146c33a2e0f6db856dccef64621c2463fb9034ea6a",
+      "block": 46550347,
+      "basescan": "https://sepolia.basescan.org/tx/0x2923df2d8b2c5fb02e60e0146c33a2e0f6db856dccef64621c2463fb9034ea6a"
+    },
+    {
+      "name": "borrower: draw 10 USDC (prove origination fee)",
+      "ok": true,
+      "tx": "0x61c0b770d23e2eaece6761434f39d93460b1684e0f5719031c85edc376be814d",
+      "basescan": "https://sepolia.basescan.org/tx/0x61c0b770d23e2eaece6761434f39d93460b1684e0f5719031c85edc376be814d"
+    },
+    {
+      "name": "condition change: force UNKNOWN market session → reduced capacity / refusal",
+      "ok": true
+    },
+    {
+      "name": "borrower: repay in full",
+      "ok": true,
+      "tx": "0x15a429b77336c9a6421e69c1dd73dc54b87d4022f9586ee4d99cdf53a989f53b",
+      "basescan": "https://sepolia.basescan.org/tx/0x15a429b77336c9a6421e69c1dd73dc54b87d4022f9586ee4d99cdf53a989f53b"
+    },
+    {
+      "name": "borrower: withdraw half of series A collateral safely",
+      "ok": true,
+      "tx": "0xd7c338765e4accf5451d7e944bd9382c88c295a308d2a822f55b3f0491e48d46",
+      "basescan": "https://sepolia.basescan.org/tx/0xd7c338765e4accf5451d7e944bd9382c88c295a308d2a822f55b3f0491e48d46"
+    }
+  ],
+  "deployerEth": "0.099928430516366516",
+  "deployerUsdc": "5",
+  "lifecycle": {
+    "quoteAtActivation": {
+      "portfolioRecognizedUsd18": "810000000000000000000000",
+      "maxDebtUsd18": "20000000000000000000",
+      "availableUsd18": "20000000000000000000",
+      "snapshotDigest": "0xff1b8bfed1e04fdcd7d1ab34fe4a8cbc123b6f12ce6fa724ab18637e0761e44f",
+      "allLive": true
+    },
+    "draw": {
+      "received": "10",
+      "debtUsd18": "10030000000000000000",
+      "feeUsd18": "30000000000000000"
+    },
+    "afterSessionDegradation": {
+      "portfolioRecognizedUsd18": "486000000000000000000000",
+      "maxDebtUsd18": "20000000000000000000",
+      "allLive": false,
+      "newDrawRefused": true
+    },
+    "repay": {
+      "debtAfterUsd18": "0"
+    }
+  },
+  "result": "PASS — live Base Sepolia portfolio-credit lifecycle: draw with fee, session-degradation refusal, repay, safe withdraw"
+}

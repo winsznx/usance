@@ -37,9 +37,40 @@ specific work cleanly separable from everything else (§34). Hedera / ENS / Priv
 | Oracle / liquidity / session adapters | `contracts/src/base/adapters/OracleAdapters.sol` | done — Chainlink Total-Return + TEST_ONLY + session + liquidity observer |
 | Tests | `contracts/test/base/{PortfolioRiskConformance,BasePortfolioLifecycle,B20Compat}.t.sol` | 26 pass; full suite 322 pass; `make test-differential` green |
 | Native USDC settlement | facility `settlementToken` = `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (Sepolia) / `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` (mainnet), 6dp | wired in the facility Terms |
-| Base Sepolia deployment | `packages/base/src/sepolia/deploy-and-run.mjs` (resumable) | **written, BLOCKED on the resource plan — needs `BASE_SEPOLIA_DEPLOYER_KEY` / `BASE_SEPOLIA_RPC_URL` + ~0.10 ETH, then native test USDC** |
-| B20 proof + portfolio credit proof | `docs/base/proof/base-sepolia-lifecycle.json` | _pending the deployment_ |
-| Limitations | Phase 08 report + `BASE_CONTINUITY.md` limitations section | this file |
+| Base Sepolia deployment | `packages/base/src/sepolia/deploy-and-run.mjs` (resumable) | **done — live on Base Sepolia 84532** |
+| B20 proof + portfolio credit proof | `docs/base/proof/base-sepolia-lifecycle.json` | done — `LIVE_TESTNET`, full lifecycle PASS |
+| Mainnet read-only characterization | `docs/base/proof/mainnet-b20-characterization.json` | done — `MAINNET_READ_ONLY`, 13 real B20 stocks, block 51029745 |
+| Limitations | Phase 08 report + limitations section below | this file |
+
+## Base Sepolia deployment (chain 84532, deployer `0x4De408bD4DE481D11afb27aBcB47AEBc808897eb`)
+
+| Contract | Address |
+|---|---|
+| `PortfolioRiskPolicyRegistry` | `0x70616061140c08b7De091FD9eD2a703eD23522E1` |
+| `ScaledCollateralVault` | `0xd571fc8C6040703EE7E55BFf0D61dA07E0f92995` |
+| `UsEquitySessionOracle` | `0x2Db18AafD92A5AD227337Ef11569E5900B1fdE3f` |
+| `TestOnlyOracleAdapter` (**TEST_ONLY**) | `0x2ef87f3880B4d273a56CB0e8B4ab2cC42EF34DBf` |
+| `StaticLiquidityObserver` | `0xc6AC5F6D14E6c6F8a3D9d40D591F7EF471Aa9E08` |
+| `BaseB20InstrumentAdapter` (series A / B) | `0x5553519C0BBb2Fe795D9dFaD9A90dFeb1B27340c` / `0x6985C26bE1F995FBB7483b870058846857551e5d` |
+| **`PortfolioRevolvingCredit`** | **`0x3cBDD73621e86B1D3EFc9622D0F540734841F0B4`** |
+
+`SYNTHETIC_TEST_B20` instruments (issued through the real `0xB20f…` factory precompile, ASSET
+variant): A `utALPHA` `0xB200000000000000000000AB44Feb0D995173a71`, B `utBETA`
+`0xB2000000000000000000002636674033A60396e0`. Settlement: Base Sepolia native USDC
+`0x036CbD53842c5426634e7929541eC2318f3dCF7e`.
+
+**Live lifecycle** (`docs/base/proof/base-sepolia-lifecycle.json`, `result: PASS`):
+activate → portfolio recognised **$810,000** (the ISSUER cap binds, both series share
+`i-usance-test`), facility cap **$20**; draw 10 USDC → debt **$10.03** / fee **$0.03** (I-110);
+force UNKNOWN session → recognised drops to **$486,000**, `allLive: false`, **new draw refused**
+(I-111, I-113); repay in full → debt **$0**; withdraw half of series A safely.
+
+## Base Mainnet read-only evidence (`MAINNET_READ_ONLY`, NO FINANCIAL ACTION)
+
+`docs/base/proof/mainnet-b20-characterization.json`, block 51029745: 13 real Coinbase B20
+tokenized stocks — `isB20` true, real names, decimals 8, `multiplier() = 1e18`, Chainlink
+Total-Return Data Feeds live (8dp USD, `us_equities_24/5`). B20 read path confirmed
+`BERYL_INSTANT_ONLY` on mainnet.
 
 ## Base contracts / adapters (addresses filled at deployment)
 

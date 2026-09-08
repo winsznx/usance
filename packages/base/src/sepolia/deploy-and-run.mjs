@@ -94,7 +94,7 @@ let M = fs.existsSync(PROOF)
       instruments: {},
       steps: [],
     };
-const save = () => fs.writeFileSync(PROOF, JSON.stringify(M, null, 2, (_, v) => (typeof v === "bigint" ? v.toString() : v)) + "\n");
+const save = () => fs.writeFileSync(PROOF, JSON.stringify(M, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2) + "\n");
 const has = (k) => M.steps.some((s) => s.name === k && s.ok);
 async function step(name, fn) {
   if (has(name)) { console.log(`  = ${name}`); return M.steps.find((s) => s.name === name); }
@@ -106,11 +106,26 @@ async function step(name, fn) {
   console.log(r.tx ? `ok ${r.tx}` : "ok");
   return rec;
 }
-async function send(address, abi, functionName, args, value) {
-  const hash = await wal.writeContract({ address, abi, functionName, args, value });
-  const rc = await pub.waitForTransactionReceipt({ hash });
-  if (rc.status !== "success") throw new Error(`${functionName} reverted (${hash})`);
-  return { tx: hash, receipt: rc };
+async function send(address, abi, functionName, args) {
+  let lastErr;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const { request } = await pub.simulateContract({ account, address, abi, functionName, args });
+      const hash = await wal.writeContract(request);
+      const rc = await pub.waitForTransactionReceipt({ hash });
+      if (rc.status !== "success") throw new Error(`${functionName} reverted (${hash})`);
+      await new Promise((r) => setTimeout(r, 2500)); // Alchemy Base Sepolia read-replica settle
+      return { tx: hash, block: Number(rc.blockNumber) };
+    } catch (e) {
+      lastErr = e;
+      const m = e?.shortMessage || e?.message || "";
+      // real reverts throw; allowance/nonce lag after a fresh write retries
+      if (/AlreadyRegistered|AlreadyBound|PolicyExists|AlreadyAdmitted/i.test(m)) throw e;
+      if (/reverted/i.test(m) && !/allowance|nonce|InsufficientAllowance|0x192b9e4e/i.test(m)) throw e;
+      await new Promise((r) => setTimeout(r, 4000 + attempt * 3000));
+    }
+  }
+  throw lastErr;
 }
 async function deploy(name, art, args) {
   if (M.contracts[name]) { console.log(`  = deploy ${name} ${M.contracts[name]}`); return M.contracts[name]; }
@@ -185,11 +200,11 @@ async function main() {
 
   // 3. publish policy (CANARY_PROVISIONAL) + risk groups + instrument registration + prices + liquidity
   await step("publish BaseCanaryPortfolioRiskPolicy (CANARY_PROVISIONAL)", async () => {
-    const caps = [[3500, 1500], [5000, 2000], [5000, 2000], [4000, 1500], [6000, 6000]];
-    const sf = [10000, 7500, 7500, 5000, 3000];
+    const existing = await pub.readContract({ address: policyReg, abi: A.policyReg.abi, functionName: "meta", args: [POLICY_ID] });
+    if (existing[5] /* exists */) return { note: "policy already published on chain" };
     const p = {
-      capBps: caps.map((x) => [x[0], x[1]]),
-      sessionFactorBps: sf,
+      capBps: [[3500, 1500], [5000, 2000], [5000, 2000], [4000, 1500], [6000, 6000]],
+      sessionFactorBps: [10000, 7500, 7500, 5000, 3000],
       stress: [],
       maxCollateralInstruments: 8,
     };
@@ -205,7 +220,8 @@ async function main() {
       await send(policyReg, A.policyReg.abi, "setRiskGroupRef", [id, mk(1, s.groups.i)]);
       await send(policyReg, A.policyReg.abi, "setRiskGroupRef", [id, mk(2, s.groups.cu)]);
       await send(policyReg, A.policyReg.abi, "setRiskGroupRef", [id, mk(3, s.groups.s)]);
-      await send(vault, A.vault.abi, "registerInstrument", [id, M.instruments[s.key].token]);
+      const reg = await pub.readContract({ address: vault, abi: A.vault.abi, functionName: "instrument", args: [id] });
+      if (!reg[1]) await send(vault, A.vault.abi, "registerInstrument", [id, M.instruments[s.key].token]);
       await send(testOracle, A.testOracle.abi, "setPrice", [id, s.priceUsd18, now]);
       const obs = {
         liquidityGroupId: gid("r-test-venue"),
@@ -234,22 +250,29 @@ async function main() {
     vault,
     policyRegistry: policyReg,
     policyId: POLICY_ID,
-    facilityLimitUsd18: 50_000n * 10n ** 18n,
+    facilityLimitUsd18: 20n * 10n ** 18n, // small cap — scaled to the 30 test-USDC funding
     maxLtvBps: 5000,
     liquidationLtvBps: 8500,
     safetyBufferBps: 9000,
     originationFeeBps: 30,
   };
   const facility = await deploy("PortfolioRevolvingCredit", A.facility, [facilityTerms]);
-  await step("bind facility to the vault", () => send(vault, A.vault.abi, "bindFacility", [facility]));
+  await step("bind facility to the vault", async () => {
+    const bound = await pub.readContract({ address: vault, abi: A.vault.abi, functionName: "facility" });
+    if (bound.toLowerCase() === facility.toLowerCase()) return { note: "already bound" };
+    return send(vault, A.vault.abi, "bindFacility", [facility]);
+  });
   for (const s of SERIES) {
-    await step(`admit series ${s.key} as collateral`, () =>
-      send(facility, A.facility.abi, "admitCollateral", [iid(s.key), adapters[s.key], testOracle, liq, session, 9000]));
+    await step(`admit series ${s.key} as collateral`, async () => {
+      const info = await pub.readContract({ address: facility, abi: A.facility.abi, functionName: "admittedInfo", args: [iid(s.key)] });
+      if (info.admitted) return { note: "already admitted" };
+      return send(facility, A.facility.abi, "admitCollateral", [iid(s.key), adapters[s.key], testOracle, liq, session, 9000]);
+    });
   }
 
   // 5. LIVE lifecycle
   await step("lender: approve + fund facility with native test USDC", async () => {
-    const need = 30_000n * 10n ** 6n; // more than the 50k limit is not required for a low-cap draw
+    const need = 25n * 10n ** 6n; // 25 of the 30 test USDC; the facility cap is 20 USD18
     const have = await pub.readContract({ address: USDC, abi: USDC_ABI, functionName: "balanceOf", args: [OP] });
     if (have < need) throw new Error(`need ~${formatUnits(need, 6)} test USDC, have ${formatUnits(have, 6)} — request from faucet.circle.com and re-run`);
     await send(USDC, USDC_ABI, "approve", [facility, need]);
@@ -270,13 +293,13 @@ async function main() {
   save();
   console.log(`  portfolioRecognized=${formatUnits(q0[0], 18)} maxDebt=${formatUnits(q0[1], 18)} live=${q0[4]}`);
 
-  await step("borrower: draw 10,000 USDC (prove origination fee)", async () => {
+  await step("borrower: draw 10 USDC (prove origination fee)", async () => {
     const q = await pub.readContract({ address: facility, abi: A.facility.abi, functionName: "quote" });
     const before = await pub.readContract({ address: USDC, abi: USDC_ABI, functionName: "balanceOf", args: [OP] });
-    const r = await send(facility, A.facility.abi, "draw", [10_000n * 10n ** 6n, q[3]]);
+    const r = await send(facility, A.facility.abi, "draw", [10n * 10n ** 6n, q[3]]);
     const debt = await pub.readContract({ address: facility, abi: A.facility.abi, functionName: "outstandingDebtUsd18" });
     const after = await pub.readContract({ address: USDC, abi: USDC_ABI, functionName: "balanceOf", args: [OP] });
-    M.lifecycle.draw = { received: formatUnits(after - before, 6), debtUsd18: debt.toString(), feeUsd18: (debt - 10_000n * 10n ** 18n).toString() };
+    M.lifecycle.draw = { received: formatUnits(after - before, 6), debtUsd18: debt.toString(), feeUsd18: (debt - 10n * 10n ** 18n).toString() };
     save();
     return r.tx ? { tx: r.tx } : {};
   });
