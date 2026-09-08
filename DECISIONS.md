@@ -9,6 +9,51 @@ comments where they can be read next to the thing they explain.
 
 ---
 
+## D-028 — Base portfolio credit is a new `PORTFOLIO_REVOLVING_CREDIT` facility; B20 uses the deployed-safe scaled-custody path; ClearingHouse untouched
+
+**Decision.** Phase 08 implements the first production-shaped public-market domain (Base) as a
+**new** `FacilityImplementation`, `facilityType = PORTFOLIO_REVOLVING_CREDIT`, home domain
+`eip155:84532` (Sepolia test) / `eip155:8453` (future mainnet canary). It is not
+`ClearingHouse` (X Layer, single-recognition, `FIXED_UNIT`, immutable, the D-025 fee gap) and not
+`InstitutionalFacility` (term, single-instrument collateral, hero op is substitution). New
+Solidity: `PortfolioRevolvingCredit` (the facility), `ScaledCollateralVault` (B20 raw custody),
+`PortfolioRiskEngine` + `PortfolioRiskPolicyRegistry` (the Phase 04 model on-chain),
+`BaseB20InstrumentAdapter`, `ChainlinkTotalReturnOracleAdapter` / `TestOnlyOracleAdapter`,
+`AerodromeLiquidityObserver`, `UsEquitySessionOracle`, `BasePortfolioLiquidation`.
+
+**Why.** The facility-reuse table (`spec/base-portfolio-facility-model.md §1`) shows neither
+existing facility fits: portfolio-recognized collateral, `EXTERNALLY_SCALED` custody with a pinned
+corporate-action snapshot, a portfolio RiskEpoch and a bypass-free origination fee are all absent
+from both. `PORTFOLIO_REVOLVING_CREDIT` extends the `facility-model.md §4` `facilityType`
+vocabulary additively (a new enum value, not a changed id-derivation formula).
+
+**B20 custody.** `corporate-action-model.md §7` classifies B20 on the deployed `CollateralVault`
+as **CONDITIONAL** — raw `balanceOf(vault)` is stable across corporate actions, so a nominal
+per-account raw ledger keeps solvency; what is missing is a pinned snapshot per quote and
+feed-pause handling. So the Base facility uses a **new** `ScaledCollateralVault` (nominal raw
+ledger + snapshot pinning), **not** the `RebasingCollateralVault` `SHARE_BASED_CUSTODY` design
+(that is for `REBASING_BALANCE` / xStocks, Phase 09) and **not** a modification of the deployed
+`CollateralVault`. Valuation is `FACTOR_IN_PRICE` (Chainlink Total-Return feed already includes the
+multiplier); the quantity side uses raw, never `scaledBalanceOf` — applying the factor twice is
+the exact I-84 defect.
+
+**Beryl, not Cobalt.** B20 is live in the **Beryl** upgrade on both Base mainnet and Sepolia
+(`docs/base/BASE_CAPABILITY_MATRIX.md`). Beryl has instant `updateMultiplier` only — no on-chain
+ERC-8056 pending-multiplier disclosure. Cobalt (which adds it) is "Planning" / not active. The
+adapter targets Beryl and probes the Cobalt selectors by staticcall; the `B20Compat` suite
+re-runs after any Base upgrade.
+
+**ClearingHouse stays closed.** No portfolio loops, no B20 handling, no Base oracle handling, no
+new fee logic inside the deployed `ClearingHouse` (86 bytes of headroom). It remains the X Layer
+revolving-credit facility, byte-for-byte matched to source.
+
+**Scope boundary.** Phase 08 proves the facility mechanics on Base Sepolia with
+`SYNTHETIC_TEST_B20` instruments + a `TEST_ONLY` oracle + native test USDC, and characterizes the
+13 real Coinbase B20 stocks on Base mainnet **read-only**. No real stock is deposited, no real
+USDC is borrowed, no mainnet write occurs — that is Phase 13 (`IMPLEMENTATION_ORDER.md`).
+
+**Invariants.** I-109…I-116 (`spec/invariants.md`).
+
 ## D-027 — ETHOnline sponsors are adapters over the Phase 06 facility; the facility stays the only financial authority
 
 **Decision.** Phase 07 wires Hedera Asset Tokenization Studio, ENSv2, Privy and Chainlink CRE into

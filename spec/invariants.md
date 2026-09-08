@@ -275,3 +275,27 @@ Phase 07 deploys to Hedera testnet + Sepolia + provider infra once the external 
 deterministic and clearly non-production (`contracts/test/institutional/mocks/`,
 `MockAtsSecurityToken`). Proof level per sponsor is tracked in
 `docs/ethonline-2026/CAPABILITY_MATRIX.md`.
+
+---
+
+## Base portfolio-revolving-credit facility (I-109…I-116)
+
+Introduced with the Base production domain (`spec/base-portfolio-facility-model.md`, `DECISIONS.md`
+D-028). New contracts on a new home domain (`eip155:84532` test, `eip155:8453` mainnet); the
+deployed X Layer core is untouched. `SPECIFIED` items become `ENFORCED` when
+`contracts/test/base/*` and the Base Sepolia lifecycle land.
+
+| # | Invariant | Status | Proof |
+|---|---|---|---|
+| I-109 | B20 raw custody is corporate-action-stable. `ScaledCollateralVault` credits a measured raw-balance delta at deposit and stores a nominal per-account raw entitlement; a `multiplier()` change moves every account's `effectiveOf` proportionally and never changes `creditedRaw`, never mints/burns a deposit, never breaks `Σ creditedRaw == token.balanceOf(vault)` under authorised deposits, withdrawals and liquidation transfers. An unprovenanced balance increase is unattributed surplus, credited to no account (restates I-82). | SPECIFIED | `contracts/test/base/ScaledCollateralVault.t.sol` — deposit-before/after a multiplier change, 3+ accounts, partial withdraw, liquidation transfer, donation → surplus |
+| I-110 | Every draw path enforces the origination fee. `draw` and `drawAgain` share one internal `_draw`; no external function transfers USDC out without `originationFee = mulDivUp(amount, feeBps, BPS)` added to debt. Restates D-025 for the new facility. | SPECIFIED | `contracts/test/base/PortfolioRevolvingCredit.t.sol` — fee applied on first draw and re-draw; a direct low-level call to any settlement path reverts or still charges |
+| I-111 | The exit fails closed on stale corporate-action / oracle state. `liquidate` and `withdrawCollateral` revert when any admitted instrument's `feedStatus != LIVE`, its Chainlink `updatedAt` is beyond the session-aware bound, or its corporate-action snapshot is older than the safe bound. You cannot liquidate or withdraw against a frozen feed or a mid-corporate-action multiplier (restates I-84/I-85 for the recovery path). | SPECIFIED | `PortfolioRevolvingCredit.t.sol` / `BasePortfolioLiquidation.t.sol` — frozen feed, paused B20 token, pending-multiplier window |
+| I-112 | The on-chain portfolio recognition never exceeds `Σ singleRecognized` and is `≥ 0`. `PortfolioRiskEngine.evaluate` only reduces or caps; no position combination, correlation or metadata makes the portfolio recognise more than the sum of its parts. Restates I-86 on-chain. | SPECIFIED | `contracts/test/base/PortfolioRiskEngine.t.sol` fuzz; the differential gate (I-116) |
+| I-113 | Market-session degradation cannot increase capacity. A worse `marketSession` (`OPEN → PRE/POST → CLOSED → UNKNOWN`) only lowers `sessionScale`; a 24/7 on-chain pool does not turn a closed underlying market into an open one. | SPECIFIED | `PortfolioRiskEngine.t.sol` — session monotonicity; `UsEquitySessionOracle.t.sol` |
+| I-114 | A portfolio-policy or risk-group-taxonomy change is a new version and a new portfolio RiskEpoch, never a silent recompute of a historical result. `PortfolioRiskPolicyRegistry` bumps the epoch on every `capBps` / `sessionFactorBps` / `RiskGroupRef` / taxonomy change. Restates I-90/I-92. | SPECIFIED | `contracts/test/base/PortfolioRiskPolicyRegistry.t.sol` |
+| I-115 | A draw executes only under the exact quoted portfolio snapshot. `draw(amount, quoteSnapshotDigest)` reverts unless `quoteSnapshotDigest == currentPortfolioSnapshotDigest` and the RiskEpoch matches; a decision quoted under snapshot N cannot execute under snapshot N+1 (multiplier move, price move, policy bump, admitted-set change). Restates I-12 for the Base facility. | SPECIFIED | `PortfolioRevolvingCredit.t.sol` — multiplier change / price change / policy bump between quote and draw |
+| I-116 | The Solidity `PortfolioRiskEngine` is byte-for-byte equal to `packages/portfolio-risk/src/evaluate.ts`. Every canonical portfolio-risk fixture agrees wei-for-wei across TS and Solidity (and the reference model's own property/adversarial suites still pass). No "close enough". | SPECIFIED | `make test-differential` gains `test/base/PortfolioRiskConformance.t.sol` vs `fixtures/portfolio/*.json` generated from the TS reference |
+
+The Phase 04 reference policy values are test parameters. The Base facility runs
+`BaseCanaryPortfolioRiskPolicy` (`status = CANARY_PROVISIONAL`), never `PRODUCTION_VALIDATED`. No
+real Coinbase stock is deposited and no real USDC is borrowed in Phase 08 — that is Phase 13.
