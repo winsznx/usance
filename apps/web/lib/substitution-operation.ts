@@ -25,6 +25,9 @@ export type SubstitutionOperationState =
   | "POLICY_DENIED"
   | "POLICY_UNAVAILABLE"
   | "AWAITING_FINANCIAL_SAFETY"
+  | "SUBSTITUTION_REQUESTED"
+  | "REPLACEMENT_COMMITTED"
+  | "RELEASE_BLOCKED"
   | "COMMITMENT_UNKNOWN"
   | "RELEASE_UNKNOWN"
   | (typeof TERMINAL_SUBSTITUTION_STATES)[number];
@@ -49,6 +52,8 @@ export const NON_FINANCIAL_STATES: readonly SubstitutionOperationState[] = [
   "POLICY_APPROVED_ONCHAIN",
   "POLICY_DENIED",
   "POLICY_UNAVAILABLE",
+  "SUBSTITUTION_REQUESTED",
+  "RELEASE_BLOCKED",
 ];
 
 /** A state the pipeline stops in until a human/operator resolves the blocker outside this app. */
@@ -62,6 +67,7 @@ export const BLOCKED_STATES: readonly SubstitutionOperationState[] = [
   "ORG_APPROVAL_UNAVAILABLE",
   "POLICY_DENIED",
   "POLICY_UNAVAILABLE",
+  "RELEASE_BLOCKED",
 ];
 
 export type CreateSubstitutionOperation = {
@@ -73,7 +79,11 @@ export type CreateSubstitutionOperation = {
 export function canAdvanceOperation(from: SubstitutionOperationState, to: SubstitutionOperationState): boolean {
   if (TERMINAL_SUBSTITUTION_STATES.includes(from as (typeof TERMINAL_SUBSTITUTION_STATES)[number])) return false;
   if (from === "COMMITMENT_UNKNOWN" || from === "RELEASE_UNKNOWN") {
-    return to === "AWAITING_FINANCIAL_SAFETY" || TERMINAL_SUBSTITUTION_STATES.includes(to as (typeof TERMINAL_SUBSTITUTION_STATES)[number]);
+    return (
+      to === "AWAITING_FINANCIAL_SAFETY" ||
+      to === "REPLACEMENT_COMMITTED" ||
+      TERMINAL_SUBSTITUTION_STATES.includes(to as (typeof TERMINAL_SUBSTITUTION_STATES)[number])
+    );
   }
   return true;
 }
