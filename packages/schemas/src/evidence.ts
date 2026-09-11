@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { sourceClassSchema } from "./source-class";
+import { inferenceProvenanceSchema } from "./intelligence";
 import {
   bpsSchema,
   claimValueSchema,
@@ -111,6 +112,8 @@ export const extractionSchema = z
     finishedAt: unixSecondsSchema,
     /** Non-fatal problems. A fatal one throws; a partial extraction is never returned as a full one. */
     warnings: z.array(z.string()),
+    /** Provider-originated metadata is audit material, not a claim or financial input. */
+    provenance: inferenceProvenanceSchema.nullable().optional(),
   })
   .strict();
 

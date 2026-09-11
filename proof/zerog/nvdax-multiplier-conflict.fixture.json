@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "usance-zerog-inference-proof/v1",
+  "proofLevel": "UNIT_TESTED",
+  "fixture": true,
+  "evidence": [
+    { "id": "0x1111111111111111111111111111111111111111111111111111111111111111", "kind": "issuer-api-multiplier", "value": "1" },
+    { "id": "0x2222222222222222222222222222222222222222222222222222222222222222", "kind": "onchain-multiplier", "value": "1.000918075849099600 WAD" }
+  ],
+  "provider": { "name": "0G Direct fixture", "model": "not-live", "route": "DIRECT", "verificationMode": "NONE", "requestDigest": "0x3333333333333333333333333333333333333333333333333333333333333333", "responseDigest": "0x4444444444444444444444444444444444444444444444444444444444444444", "attestation": null },
+  "structuredClaims": [
+    { "claimType": "corporateActions.multiplier", "sourceEvidenceId": "0x1111111111111111111111111111111111111111111111111111111111111111", "value": "1", "unit": "decimal" },
+    { "claimType": "corporateActions.multiplier", "sourceEvidenceId": "0x2222222222222222222222222222222222222222222222222222222222222222", "value": "1.000918075849099600", "unit": "WAD" }
+  ],
+  "validation": "VALID_STRUCTURED_CONFLICTING_CLAIMS",
+  "corroboration": "CLAIM_CONFLICT",
+  "conflict": "PRODUCTION_ADMISSION_BLOCKED_EXTERNAL",
+  "financialEffect": "RESTRICT_ONLY",
+  "assertion": "This fixture demonstrates that evidence intelligence surfaces the unresolved NVDAx representation conflict. It does not resolve, normalize, admit, or approve the instrument."
+}

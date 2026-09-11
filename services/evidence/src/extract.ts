@@ -114,7 +114,14 @@ export function validateExtraction(
     );
   }
 
+  if (e.provenance && !e.provenance.sourceEvidenceIds.includes(doc.evidenceId)) {
+    throw new ExtractionSchemaInvalid(e.extractor, "inference provenance does not bind this evidence document");
+  }
+
   for (const c of e.claims) {
+    if (c.extractor !== e.extractor) {
+      throw new ExtractionSchemaInvalid(e.extractor, `claim ${c.field} has a different extractor identity`);
+    }
     if (RISK_PARAMETER_PATTERN.test(c.field)) throw new RiskParameterFieldRejected(e.extractor, c.field);
     if (c.evidenceId !== doc.evidenceId) {
       throw new ExtractionSchemaInvalid(e.extractor, `claim ${c.field} cites evidence ${c.evidenceId}`);

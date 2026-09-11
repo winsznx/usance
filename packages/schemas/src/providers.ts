@@ -1,4 +1,5 @@
 import type { CanonicalDocument, ClaimSet, Corroboration, Extraction, Observation, ObservationQuery } from "./evidence";
+import type { EvidenceIntelligenceResult } from "./intelligence";
 
 /**
  * The provider interfaces, frozen in `spec/interfaces.md §7`.
@@ -16,6 +17,16 @@ export interface EvidenceExtractor {
    */
   readonly independenceGroup: string;
   extract(input: CanonicalDocument, signal?: AbortSignal): Promise<Extraction>;
+}
+
+/**
+ * Narrow, provider-neutral intelligence seam. Implementations may interpret evidence, but no
+ * method accepts a Passport, policy, signer, calldata, or a financial action.
+ */
+export interface EvidenceIntelligenceProvider extends ProviderAvailability {
+  readonly id: string;
+  readonly independenceGroup: string;
+  extractClaims(input: CanonicalDocument, signal?: AbortSignal): Promise<EvidenceIntelligenceResult>;
 }
 
 export interface EvidenceCorroborator {

@@ -184,6 +184,25 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(supports-color@10.2.2)(terser@5.16.9)
 
+  packages/zerog:
+    dependencies:
+      '@usance/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      viem:
+        specifier: ^2.21.55
+        version: 2.55.16(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(supports-color@10.2.2)(terser@5.16.9)
+
   services/evidence:
     dependencies:
       '@usance/chaingpt':

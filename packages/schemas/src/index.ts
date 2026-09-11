@@ -7,6 +7,7 @@ export * from "./domain";
 export * from "./corporate-action";
 export * from "./portfolio-risk";
 export * from "./evidence";
+export * from "./intelligence";
 export * from "./passport";
 export * from "./facility";
 export * from "./audit";

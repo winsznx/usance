@@ -1,6 +1,7 @@
 export * from "./receipt";
 export * from "./media";
 export * from "./store";
+export * from "./archive";
 export * from "./ingest";
 export * from "./extract";
 export * from "./candidate";
