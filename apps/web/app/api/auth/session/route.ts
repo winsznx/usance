@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { cookieToken, lookupSession } from "@/lib/institutional-auth";
+export const dynamic = "force-dynamic";
+export async function GET(request: Request) { const token = cookieToken(request); if (!token) return NextResponse.json({ authenticated: false }, { status: 401 }); try { const session = await lookupSession(token); if (!session) return NextResponse.json({ authenticated: false }, { status: 401 }); return NextResponse.json({ authenticated: true, caller: { walletAddress: session.wallet_address, organization: { slug: session.organization_slug, displayName: session.organization_display_name }, role: session.membership_role }, expiresAt: session.expires_at }); } catch { return NextResponse.json({ outcome: "AUTH_UNAVAILABLE" }, { status: 503 }); } }
