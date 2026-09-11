@@ -108,6 +108,7 @@ export function Nav({ cta = true }: { cta?: boolean }) {
           <Logo />
           <nav className="site-header-nav" aria-label="Site">
             <Link href="/assets">Assets</Link>
+            <Link href="/capital">Capital</Link>
             <Link href="/simulate">How it works</Link>
             <Link href="/security">Security</Link>
             <Link href="/status">Status</Link>

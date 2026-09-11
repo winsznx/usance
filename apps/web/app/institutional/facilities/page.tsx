@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { Footer, Nav } from "@/components/primitives";
+import { HEDERA_FACILITY } from "@/lib/institutional-proof";
+export default function FacilitiesPage() { return <><Nav /><main><section className="section"><div className="shell"><div className="micro">Facilities</div><h1 className="heading-lg">Institutional facilities</h1><div className="card card-flush scroll-x"><table className="table"><thead><tr><th>Facility</th><th>Home domain</th><th>Status</th><th>Proof</th></tr></thead><tbody><tr><td><Link href={`/institutional/facilities/${HEDERA_FACILITY.id}`}>{HEDERA_FACILITY.id.slice(0, 18)}…</Link><div className="caption">{HEDERA_FACILITY.type.replace(/_/g, " ")}</div></td><td>{HEDERA_FACILITY.homeDomain}</td><td><span className="risk risk-NORMAL">{HEDERA_FACILITY.status}</span></td><td><span className="tag">{HEDERA_FACILITY.proofLevel.replace(/_/g, " ")}</span></td></tr></tbody></table></div></div></section></main><Footer /></> }
