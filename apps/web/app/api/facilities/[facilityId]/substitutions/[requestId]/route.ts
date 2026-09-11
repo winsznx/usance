@@ -26,6 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ faci
       requestId: requestId as `0x${string}`,
       replacement: operation.replacement_instrument_id,
       requestedUnits: BigInt(operation.requested_units),
+      operationAlreadyCompleted: operation.state === "COMPLETED",
     }),
   ]);
 

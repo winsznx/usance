@@ -27,6 +27,13 @@ export async function reconcileSubstitutionOperation(input: {
   requestId: `0x${string}`;
   replacement: string;
   requestedUnits: bigint;
+  /** True once the durable operation has already recorded a COMPLETED release for this exact
+   *  requestId. `InstitutionalFacility._clearSubstitution()` zeroes `substitution.id` on release,
+   *  so a live chain read alone cannot distinguish "this operation released" from "this facility
+   *  never had a substitution" — both read back as `NONE` with a zero on-chain requestId. This
+   *  flag is the only thing that disambiguates them; it never substitutes for the chain read
+   *  itself, only for resolving that one specific ambiguity. */
+  operationAlreadyCompleted?: boolean;
 }): Promise<Reconciliation> {
   const [facility, readiness] = await Promise.all([
     readHederaFacility(),
@@ -42,7 +49,7 @@ export async function reconcileSubstitutionOperation(input: {
   const onChainState = facility.facility.substitution.state;
   const onChainRequestId = facility.facility.substitution.requestId;
   const matches = onChainRequestId.toLowerCase() === input.requestId.toLowerCase();
-  const outcome = mapReconciliationOutcome(onChainState, matches, /^0x0+$/.test(onChainRequestId));
+  const outcome = mapReconciliationOutcome(onChainState, matches, /^0x0+$/.test(onChainRequestId), input.operationAlreadyCompleted ?? false);
 
   return {
     outcome,
@@ -56,11 +63,25 @@ export async function reconcileSubstitutionOperation(input: {
 }
 
 /** Pure state mapping (§17): `COMMITMENT_UNKNOWN` never resolves here; a mismatched non-zero
- *  on-chain requestId is always an external attempt, even mid-lifecycle. */
-export function mapReconciliationOutcome(onChainState: string, matches: boolean, zeroRequestId: boolean): ReconciliationOutcome {
+ *  on-chain requestId is always an external attempt, even mid-lifecycle.
+ *
+ *  `_clearSubstitution()` deletes the whole `Substitution` struct on release, so a released
+ *  operation and a facility that never substituted are BOTH observed as `NONE` with a zero
+ *  on-chain requestId — chain state alone cannot tell them apart. `operationAlreadyCompleted`
+ *  (sourced from this operation's own durable record, never from historical proof of a
+ *  *different* operation) is the only thing allowed to break that tie. */
+export function mapReconciliationOutcome(
+  onChainState: string,
+  matches: boolean,
+  zeroRequestId: boolean,
+  operationAlreadyCompleted = false,
+): ReconciliationOutcome {
   if (onChainState === "COMMITMENT_UNKNOWN") return "COMMITMENT_UNKNOWN";
   if (!matches && !zeroRequestId) return "EXTERNAL_ATTEMPT_DETECTED";
-  if (onChainState === "NONE") return zeroRequestId ? "NONE" : "OLD_RELEASED";
+  if (onChainState === "NONE") {
+    if (matches) return "OLD_RELEASED";
+    return zeroRequestId && operationAlreadyCompleted ? "OLD_RELEASED" : "NONE";
+  }
   if (onChainState === "REQUESTED") return "REQUESTED";
   if (onChainState === "REPLACEMENT_COMMITTING") return "REPLACEMENT_COMMITTING";
   if (onChainState === "REPLACEMENT_COMMITTED") return "REPLACEMENT_COMMITTED";

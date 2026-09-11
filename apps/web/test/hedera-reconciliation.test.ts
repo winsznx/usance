@@ -22,4 +22,22 @@ describe("Hedera reconciliation state mapping (§17)", () => {
     expect(mapReconciliationOutcome("REPLACEMENT_COMMITTING", true, false)).toBe("REPLACEMENT_COMMITTING");
     expect(mapReconciliationOutcome("REPLACEMENT_COMMITTED", true, false)).toBe("REPLACEMENT_COMMITTED");
   });
+
+  describe("post-release ambiguity (`_clearSubstitution` zeroes the on-chain requestId)", () => {
+    it("without corroboration, a zeroed on-chain requestId after release reads back as NONE, not OLD_RELEASED — this is the ambiguity, not a bug in isolation", () => {
+      expect(mapReconciliationOutcome("NONE", false, true, false)).toBe("NONE");
+    });
+
+    it("this operation's own durable COMPLETED record breaks the tie toward OLD_RELEASED", () => {
+      expect(mapReconciliationOutcome("NONE", false, true, true)).toBe("OLD_RELEASED");
+    });
+
+    it("a genuinely-untouched facility (operationAlreadyCompleted=false) still reads NONE even when asked to consider completion", () => {
+      expect(mapReconciliationOutcome("NONE", false, true, false)).toBe("NONE");
+    });
+
+    it("an external attempt for a different requestId is never reinterpreted as this operation's release, even if this operation is itself completed", () => {
+      expect(mapReconciliationOutcome("REQUESTED", false, false, true)).toBe("EXTERNAL_ATTEMPT_DETECTED");
+    });
+  });
 });
