@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.28;
 
+import {IPortfolioCollateralVault} from "./interfaces/IBaseFacility.sol";
+
 /// @dev Minimal ERC-20 surface — B20 tokens are ERC-20 supersets.
 interface IERC20Min {
     function transfer(address to, uint256 amount) external returns (bool);
@@ -25,7 +27,7 @@ interface IERC20Min {
 ///      I-109: a corporate action moves every `effectiveOf` proportionally and never changes
 ///      `creditedRaw`, never mints/burns a deposit, and emits no deposit/withdraw event.
 ///      An unprovenanced balance increase is unattributed surplus (I-82), credited to no account.
-contract ScaledCollateralVault {
+contract ScaledCollateralVault is IPortfolioCollateralVault {
     address public immutable governance;
 
     /// @notice The single facility allowed to drive deposit/withdraw/liquidation. One-shot bind.
@@ -109,23 +111,61 @@ contract ScaledCollateralVault {
         return delta;
     }
 
+    /// @notice Generic-facility alias. B20 raw units are the valuation quantity because the
+    /// admitted B20 oracle carries the multiplier in price (`FACTOR_IN_PRICE`).
+    function claimOf(bytes32 instrumentId, address account) external view returns (uint256) {
+        return creditedRaw[instrumentId][account];
+    }
+
+    function valuationQuantityOf(bytes32 instrumentId, address account) external view returns (uint256) {
+        return creditedRaw[instrumentId][account];
+    }
+
+    function valuationQuantityAfterWithdrawal(bytes32 instrumentId, address account, uint256 raw)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 held = creditedRaw[instrumentId][account];
+        return held > raw ? held - raw : 0;
+    }
+
+    function valuationQuantityForClaim(bytes32, address, uint256 raw) external pure returns (uint256) {
+        return raw;
+    }
+
     /// @notice Withdraw raw units back to `account`. The facility gates safety (§9) before calling.
     function withdraw(bytes32 instrumentId, address account, uint256 raw) external onlyFacility {
+        _withdraw(instrumentId, account, raw);
+    }
+
+    function _withdraw(bytes32 instrumentId, address account, uint256 raw) internal {
         _debit(instrumentId, account, raw);
         Instrument memory inst = instrument[instrumentId];
         if (!inst.token.transfer(account, raw)) revert TransferFailed();
         emit Withdrawn(instrumentId, account, raw);
     }
 
+    function withdrawClaim(bytes32 instrumentId, address account, uint256 raw)
+        external
+        onlyFacility
+        returns (uint256)
+    {
+        _withdraw(instrumentId, account, raw);
+        return raw;
+    }
+
     /// @notice Move raw units to a liquidation route. The facility gates unsafe-state + freshness.
     function liquidationTransfer(bytes32 instrumentId, address account, address to, uint256 raw)
         external
         onlyFacility
+        returns (uint256)
     {
         _debit(instrumentId, account, raw);
         Instrument memory inst = instrument[instrumentId];
         if (!inst.token.transfer(to, raw)) revert TransferFailed();
         emit LiquidationTransfer(instrumentId, account, to, raw);
+        return raw;
     }
 
     /// @notice Permissionless: classify any balance above `totalCreditedRaw` as unattributed

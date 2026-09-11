@@ -63,9 +63,9 @@ This section is the point of the README. Every claim below is reproducible from 
 |---|---|---|
 | ChainGPT extraction | No API key configured | Extraction runs single-path; those Passports are **capped** by policy and cannot unlock corroboration-gated capabilities |
 | Exchange OS / TradeZone | No builder access granted | `/app/protect` and `/app/trade` render as unavailable with the reason shown. No synthetic fill is ever presented as an execution |
-| xStocks on X Layer | Exact contract address unverified | No xStocks asset is registered. The rebasing corporate-action accounting is implemented and tested against a fixture token |
+| xStocks on X Layer | Exact instrument admission pending | No real xStocks asset is registered. The share-based corporate-action accounting is tested against a clearly labelled synthetic xStocks token |
 | Chainlink Data Streams | **Not deployed on X Layer at all** | Nothing routes through it. The adapter is retained for the day it exists |
-| Circle CCTP | X Layer is not a supported domain | Not a dependency of any path |
+| Circle CCTP | Live externally; not integrated | Native USDC/CCTP launched on X Layer in August 2026, but Usance has no cross-domain cash transport |
 
 The internal planning material recorded Chainlink **Data Streams** as confirmed on X Layer. It is
 not. Chainlink's own registry lists X Layer with `supportedFeatures: ["feeds"]`, and every X Layer

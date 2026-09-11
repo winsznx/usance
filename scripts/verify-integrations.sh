@@ -92,9 +92,9 @@ echo "Credential-gated integrations"
   || note "Exchange OS access not configured — hedging and trading stay disabled"
 
 echo ""
-echo "Not available on X Layer, by verification rather than assumption:"
+echo "Capability boundaries on X Layer:"
 note "Chainlink Data Streams — X Layer publishes 'feeds' only, never 'streams'"
-note "Circle CCTP — X Layer is not a supported CCTP domain"
+note "Circle CCTP — live per current Circle X Layer launch; not integrated and contract discovery remains pending"
 
 echo ""
 printf 'passed %d, failed %d\n' "$pass" "$fail"

@@ -3,11 +3,11 @@ pragma solidity 0.8.28;
 
 import {PortfolioRiskEngine} from "./PortfolioRiskEngine.sol";
 import {PortfolioRiskPolicyRegistry} from "./PortfolioRiskPolicyRegistry.sol";
-import {ScaledCollateralVault} from "./ScaledCollateralVault.sol";
 import {
     IInstrumentAdapter,
     IBaseOracleAdapter,
     IMarketSession,
+    IPortfolioCollateralVault,
     CorporateActionSnapshot
 } from "./interfaces/IBaseFacility.sol";
 
@@ -59,7 +59,7 @@ contract PortfolioRevolvingCredit {
         address treasury;
         address settlementToken; // native USDC
         uint8 settlementDecimals; // 6
-        address vault; // ScaledCollateralVault
+        address vault; // IPortfolioCollateralVault
         address policyRegistry; // PortfolioRiskPolicyRegistry
         bytes32 policyId;
         uint256 facilityLimitUsd18;
@@ -96,7 +96,7 @@ contract PortfolioRevolvingCredit {
     address public immutable treasury;
     IERC20S public immutable settlementToken;
     uint8 public immutable settlementDecimals;
-    ScaledCollateralVault public immutable vault;
+    IPortfolioCollateralVault public immutable vault;
     PortfolioRiskPolicyRegistry public immutable policyReg;
     bytes32 public immutable policyId;
     uint256 public immutable facilityLimitUsd18;
@@ -165,7 +165,7 @@ contract PortfolioRevolvingCredit {
         treasury = t.treasury;
         settlementToken = IERC20S(t.settlementToken);
         settlementDecimals = t.settlementDecimals;
-        vault = ScaledCollateralVault(t.vault);
+        vault = IPortfolioCollateralVault(t.vault);
         policyReg = PortfolioRiskPolicyRegistry(t.policyRegistry);
         policyId = t.policyId;
         facilityLimitUsd18 = t.facilityLimitUsd18;
@@ -229,8 +229,8 @@ contract PortfolioRevolvingCredit {
         if (!a.admitted) revert NotAdmitted(instrumentId);
         (bool ok, bytes32 reason) = a.adapter.transferable(from, address(vault));
         if (!ok) revert InstrumentNotTransferable(instrumentId, reason);
-        uint256 measured = vault.deposit(instrumentId, from, borrower, raw);
-        emit CollateralCommitted(instrumentId, from, measured);
+        uint256 claimMinted = vault.deposit(instrumentId, from, borrower, raw);
+        emit CollateralCommitted(instrumentId, from, claimMinted);
     }
 
     function activate() external {
@@ -313,19 +313,19 @@ contract PortfolioRevolvingCredit {
 
     // ----------------------------------------------------------------- withdraw
 
-    function withdrawCollateral(bytes32 instrumentId, uint256 raw) external onlyBorrower {
+    function withdrawCollateral(bytes32 instrumentId, uint256 claim) external onlyBorrower {
         if (status != Status.ACTIVE) revert WrongStatus(status, Status.ACTIVE);
         AdmittedInstrument memory a = _admitted[instrumentId];
         if (!a.admitted) revert NotAdmitted(instrumentId);
 
         // recompute the portfolio as if `raw` were already gone
-        Snap memory s = _recomputeWithDelta(instrumentId, raw);
+        Snap memory s = _recomputeWithDelta(instrumentId, claim);
         if (!s.allLive) revert FeedNotLive(instrumentId); // I-111: no withdraw against a frozen/paused instrument
         uint256 safeMaxDebt = _mulDivDown(_maxDebt(s.portfolioRecognizedUsd18), safetyBufferBps, BPS);
         if (outstandingDebtUsd18 > safeMaxDebt) revert UnsafeWithdrawal(outstandingDebtUsd18, safeMaxDebt);
 
-        vault.withdraw(instrumentId, borrower, raw);
-        emit CollateralWithdrawn(instrumentId, raw, s.portfolioRecognizedUsd18);
+        vault.withdrawClaim(instrumentId, borrower, claim);
+        emit CollateralWithdrawn(instrumentId, claim, s.portfolioRecognizedUsd18);
     }
 
     // ----------------------------------------------------------------- settle
@@ -337,8 +337,8 @@ contract PortfolioRevolvingCredit {
         // release everything
         for (uint256 i = 0; i < admittedInstruments.length; i++) {
             bytes32 id = admittedInstruments[i];
-            uint256 held = vault.creditedRaw(id, borrower);
-            if (held > 0) vault.withdraw(id, borrower, held);
+            uint256 held = vault.claimOf(id, borrower);
+            if (held > 0) vault.withdrawClaim(id, borrower, held);
         }
         emit Settled();
     }
@@ -354,7 +354,7 @@ contract PortfolioRevolvingCredit {
 
     /// @notice Permissionless once unsafe. Converts an effective B20 quantity to a settlement intent
     ///         handed off to `route` (a zero-authority execution adapter). Stale-state protected (I-111).
-    function liquidate(bytes32 instrumentId, uint256 raw, address route) external {
+    function liquidate(bytes32 instrumentId, uint256 claim, address route) external {
         AdmittedInstrument memory a = _admitted[instrumentId];
         if (!a.admitted) revert NotAdmitted(instrumentId);
         Snap memory s = _recompute();
@@ -363,15 +363,15 @@ contract PortfolioRevolvingCredit {
         if (outstandingDebtUsd18 <= liqMax) revert NotUnsafe();
 
         (uint256 price,,) = a.oracle.priceUsd18(instrumentId);
-        // FACTOR_IN_PRICE: the Chainlink Total-Return answer already includes multiplier(), so the
-        // recoverable value of `raw` units is `raw * price / 10^decimals` — no second multiplier.
-        uint256 proceedsUsd18 = (raw * price) / (10 ** a.decimals);
-        // route receives the raw units; it is expected to return settlement proceeds to this facility
-        vault.liquidationTransfer(instrumentId, borrower, route, raw);
+        uint256 valuationQuantity = vault.valuationQuantityForClaim(instrumentId, borrower, claim);
+        uint256 proceedsUsd18 = (valuationQuantity * price) / (10 ** a.decimals);
+        // route receives the custody-specific transfer quantity; it is expected to return settlement
+        // proceeds to this facility. A venue remains zero-authority over credit policy.
+        vault.liquidationTransfer(instrumentId, borrower, route, claim);
 
         uint256 applied = proceedsUsd18 > outstandingDebtUsd18 ? outstandingDebtUsd18 : proceedsUsd18;
         outstandingDebtUsd18 -= applied;
-        emit Liquidated(instrumentId, raw, proceedsUsd18, outstandingDebtUsd18);
+        emit Liquidated(instrumentId, claim, proceedsUsd18, outstandingDebtUsd18);
     }
 
     // ----------------------------------------------------------------- views / internals
@@ -401,9 +401,9 @@ contract PortfolioRevolvingCredit {
         return _recomputeWithDelta(bytes32(0), 0);
     }
 
-    /// @dev Builds the engine positions from the admitted set, subtracting `deltaRaw` from
-    ///      `deltaInstrument` (a withdrawal simulation). Runs the pure `PortfolioRiskEngine`.
-    function _recomputeWithDelta(bytes32 deltaInstrument, uint256 deltaRaw)
+    /// @dev Builds engine positions from custody-derived valuation quantities. `deltaClaim` is
+    ///      opaque: nominal raw units for B20 and stable pool shares for xStocks.
+    function _recomputeWithDelta(bytes32 deltaInstrument, uint256 deltaClaim)
         internal
         view
         returns (Snap memory out)
@@ -416,7 +416,7 @@ contract PortfolioRevolvingCredit {
         (uint32 polVersion,,,,,) = policyReg.meta(policyId);
         bytes32 acc = keccak256(
             abi.encode(
-                "USANCE_BASE_PORTFOLIO_SNAPSHOT_V1",
+                "USANCE_PORTFOLIO_SNAPSHOT_V2",
                 facilityId,
                 policyId,
                 polVersion,
@@ -426,12 +426,11 @@ contract PortfolioRevolvingCredit {
 
         for (uint256 i = 0; i < n; i++) {
             bytes32 id = admittedInstruments[i];
-            uint256 rawCredited = vault.creditedRaw(id, borrower);
-            if (id == deltaInstrument) {
-                rawCredited = rawCredited > deltaRaw ? rawCredited - deltaRaw : 0;
-            }
+            uint256 valuationQuantity = id == deltaInstrument
+                ? vault.valuationQuantityAfterWithdrawal(id, borrower, deltaClaim)
+                : vault.valuationQuantityOf(id, borrower);
             (PortfolioRiskEngine.Position memory p, bool live, bytes32 chunk) =
-                _buildPosition(id, rawCredited);
+                _buildPosition(id, valuationQuantity);
             pos[i] = p;
             if (!live) allLive = false;
             acc = keccak256(abi.encode(acc, chunk));
@@ -449,7 +448,7 @@ contract PortfolioRevolvingCredit {
 
     /// @dev One instrument's engine `Position`, its live-flag, and a digest chunk. Extracted to
     ///      keep `_recomputeWithDelta` under the stack limit (`via_ir = false`, Phase 06 discipline).
-    function _buildPosition(bytes32 id, uint256 rawCredited)
+    function _buildPosition(bytes32 id, uint256 valuationQuantity)
         internal
         view
         returns (PortfolioRiskEngine.Position memory p, bool live, bytes32 chunk)
@@ -458,11 +457,27 @@ contract PortfolioRevolvingCredit {
         uint256 mv;
         {
             (uint256 price, uint64 updatedAt, bool oracleLive) = a.oracle.priceUsd18(id);
-            uint8 feedStatus = a.adapter.snapshot().feedStatus;
-            live = oracleLive && feedStatus == 0;
-            mv = (rawCredited * price) / (10 ** a.decimals);
-            chunk =
-                keccak256(abi.encode(id, rawCredited, price, updatedAt, a.adapter.factorWad(), feedStatus));
+            CorporateActionSnapshot memory ca = a.adapter.snapshot();
+            uint8 feedStatus = ca.feedStatus;
+            live = oracleLive && feedStatus == 0 && ca.support <= 1;
+            mv = (valuationQuantity * price) / (10 ** a.decimals);
+            chunk = keccak256(
+                abi.encode(
+                    id,
+                    valuationQuantity,
+                    price,
+                    updatedAt,
+                    ca.accountingMode,
+                    ca.factorWad,
+                    ca.pendingFactorWad,
+                    ca.pendingActivationAt,
+                    ca.sourceBlock,
+                    ca.priceConvention,
+                    feedStatus,
+                    ca.support,
+                    ca.observedAt
+                )
+            );
         }
         bytes32[5] memory g = policyReg.groupsOf(id);
         (bytes32 liqGroup, uint256 depth,) = a.liquidity.observe(id, mv);

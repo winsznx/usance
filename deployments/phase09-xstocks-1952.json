@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "deploymentId": "PHASE09_SYNTHETIC_XSTOCKS_FACILITY_V1",
+  "network": "X Layer Testnet",
+  "chainId": 1952,
+  "rpc": "https://testrpc.xlayer.tech/terigon",
+  "deployedAt": "2026-09-09",
+  "proofLevel": "LIVE_TESTNET_SYNTHETIC",
+  "productionAdmission": "BLOCKED_EXTERNAL",
+  "warning": "This stack uses SYNTHETIC_TEST_NVDAx. It does not admit, custody, price, or represent mainnet NVDAx.",
+  "contracts": {
+    "portfolioRevolvingCredit": "0xCd8027e1a71326267910749cF30B32A150E082D7",
+    "rebasingCollateralVault": "0xC9E52c97934Ccc99Be71556EfeC5CE646e430Ca8",
+    "xStocksInstrumentAdapter": "0xA7a528Fc49412A5bF335156a420556c38c1bc243",
+    "portfolioRiskPolicyRegistry": "0x7035D48850BCFBaAd27E093eF3c6a833BbdFFe5C",
+    "testOnlyOracle": "0x40bE8b77Cc2A94ca85BfF255cEED47930B240Eee",
+    "sessionOracle": "0x8A1Fe1d0e4C3Cb9548a3D18973a3d192C16dD259",
+    "staticLiquidityObserver": "0x44dE1260a305aeE86C7885c58229b826a64BB8E0",
+    "syntheticCorporateActionReporter": "0x00c0f579372fbbC08f85519A5d2F30fC8298A0B6",
+    "syntheticXStock": "0x63c614Ef729B9a6dc89e8c31f9EC77186905103B",
+    "syntheticSettlementToken": "0x2c1A691fAC120f81A5089805346E6C2ec73Ead52"
+  },
+  "instrument": {
+    "instrumentId": "0x31bae22cb262786b452c804c55520d58c5d17d277749a9ef7daf6c410322afa0",
+    "symbol": "SYNTHETIC_TEST_NVDAx",
+    "accounting": "SHARE_BASED_CUSTODY / REBASING_BALANCE",
+    "oracle": "TEST_ONLY",
+    "policy": "TESTNET_CALIBRATION"
+  },
+  "legacyDeployment": "deployments/1952.json",
+  "legacyDeploymentModified": false
+}

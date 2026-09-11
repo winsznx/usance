@@ -42,6 +42,40 @@ interface IInstrumentAdapter {
     function transferable(address from, address to) external view returns (bool ok, bytes32 reason);
 }
 
+/// @notice Provider-neutral custody boundary for a portfolio facility.
+///
+/// `claim` is deliberately opaque to the facility. For a FIXED_UNIT/B20 vault it is a nominal raw
+/// amount; for a rebasing xStocks vault it is a stable pro-rata share claim. `valuationQuantity`
+/// is the only quantity the facility may multiply by the admitted oracle price, and the custody
+/// implementation must select it so the corporate-action factor appears exactly once.
+interface IPortfolioCollateralVault {
+    function deposit(bytes32 instrumentId, address from, address account, uint256 requested)
+        external
+        returns (uint256 claimMinted);
+
+    function claimOf(bytes32 instrumentId, address account) external view returns (uint256);
+
+    function valuationQuantityOf(bytes32 instrumentId, address account) external view returns (uint256);
+
+    function valuationQuantityAfterWithdrawal(bytes32 instrumentId, address account, uint256 claim)
+        external
+        view
+        returns (uint256);
+
+    function valuationQuantityForClaim(bytes32 instrumentId, address account, uint256 claim)
+        external
+        view
+        returns (uint256);
+
+    function withdrawClaim(bytes32 instrumentId, address account, uint256 claim)
+        external
+        returns (uint256 amountOut);
+
+    function liquidationTransfer(bytes32 instrumentId, address account, address to, uint256 claim)
+        external
+        returns (uint256 amountOut);
+}
+
 /// @notice USD18 price of a tokenized instrument. `spec/base-portfolio-facility-model.md §8`.
 interface IBaseOracleAdapter {
     /// @return priceUsd18 the price the risk pipeline multiplies the RAW quantity by

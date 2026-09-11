@@ -36,7 +36,7 @@
       "family": "XSTOCKS_TRACKER_CERT",
       "label": "xStocks tracker certificates (Backed Finance)",
       "issuerOperator": "Backed Finance AG (issuer and token-mechanics operator)",
-      "network": "Solana and EVM chains including X Layer (eip155:1952 testnet / eip155:196)",
+      "network": "Solana and EVM chains including X Layer mainnet (eip155:196); official issuer-token availability on X Layer testnet (eip155:1952) is unverified and must not be assumed",
       "tokenStandard": "ERC-20 on EVM, with an internal multiplier applied inside balanceOf()",
       "usanceAccountingMode": "REBASING_BALANCE",
       "rawBalanceSemantics": "There is a 'Raw Balance' internally, but on EVM chains the smart contract applies the multiplier internally and balanceOf() returns the ALREADY-ADJUSTED (equity-adjusted) balance.",

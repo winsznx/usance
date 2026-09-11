@@ -30,11 +30,11 @@ Last verification pass: **2026-08-17**. Claims about which *files* exist were re
 | ChainGPT Web3 LLM | Evidence extraction | `CONFIRMED` |
 | ChainGPT News | Low-trust change detection | `CONFIRMED` |
 | ChainGPT Smart Contract Auditor | CI security source | `CONFIRMED` |
-| xStocks / Backed on X Layer | First tokenized-equity family | `ACCESS_REQUIRED` |
+| xStocks / Backed on X Layer | First tokenized-equity family | `EXTERNAL_INTEGRATION` — exact admission remains restricted |
 | Exchange OS / TradeZone | Spot / perp / outcome execution | `ACCESS_REQUIRED` |
 | OKX DEX API | Programmatic quotes and routing | `ACCESS_REQUIRED` |
 | OKX DEX Interface | Qualifying interface activity | `DEFERRED` |
-| Circle CCTP | Optional cash transport | `NOT_AVAILABLE` on X Layer |
+| Circle CCTP | Optional cash transport | `CCTP_V2_LIVE` externally; `NOT_INTEGRATED` by Usance |
 
 ---
 
@@ -249,7 +249,7 @@ audit job prints `AUDIT_UNAVAILABLE` and never "secure".
 
 ---
 
-## xStocks — `ACCESS_REQUIRED`
+## xStocks — `EXTERNAL_INTEGRATION` / admission restricted
 
 xStocks (issued by Backed Assets (JE) Limited) is publicly described as deployed on X Layer
 alongside Exchange OS. Usance has **not** been able to verify an exact X Layer token contract
@@ -260,12 +260,12 @@ Activation requires all of: exact contract address verified onchain, chain deplo
 verified, issuer documentation hashed, eligibility encoded, oracle route present, liquidity
 route present, and corporate-action (rebase) behaviour covered by accounting tests.
 
-Until then no xStocks asset is registered in any deployment, and there is no `XStocksAdapter`
-file. Rebasing behaviour *is* exercised against hostile fixture tokens in
-`contracts/test/Adversarial.t.sol` (positive and negative rebase, vault solvency), which is the
-part most likely to be wrong and can be checked without the real address. A negative rebase
-currently allocates the loss first-come-first-served across withdrawals; that residual is recorded
-against invariant I-34 rather than claimed as closed.
+Until an exact candidate is characterized, no real xStocks asset is registered in any deployment.
+`contracts/src/base/XStocksInstrumentAdapter.sol` and
+`contracts/src/base/RebasingCollateralVault.sol` implement the isolated, share-based accounting
+path. Their tests use `SYNTHETIC_TEST_XSTOCK`, never a real issuer token. The adapter fails closed
+when its corporate-action reporter is stale, mismatched with the token multiplier, or reports a
+pending action; it is not a production admission claim.
 
 ---
 
@@ -303,11 +303,15 @@ facing OKX surface) are different things, and Usance does not conflate them.
 
 ---
 
-## Circle CCTP — `NOT_AVAILABLE`
+## Circle CCTP — `CCTP_V2_LIVE` / `NOT_INTEGRATED`
 
-Circle does not list X Layer among supported CCTP domains. A `CashTransport` boundary is
-specified in `spec/interfaces.md` so that adding CCTP later is an adapter rather than a redesign.
-No Solidity interface or implementation exists. Circle is not a dependency of any current path.
+Circle announced native USDC and CCTP on X Layer on August 6, 2026 and its current X Layer USDC
+page confirms CCTP cross-chain use. The public CCTP supported-domain and contract-address table
+queried during Phase 09 still omits X Layer; it is a stale discovery surface, not a basis to deny
+the newer first-party launch record. Exact CCTP contract addresses remain undiscoverable from that
+table and are documented in `PHASE_09_EXTERNAL_EVIDENCE.md`. A `CashTransport` boundary is
+specified in `spec/interfaces.md`; no Solidity CCTP implementation exists and no facility path
+depends on cross-domain cash movement.
 
 ---
 
