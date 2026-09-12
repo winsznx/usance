@@ -33,6 +33,10 @@ the mechanics are already proven on testnet.
 | ChainGPT extraction | **Live** | Verified against the live API. Public Passports are built single-source by design, so they stay capped. |
 | Exchange OS execution (hedge/trade) | **Needs access** | No builder deployment access, so those actions are off and nothing is simulated in their place. |
 | Chainlink Data Streams | **Not on X Layer** | Adapter retained. Nothing routes through it. |
+| Institutional collateral replacement (Hedera) | **Live testnet** | A separate proven surface — see [Institutional collateral replacement](institutional.md). |
+| Base Sepolia portfolio credit | **Live testnet, canary provisional** | Technical path proven; economic policy stays provisional pending real-asset admission. |
+| xStocks / X Layer production admission | **Technical model complete, production admission blocked** | The synthetic multiplier and custody model are proven; admitting a real xStocks deployment needs issuer-confirmed pricing semantics, not yet available. |
+| 0G (compute/storage) | **Resource plan written, not yet executed** | A concrete integration plan exists; no live 0G proof has been produced yet. |
 
 Every claim above is reproducible against the network.
 

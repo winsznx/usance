@@ -11,6 +11,7 @@
 ## Use it
 
 * [Using Usance](using-usance.md)
+* [Institutional collateral replacement](institutional.md)
 * [Mandates](mandates.md)
 * [Sentinels](sentinels.md)
 * [Earn](earn.md)

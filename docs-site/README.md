@@ -4,9 +4,14 @@ description: Make tokenized assets usable as capital.
 
 # Introduction
 
-Usance is a clearing and risk layer on [X Layer](networks.md). It reads what a tokenized asset
-actually is, recognises a conservative portion of it as collateral, and lets you finance against
-that portion without selling. It also tells you, line by line, exactly how it arrived at the number.
+Usance is a capital operations layer for organizations holding tokenized real-world assets. It
+reads what a tokenized asset actually is, recognises a conservative portion of it as collateral,
+and lets you finance against that portion without selling. It also tells you, line by line, exactly
+how it arrived at the number.
+
+The core mechanism runs on [X Layer](networks.md). Usance also spans other domains for specific
+capabilities — an institutional Hedera facility for collateral replacement, and a Base Sepolia
+canary — each documented on its own terms rather than folded into one undifferentiated claim.
 
 ## The problem
 
