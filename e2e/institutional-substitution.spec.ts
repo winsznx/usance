@@ -50,18 +50,20 @@ test.describe("institutional substitution orchestration", () => {
     await expect(page.getByText(/requestId/i)).toHaveCount(0);
   });
 
-  test("a signed-in operator recovers the existing durable operation, not a second one", async ({ page, request, baseURL }) => {
+  test("a signed-in operator recovers the existing durable operation as a completed receipt, not a create form", async ({ page, request, baseURL }) => {
+    test.setTimeout(60_000);
     const cookie = await signInCookie(request, baseURL!);
     await applyCookie(page, baseURL!, cookie);
 
     await page.goto(`/institutional/facilities/${FACILITY_ID}/replace`);
-    await expect(page.getByText(/existing durable operation recovered/i)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(PRESERVED_REQUEST_ID)).toBeVisible();
+    await expect(page.getByText("Completed", { exact: true })).toBeVisible({ timeout: 20_000 });
     // Only one operation may be active; the create form must not be offered alongside a recovered one.
     await expect(page.getByRole("button", { name: /create substitution request/i })).toHaveCount(0);
 
+    // The receipt's CURRENT section requires two live RPC reads (Hedera + Sepolia); give a reload
+    // more headroom than the initial load, which benefits from Next.js's warm route cache.
     await page.reload();
-    await expect(page.getByText(PRESERVED_REQUEST_ID)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("Completed", { exact: true })).toBeVisible({ timeout: 40_000 });
   });
 
   test("current facility state is shown as a live read, distinct from the recovered operation", async ({ page, request, baseURL }) => {
@@ -95,5 +97,93 @@ test.describe("blocked authority path (no chain write)", () => {
     await expect(page.getByText(/blocked before any collateral changed/i)).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText(/existing collateral remains secured/i)).toBeVisible();
     await expect(page.getByText("ENS authority — revoked")).toBeVisible();
+  });
+});
+
+const MOCK_REQUEST_ID = `0x${"cc".repeat(32)}`;
+
+async function mockAuthenticatedSession(page: Page) {
+  await page.route("**/api/auth/session", (route) =>
+    route.fulfill({ json: { authenticated: true, caller: { walletAddress: "0x2222222222222222222222222222222222222222", organization: { slug: "usance-phase07-testnet", displayName: "Usance Phase 07 Testnet" }, role: "TESTNET_OPERATOR" }, expiresAt: new Date(Date.now() + 3_600_000).toISOString() } }),
+  );
+}
+
+async function mockOperationRead(page: Page, state: string) {
+  const operation = { request_id: MOCK_REQUEST_ID, replacement_instrument_id: "B", requested_units: "150000", state };
+  await Promise.all([
+    page.route(`**/api/facilities/${FACILITY_ID}/substitutions/current`, (route) =>
+      route.fulfill({ json: { outcome: "FOUND", operation } }),
+    ),
+    page.route(`**/api/facilities/${FACILITY_ID}/substitutions/${MOCK_REQUEST_ID}`, (route) =>
+      route.fulfill({
+        json: {
+          outcome: "FOUND",
+          PENDING: { operation, events: [] },
+          CURRENT: { outcome: state === "COMPLETED" ? "OLD_RELEASED" : "REPLACEMENT_COMMITTED" },
+          TIMELINE: [
+            { provenance: "DURABLE_EVENT", title: "Substitution request created", timestamp: "2026-09-11T11:21:42.605798+00:00" },
+            { provenance: "DURABLE_EVENT", title: "Organization approval recorded on Hedera", timestamp: "2026-09-11T21:16:16.729002+00:00" },
+            { provenance: "DURABLE_EVENT", title: "Lender policy verdict recorded on Hedera", timestamp: "2026-09-11T21:16:37.724138+00:00" },
+            { provenance: "DURABLE_EVENT", title: "Replacement collateral requested", timestamp: "2026-09-11T21:43:27.730086+00:00" },
+            { provenance: "DURABLE_EVENT", title: "Replacement collateral secured", timestamp: "2026-09-11T21:43:37.790856+00:00" },
+            { provenance: "DURABLE_EVENT", title: "Release paused: settlement valuation was stale", timestamp: "2026-09-11T21:46:04.602151+00:00" },
+            { provenance: "ONCHAIN_EVIDENCE", title: "One recovery transaction reverted because its gas limit was insufficient", detail: "No partial state change occurred.", txHash: `0x${"11".repeat(32)}`, network: "hedera-testnet", timestamp: null },
+            { provenance: "ONCHAIN_EVIDENCE", title: "Existing collateral released", txHash: `0x${"22".repeat(32)}`, network: "hedera-testnet", timestamp: null },
+            { provenance: "DURABLE_EVENT", title: "Release paused: replacement valuation was stale", timestamp: "2026-09-11T22:49:28.900215+00:00" },
+            ...(state === "COMPLETED" ? [{ provenance: "DURABLE_EVENT", title: "Collateral replacement completed", timestamp: "2026-09-11T22:51:11.384337+00:00" }] : []),
+          ],
+          HISTORICAL_PROOF: { note: "", references: [] },
+        },
+      }),
+    ),
+  ]);
+}
+
+test.describe("completed substitution journey (deterministic, no live chain writes)", () => {
+  test("shows the completed receipt with facility ACTIVE, financing OPEN, both safety events, and the gas-revert recovery event", async ({ page }) => {
+    await mockAuthenticatedSession(page);
+    await mockOperationRead(page, "COMPLETED");
+
+    await page.goto(`/institutional/facilities/${FACILITY_ID}/replace`);
+
+    await expect(page.getByText("Completed", { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("ACTIVE")).toBeVisible();
+    await expect(page.getByText("Financing remains open")).toBeVisible();
+    await expect(page.getByText(/RELEASED/)).toBeVisible();
+    await expect(page.getByText(/150000 SECURED|SECURED/)).toBeVisible();
+
+    await expect(page.getByText("Organization authority")).toBeVisible();
+    await expect(page.getByText("Lender policy")).toBeVisible();
+    await expect(page.getByText("LIVE_SIMULATION")).toBeVisible();
+    await expect(page.getByText("Collateral operations")).toBeVisible();
+
+    await expect(page.getByText(/Release paused: settlement valuation was stale/i)).toBeVisible();
+    await expect(page.getByText(/Release paused: replacement valuation was stale/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /show evidence timeline/i }).click();
+    await expect(page.getByText(/insufficient/i).first()).toBeVisible();
+    await expect(page.getByText(/Onchain evidence/i).first()).toBeVisible();
+    await expect(page.getByText(/Durable record/i).first()).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText("Completed", { exact: true })).toBeVisible({ timeout: 20_000 });
+  });
+});
+
+test.describe("blocked substitution journey (deterministic, no live chain writes)", () => {
+  test("shows release paused with the specific reason, secured collateral, and open financing — never 'failed'", async ({ page }) => {
+    await mockAuthenticatedSession(page);
+    await mockOperationRead(page, "RELEASE_BLOCKED_REPLACEMENT_PRICE_STALE");
+
+    await page.goto(`/institutional/facilities/${FACILITY_ID}/replace`);
+
+    await expect(page.getByRole("heading", { name: "Release paused" })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/replacement collateral valuation evidence was stale/i)).toBeVisible();
+    await expect(page.getByText(/existing collateral remains secured/i)).toBeVisible();
+    await expect(page.getByText("Financing remains open", { exact: true })).toBeVisible();
+    await expect(page.getByText(/failed substitution/i)).toHaveCount(0);
+
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Release paused" })).toBeVisible({ timeout: 20_000 });
   });
 });
