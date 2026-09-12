@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Notice } from "@/components/primitives";
+import { SubstitutionReceipt } from "@/components/substitution-receipt";
 import { fetchInstitutionalSession, signIntoInstitutionalWorkspace, type InstitutionalSessionState } from "@/lib/institutional-session-client";
+import type { TimelineItem } from "@/lib/substitution-evidence-timeline";
 import { WalletError } from "@/lib/wallet";
 
-type Operation = { state: string; request_id: string };
+type Operation = { state: string; request_id: string; replacement_instrument_id?: string; requested_units?: string | number };
+const RECEIPT_STATES = new Set(["COMPLETED", "RELEASE_BLOCKED", "RELEASE_BLOCKED_REPLACEMENT_PRICE_STALE"]);
 type CreateResult = {
   outcome: string;
   operation?: Operation;
@@ -103,8 +106,14 @@ export function SubstitutionRequestFlow({ facilityId, currentSeries }: { facilit
         <div className="skeleton" style={{ height: 18, width: "40%" }} />
       ) : recovered ? (
         <>
-          <Notice title="Existing durable operation recovered">This facility already has one active substitution request. A refresh recovers it rather than creating a second — only one may be active at a time.</Notice>
-          <ResultTimeline operation={recovered} preparation={result?.preparation} />
+          {RECEIPT_STATES.has(recovered.state) ? (
+            <ReceiptLoader facilityId={facilityId} requestId={recovered.request_id} currentSeries={currentSeries} operation={recovered} />
+          ) : (
+            <>
+              <Notice title="Existing durable operation recovered">This facility already has one active substitution request. A refresh recovers it rather than creating a second — only one may be active at a time.</Notice>
+              <ResultTimeline operation={recovered} preparation={result?.preparation} />
+            </>
+          )}
         </>
       ) : (
         <>
@@ -125,6 +134,41 @@ export function SubstitutionRequestFlow({ facilityId, currentSeries }: { facilit
         </>
       )}
     </section>
+  );
+}
+
+type GetOperationResponse = { outcome: "FOUND"; PENDING: { operation: Operation }; CURRENT: { outcome: string }; TIMELINE: TimelineItem[] } | { outcome: string };
+
+/** Fetches the full read model (durable + current + evidence timeline) for a completed or
+ *  release-paused operation and renders the demo receipt, rather than the in-progress stage list. */
+function ReceiptLoader({ facilityId, requestId, currentSeries, operation }: { facilityId: string; requestId: string; currentSeries: string; operation: Operation }) {
+  const [data, setData] = useState<GetOperationResponse | null>(null);
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/facilities/${facilityId}/substitutions/${requestId}`)
+      .then((r) => r.json() as Promise<GetOperationResponse>)
+      .then((d) => active && setData(d))
+      .catch(() => active && setData({ outcome: "NETWORK_ERROR" }));
+    return () => { active = false; };
+  }, [facilityId, requestId]);
+
+  if (!data) return <div className="skeleton" style={{ height: 120 }} />;
+  if (data.outcome !== "FOUND") return <Notice tone="warn" title="Could not load the receipt">Try refreshing.</Notice>;
+  const found = data as Extract<GetOperationResponse, { outcome: "FOUND" }>;
+
+  const isCompleted = operation.state === "COMPLETED";
+  const replacementSeries = operation.replacement_instrument_id ?? "B";
+  const oldSeries = currentSeries;
+  const requestedUnits = operation.requested_units ?? "150000";
+
+  return (
+    <SubstitutionReceipt
+      operation={found.PENDING.operation}
+      current={found.CURRENT}
+      timeline={found.TIMELINE}
+      seriesA={{ series: oldSeries, committed: isCompleted ? 0 : "150,000" }}
+      seriesB={{ series: replacementSeries, committed: isCompleted ? requestedUnits : "committing" }}
+    />
   );
 }
 

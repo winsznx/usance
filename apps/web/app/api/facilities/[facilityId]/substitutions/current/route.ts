@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { findActiveSubstitutionOperation } from "@/lib/substitution-operation-store";
+import { findActiveSubstitutionOperation, findMostRecentSubstitutionOperation } from "@/lib/substitution-operation-store";
 import { HEDERA_FACILITY } from "@/lib/institutional-proof";
 import { cookieToken, isCallerAssignedToFacility, lookupSession } from "@/lib/institutional-auth";
 
@@ -22,8 +22,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ faci
   if (!isCallerAssignedToFacility(caller, facilityId)) return NextResponse.json({ outcome: "FACILITY_NOT_ASSIGNED" }, { status: 403 });
 
   try {
-    const operation = await findActiveSubstitutionOperation(facilityId);
-    return NextResponse.json(operation ? { outcome: "FOUND", operation } : { outcome: "NONE" });
+    const active = await findActiveSubstitutionOperation(facilityId);
+    if (active) return NextResponse.json({ outcome: "FOUND", operation: active });
+    // No active (non-terminal) operation — a returning browser may still be looking at its own
+    // completed or release-paused receipt rather than starting a new request.
+    const mostRecent = await findMostRecentSubstitutionOperation(facilityId);
+    return NextResponse.json(mostRecent ? { outcome: "FOUND", operation: mostRecent } : { outcome: "NONE" });
   } catch {
     return NextResponse.json({ outcome: "OPERATION_STORE_UNAVAILABLE" }, { status: 503 });
   }

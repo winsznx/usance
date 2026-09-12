@@ -51,6 +51,21 @@ export async function findActiveSubstitutionOperation(facilityId: string): Promi
   return rows[0] ?? null;
 }
 
+/** The most recently created operation for a facility regardless of state — used only to let a
+ *  returning browser view its own completed/blocked receipt after the active operation reaches a
+ *  terminal state. Never used to decide whether a NEW request may be created; that remains
+ *  `findActiveSubstitutionOperation`'s exclusive job. */
+export async function findMostRecentSubstitutionOperation(facilityId: string): Promise<SupabaseOperation | null> {
+  const { base, key } = dbConfig();
+  const response = await fetch(
+    `${base}/rest/v1/substitution_operations?facility_id=eq.${encodeURIComponent(facilityId.toLowerCase())}&select=*&order=created_at.desc&limit=1`,
+    { headers: { apikey: key, authorization: `Bearer ${key}` } },
+  );
+  if (!response.ok) throw new Error("SUBSTITUTION_STORE_UNAVAILABLE");
+  const rows = (await response.json()) as SupabaseOperation[];
+  return rows[0] ?? null;
+}
+
 /** Read-only lookup by `requestId` — the canonical external identity for one economic intent. */
 export async function findSubstitutionOperationByRequestId(requestId: string): Promise<SupabaseOperation | null> {
   const { base, key } = dbConfig();
