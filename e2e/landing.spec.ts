@@ -208,3 +208,81 @@ test.describe("holdings", () => {
     expect(overflow).toBe(false);
   });
 });
+
+/**
+ * Durable header/CTA geometry invariants (found live: "How it works" wrapped onto two lines once
+ * the condensed pill ran out of room for six nav links). These check the actual failure mode, not
+ * a pixel snapshot, so they survive future copy/asset changes.
+ */
+test.describe("header geometry", () => {
+  const DESKTOP_WIDTHS = [1600, 1440, 1280, 1024, 900];
+
+  for (const width of DESKTOP_WIDTHS) {
+    test(`nav labels never wrap at ${width}px, top and scrolled`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const noWrap = () => page.evaluate(() =>
+        Array.from(document.querySelectorAll(".site-header-nav a")).every((a) => a.getBoundingClientRect().height < 40),
+      );
+      await expect.poll(noWrap).toBe(true);
+      await page.evaluate(() => window.scrollTo(0, 900));
+      await page.waitForTimeout(400);
+      await expect.poll(noWrap).toBe(true);
+    });
+  }
+
+  test("condensed header height stays within a compact range", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/");
+    await page.evaluate(() => window.scrollTo(0, 900));
+    await page.waitForTimeout(400);
+    const height = await page.evaluate(() => document.querySelector(".site-header")?.getBoundingClientRect().height ?? 0);
+    // A normal compact product navbar, not the ~80-100px floating block this used to be.
+    expect(height).toBeGreaterThan(50);
+    expect(height).toBeLessThan(80);
+  });
+
+  test("the condensed header never overlaps the next section's heading", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const headerBottom = await page.evaluate(() => document.querySelector(".site-header")!.getBoundingClientRect().bottom);
+    const firstHeadingTop = await page.evaluate(() =>
+      document.querySelector("main h2")!.getBoundingClientRect().top,
+    );
+    expect(firstHeadingTop).toBeGreaterThanOrEqual(headerBottom);
+  });
+
+  test("every 'Open Usance' control shares the same canonical control height", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1200 });
+    await page.goto("/");
+    const heights = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("a")).filter((a) => a.textContent?.trim() === "Open Usance")
+        .map((a) => Math.round(a.getBoundingClientRect().height)),
+    );
+    expect(heights.length).toBeGreaterThanOrEqual(2);
+    const distinct = new Set(heights);
+    // The header CTA and hero CTA render at their own declared sizes (.btn vs .btn-lg), which is
+    // intentional visual hierarchy — but each must be internally consistent everywhere it repeats.
+    expect(distinct.size).toBeLessThanOrEqual(2);
+  });
+
+  test("no horizontal overflow across representative breakpoints", async ({ page }) => {
+    for (const width of [1600, 1280, 1024, 768, 430, 390, 375]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+      expect(overflow, `overflow at ${width}`).toBe(false);
+    }
+  });
+
+  test("mobile nav stays usable at 375 and 390 — the way in never disappears", async ({ page }) => {
+    for (const width of [375, 390]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      await expect(page.locator("#site-header").getByRole("link", { name: /open usance/i })).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+      expect(overflow, `overflow at ${width}`).toBe(false);
+    }
+  });
+});

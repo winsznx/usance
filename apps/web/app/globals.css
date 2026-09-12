@@ -2558,6 +2558,10 @@ main > section:first-child:not(.hero) {
   display: block;
   width: 100%;
   height: auto;
+  /* Guarantees identical card heights across the row regardless of any future asset's native
+     ratio — the six illustrations are authored at 560:315, matching the width/height props. */
+  aspect-ratio: 560 / 315;
+  object-fit: cover;
   margin-bottom: 20px;
   border-radius: var(--radius-input);
 }
