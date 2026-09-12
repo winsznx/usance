@@ -125,11 +125,12 @@ export default function Landing() {
               become collateral, how much capital is available, which actions policy allows, or
               where that capital should execute.
             </p>
-            <div className="card card-flush" style={{ padding: 28 }}>
-              <div className="grid-2" style={{ gap: 20 }}>
-                <Stat label="Portfolio value" value="4.20M" hint="Example figures" />
+            <div className="figure-grid">
+              <div className="figure-grid-heading">Example figures</div>
+              <div className="figure-grid-cells">
+                <Stat label="Portfolio value" value="4.20M" />
                 <Stat label="Recognized collateral" value="2.65M" hint="After stress haircuts" />
-                <Stat label="Available credit" value="1.90M" hint="Undrawn" prefix="$" />
+                <Stat label="Available credit" value="1.90M" />
                 <Stat label="Open facilities" value="2" hint="Active" prefix="" />
               </div>
             </div>
@@ -197,16 +198,18 @@ export default function Landing() {
               <span className="proof-flow-arrow">→</span>
               <span className="proof-flow-step">Financing remained open</span>
             </div>
-            <div className="grid-2" style={{ gap: 16, maxWidth: 640 }}>
-              <Stat label="Facility" value="ACTIVE" prefix="" />
-              <Stat label="Financing" value="OPEN" prefix="" />
-              <Stat label="Series A" value="RELEASED" prefix="" />
-              <Stat label="Series B" value="150,000 SECURED" prefix="" />
+            <div className="figure-grid" style={{ maxWidth: 640 }}>
+              <div className="figure-grid-cells">
+                <Stat label="Facility" value="ACTIVE" prefix="" />
+                <Stat label="Financing" value="OPEN" prefix="" />
+                <Stat label="Series A" value="RELEASED" prefix="" />
+                <Stat label="Series B" value="150,000 SECURED" prefix="" />
+              </div>
             </div>
-            <p className="caption" style={{ marginTop: 18, maxWidth: 560 }}>
+            <p className="caption" style={{ margin: "16px 0 20px", maxWidth: 560 }}>
               Hedera testnet, test securities and test settlement. Not a claim of production funds.
             </p>
-            <Link className="btn btn-primary" style={{ marginTop: 8 }} href="/institutional">
+            <Link className="btn btn-primary" href="/institutional">
               View live proof
             </Link>
           </div>
@@ -334,11 +337,19 @@ export default function Landing() {
         {/* ---------------------------------------------------------------- audience */}
         <section className="section">
           <div className="shell">
-            <h2 className="heading-lg" style={{ margin: "0 0 24px" }}>Who this is for</h2>
-            <p className="muted" style={{ margin: 0, maxWidth: "70ch", lineHeight: 1.7 }}>
-              RWA asset managers · Crypto-native funds · Fintech treasury teams · Market makers ·
-              Tokenized-asset platforms · Structured-product operators
-            </p>
+            <h2 className="heading-lg" style={{ margin: "0 0 28px" }}>Who this is for</h2>
+            <div className="audience-row">
+              {[
+                "RWA asset managers",
+                "Crypto-native funds",
+                "Fintech treasury teams",
+                "Market makers",
+                "Tokenized-asset platforms",
+                "Structured-product operators",
+              ].map((who) => (
+                <span key={who} className="audience-item">{who}</span>
+              ))}
+            </div>
           </div>
         </section>
 

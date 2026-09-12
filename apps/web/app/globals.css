@@ -1833,6 +1833,62 @@ h4 {
   line-height: 1;
 }
 
+/* ------------------------------------------------------------------ figure grid
+ *
+ * A dense 2x2 of example figures rather than a card with four islands floating in it. Hairline
+ * dividers do the separating work a card's own padding was doing badly — the whole composition
+ * reads as one instrument panel, not four unrelated stat widgets.
+ */
+.figure-grid {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.figure-grid-heading {
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--stone);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--linen);
+}
+
+.figure-grid-cells {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.figure-grid-cells > * {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.figure-grid-cells > *:nth-child(odd) {
+  border-right: 1px solid var(--hairline);
+}
+
+.figure-grid-cells > *:nth-last-child(-n + 2) {
+  border-bottom: none;
+}
+
+@media (max-width: 560px) {
+  .figure-grid-cells {
+    grid-template-columns: 1fr;
+  }
+  .figure-grid-cells > *:nth-child(odd) {
+    border-right: none;
+  }
+  .figure-grid-cells > *:nth-last-child(-n + 2) {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .figure-grid-cells > *:last-child {
+    border-bottom: none;
+  }
+}
+
 /* ------------------------------------------------------------------ editorial columns
  *
  * Three product jobs and the architecture roles both use this: quiet columns separated by a
@@ -1874,27 +1930,29 @@ h4 {
   font-size: 14.5px;
 }
 
-/* ------------------------------------------------------------------ institutional proof flow */
+/* ------------------------------------------------------------------ institutional proof flow
+ *
+ * Information, not controls: no pill radius, no background fill, no border that could read as a
+ * clickable chip. A sequence of quiet labels joined by arrows reads as one process.
+ */
 .proof-flow {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 28px 0;
+  gap: 8px;
+  margin: 24px 0 32px;
 }
 
 .proof-flow-step {
-  padding: 10px 16px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius-pill);
-  font-size: 14px;
-  color: var(--espresso);
-  background: var(--paper);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--graphite);
+  white-space: nowrap;
 }
 
 .proof-flow-arrow {
   color: var(--stone);
-  font-size: 15px;
+  font-size: 14px;
 }
 
 @media (max-width: 860px) {
@@ -1908,6 +1966,31 @@ h4 {
   }
   .editorial-col:first-child {
     border-top: none;
+  }
+}
+
+/* ------------------------------------------------------------------ audience row
+ *
+ * A restrained two-row editorial grid rather than a flat dotted sentence or six persona cards.
+ */
+.audience-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--hairline);
+  border: 1px solid var(--hairline);
+}
+
+.audience-item {
+  padding: 20px 22px;
+  background: var(--linen);
+  font-size: 15px;
+  color: var(--espresso);
+}
+
+@media (max-width: 700px) {
+  .audience-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2328,16 +2411,18 @@ main > section:first-child:not(.hero) {
 .site-header-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  flex-wrap: nowrap;
+  gap: 2px;
   margin-left: auto;
   font-size: 14px;
 }
 
 .site-header-nav a {
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: var(--radius-pill);
   color: var(--graphite);
   text-decoration: none;
+  white-space: nowrap;
   transition: background-color 200ms ease, color 200ms ease;
 }
 
@@ -2353,18 +2438,25 @@ main > section:first-child:not(.hero) {
 /* ---------------------------------------------------------------- condensed */
 
 .site-header[data-condensed="true"] {
-  padding: 10px 0;
+  /* Total condensed height is deliberately close to a normal product navbar: this outer padding
+     plus the inner pill's padding plus the 44px control height lands around 64-68px, not the
+     ~80px the previous values produced. The button's own min-height never changes — only the air
+     around it shrinks. */
+  padding: 6px 0;
 }
 
 .site-header[data-condensed="true"] .site-header-inner {
-  max-width: 720px;
+  /* Wide enough that six nav links plus the CTA never wrap, even at the widths where the
+     condensed pill first engages (nav text wrapping inside the pill was the actual bug — the
+     items had no room, and anchors wrap by default without `white-space: nowrap`). */
+  max-width: 780px;
   background: rgba(22, 15, 12, 0.94);
   border-color: rgba(237, 236, 231, 0.12);
   /* The one shadow on the site. It is here because the pill has to read as floating above the
      page rather than printed on it, which a hairline alone cannot say. */
   box-shadow: 0 8px 32px rgba(22, 15, 12, 0.16);
   backdrop-filter: blur(14px);
-  padding: 8px 8px 8px 18px;
+  padding: 6px 6px 6px 18px;
 }
 
 .site-header[data-condensed="true"] .site-header-nav a {
