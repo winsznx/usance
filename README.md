@@ -1,6 +1,8 @@
 # Usance
 
-**The clearing layer that makes tokenized assets usable as capital.**
+**Capital operations for tokenized assets.**
+
+Turn tokenized assets into working capital without selling them.
 
 Tokenization proves an asset exists. It does not tell a lender what rights the holder owns, who
 owes them, how redemption works, or how much of the position could actually be recovered under
@@ -9,8 +11,10 @@ capacity.
 
 Usance does. It reads the real evidence behind a tokenized asset, extracts structured claims from
 it, commits a versioned **Asset Passport** onchain, derives a conservative **recognised collateral
-value** from deterministic policy, and lets the holder finance against it on X Layer — with limits
-the contract enforces and capacity that moves on its own when the evidence changes.
+value** from deterministic policy, and lets the holder finance against it — with limits the
+contract enforces and capacity that moves on its own when the evidence changes. The core mechanism
+runs on X Layer; an institutional facility on Hedera proves the same discipline for organizations
+replacing collateral without unwinding financing (see `docs-site/institutional.md`).
 
 > **AI interprets reality. Deterministic code controls money.**
 >

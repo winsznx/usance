@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     images: ["/assets/social/og-background.png"],
   },
   description:
-    "Usance is a clearing and risk layer on X Layer. It verifies what a tokenized asset actually is, recognises a conservative portion of it as collateral, and lets you finance against it without selling.",
+    "Usance is the capital operations layer for organizations holding tokenized real-world assets. It verifies what a tokenized asset actually is, recognises a conservative portion of it as collateral, and lets you finance against it without selling.",
 };
 
 export const viewport: Viewport = {

@@ -12,7 +12,7 @@ test.describe("hero", () => {
   test("leads with the outcome, not the mechanism", async ({ page }) => {
     await page.goto("/");
     const h1 = page.getByRole("heading", { level: 1 });
-    await expect(h1).toContainText(/usable as capital/i);
+    await expect(h1).toContainText(/working capital/i);
 
     // "Passport", "clearing" and "risk epoch" are what Usance is. They are not what a stranger
     // came to find out, so they must not be in the first thing read.
@@ -164,7 +164,7 @@ test.describe("the condensing header", () => {
     await page.goto("/");
     // Four links at a size that fits a phone header are four links nobody can hit, so they drop.
     // What must never drop is the way in.
-    await expect(page.getByRole("link", { name: /open usance/i })).toBeVisible();
+    await expect(page.locator("#site-header").getByRole("link", { name: /open usance/i })).toBeVisible();
   });
 });
 

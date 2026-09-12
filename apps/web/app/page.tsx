@@ -18,7 +18,7 @@ import { Nav, Footer } from "@/components/primitives";
 const FAQ: Array<{ q: string; a: string }> = [
   {
     q: "What is Usance?",
-    a: "A clearing and risk layer for tokenized real-world assets. It reads what an asset actually is from the issuer’s own filing, works out a conservative value that could be recovered under stress, and lets you borrow against that value without selling the asset.",
+    a: "Capital operations for tokenized real-world assets. It reads what an asset actually is from the issuer’s own filing, works out a conservative value that could be recovered under stress, and lets you borrow against that value without selling the asset.",
   },
   {
     q: "How is this different from a normal lending market?",
@@ -82,15 +82,14 @@ export default function Landing() {
             className="hero-art"
           />
           <div className="shell hero-inner">
-            <span className="hero-pill">Built on X Layer</span>
-            <h1 className="hero-headline">Make your tokenized assets usable as capital.</h1>
+            <span className="hero-pill">Capital operations for tokenized assets</span>
+            <h1 className="hero-headline">Turn tokenized assets into working capital.</h1>
             <p className="hero-sub">
-              Tokenization tells the chain an asset exists. Usance tells it what that asset is
-              actually worth as collateral, how much could be recovered under stress, and what you
-              can safely do with it.
+              Usance gives organizations one policy-controlled capital account to finance, move,
+              govern and settle tokenized assets across onchain markets — without selling them.
             </p>
             <div className="row" style={{ gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-              <Link className="btn btn-primary btn-lg" href="/app/onboarding">Launch Usance</Link>
+              <Link className="btn btn-primary btn-lg" href="/app/onboarding">Open Usance</Link>
               <Link className="btn btn-ghost btn-lg" href="/assets">Explore supported assets</Link>
             </div>
           </div>

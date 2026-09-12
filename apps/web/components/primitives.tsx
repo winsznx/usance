@@ -194,14 +194,14 @@ export function Footer() {
               confirmation.
             */}
             <p className="caption" style={{ margin: "0 0 12px", maxWidth: "32ch" }}>
-              Get an email when Usance goes live on X Layer mainnet.
+              Get an email when Usance goes live with real capital.
             </p>
             <SubscribeForm />
           </div>
         </div>
 
         <div className="footer-base">
-          <span className="caption">© 2026 Usance. Built on X Layer.</span>
+          <span className="caption">© 2026 Usance. Capital operations for tokenized assets.</span>
           <span className="caption" style={{ color: "var(--stone)" }}>
             Testnet deployment. Test assets have no real value.
           </span>
