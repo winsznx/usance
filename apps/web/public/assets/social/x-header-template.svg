@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500">
+<!-- X profile header. Capacity Cut motif, no sponsor logos, no ETHOnline branding. -->
+<rect width="1500" height="500" fill="#f7f7f5"/>
+<path d="M900 0H1500V120H1350V380H1500V500H900Z" fill="#edece7"/>
+<rect x="1360" y="155" width="100" height="190" rx="16" fill="#ffffff" stroke="#1b0624" stroke-width="4"/>
+<g transform="translate(80,80) scale(1.6)">
+<g fill="#1b0624">
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g>
+</g>
+<text x="80" y="230" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="56" font-weight="500" fill="#1b0624" letter-spacing="-0.01em">Turn tokenized assets</text>
+<text x="80" y="296" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="56" font-weight="500" fill="#1b0624" letter-spacing="-0.01em">into working capital.</text>
+<text x="80" y="345" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="22" fill="#766a7c" letter-spacing="0.01em">Capital operations for tokenized assets.</text>
+</svg>

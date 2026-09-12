@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+<!-- X profile avatar. Capacity Cut mark only, centred with generous clear space for a circle crop. -->
+<rect width="400" height="400" fill="#f7f7f5"/>
+<g transform="translate(120,120) scale(2.5)">
+<g fill="#1b0624">
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g>
+</g>
+</svg>

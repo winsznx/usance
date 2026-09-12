@@ -22,17 +22,17 @@ export const metadata: Metadata = {
   },
   manifest: "/assets/brand/site.webmanifest",
   openGraph: {
-    title: "Usance · make tokenized assets usable as capital",
+    title: "Usance · capital operations for tokenized assets",
     description:
       "Usance verifies what a tokenized asset actually is, recognises a conservative portion of it as collateral, and lets you finance against it without selling.",
     url: "/",
     siteName: "Usance",
     images: [
       {
-        url: "/assets/social/og-background.png",
+        url: "/assets/social/og-template.png",
         width: 1200,
         height: 630,
-        alt: "Usance · make tokenized assets usable as capital",
+        alt: "Usance — turn tokenized assets into working capital",
       },
     ],
     type: "website",
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@usance_fi",
     creator: "@usance_fi",
-    title: "Usance · make tokenized assets usable as capital",
+    title: "Usance · capital operations for tokenized assets",
     description:
       "Verify what a tokenized asset is, recognise a conservative portion as collateral, and finance against it without selling.",
-    images: ["/assets/social/og-background.png"],
+    images: ["/assets/social/og-template.png"],
   },
   description:
     "Usance is the capital operations layer for organizations holding tokenized real-world assets. It verifies what a tokenized asset actually is, recognises a conservative portion of it as collateral, and lets you finance against it without selling.",

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<!-- Default OG/Twitter card template. Capacity Cut motif, headline baked in so the preview
+     communicates the company even where a platform doesn't render title/description text. -->
+<rect width="1200" height="630" fill="#f7f7f5"/>
+<path d="M760 90H1120V205H1020V425H1120V540H760Z" fill="#edece7"/>
+<rect x="1060" y="225" width="90" height="180" rx="14" fill="#ffffff" stroke="#1b0624" stroke-width="4"/>
+<g transform="translate(70,64) scale(1.1)">
+<g fill="#1b0624">
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g>
+</g>
+<text x="70" y="300" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="17" font-weight="500" fill="#766a7c" letter-spacing="0.08em">USANCE</text>
+<text x="70" y="360" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="54" font-weight="500" fill="#1b0624" letter-spacing="-0.01em">Turn tokenized assets</text>
+<text x="70" y="418" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="54" font-weight="500" fill="#1b0624" letter-spacing="-0.01em">into working capital.</text>
+<text x="70" y="470" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="22" fill="#766a7c">Capital operations for tokenized assets.</text>
+</svg>

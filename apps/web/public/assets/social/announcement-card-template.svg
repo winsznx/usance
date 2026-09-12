@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<!-- Reusable announcement-card template. Replace the two HEADLINE_LINE_* placeholders and the
+     EYEBROW placeholder per post; keep the motif, palette, and type scale unchanged so every
+     announcement reads as the same company. -->
+<rect width="1200" height="630" fill="#f7f7f5"/>
+<path d="M0 630V510H150V310H0V0" fill="none"/>
+<path d="M1050 40H1150V630" stroke="#edece7" stroke-width="2"/>
+<g transform="translate(70,64) scale(1.1)">
+<g fill="#1b0624">
+  <path d="M7 10H43V21H34V43H43V54H7Z"/>
+  <rect x="48" y="22" width="9" height="20" rx="1.5"/>
+</g>
+</g>
+<text x="70" y="280" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="17" font-weight="500" fill="#766a7c" letter-spacing="0.08em">EYEBROW_PLACEHOLDER</text>
+<text x="70" y="345" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="50" font-weight="500" fill="#1b0624" letter-spacing="-0.01em">HEADLINE_LINE_ONE</text>
+<text x="70" y="403" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="50" font-weight="500" fill="#1b0624" letter-spacing="-0.01em">HEADLINE_LINE_TWO</text>
+<text x="70" y="580" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="17" font-weight="500" fill="#898683" letter-spacing="0.06em">USANCE</text>
+</svg>
