@@ -2,21 +2,24 @@
 
 * [Introduction](README.md)
 
-## Understand it
+## Core concepts
 
 * [How Usance works](how-it-works.md)
-* [Security and authority](security.md)
-* [Networks and what is live](networks.md)
-
-## Use it
-
 * [Using Usance](using-usance.md)
+* [Security and authority](security.md)
+
+## Operating capital
+
 * [Institutional collateral replacement](institutional.md)
 * [Mandates](mandates.md)
 * [Sentinels](sentinels.md)
 * [Earn](earn.md)
 
-## Build on it
+## Networks and integrations
+
+* [Networks and what is live](networks.md)
+
+## Developers
 
 * [For developers](developers.md)
 
