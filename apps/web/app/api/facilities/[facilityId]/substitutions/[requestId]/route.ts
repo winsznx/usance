@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { findSubstitutionOperationByRequestId, listSubstitutionOperationEvents } from "@/lib/substitution-operation-store";
 import { reconcileSubstitutionOperation } from "@/lib/hedera-reconciliation";
 import { HEDERA_FACILITY } from "@/lib/institutional-proof";
+import { buildEvidenceTimeline } from "@/lib/substitution-evidence-timeline";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ faci
     outcome: "FOUND",
     PENDING: { operation, events },
     CURRENT: current,
+    TIMELINE: buildEvidenceTimeline(operation, events),
     HISTORICAL_PROOF: {
       note: "The completed Phase 07 A->B/A->C operations are evidence of previous requests. They do not describe this operation.",
       references: ["/docs/ethonline-2026/proof/hedera-substitution-positive.json", "/docs/ethonline-2026/proof/hedera-substitution-negative.json"],
