@@ -158,7 +158,11 @@ function ReceiptLoader({ facilityId, requestId, currentSeries, operation }: { fa
 
   const isCompleted = operation.state === "COMPLETED";
   const replacementSeries = operation.replacement_instrument_id ?? "B";
-  const oldSeries = currentSeries;
+  // `currentSeries` is the page's static "collateral before any replacement" reference and is not
+  // reliable once a replacement has completed. For this operation the prior series is simply
+  // whichever of A/B was not the replacement — the only two series this facility's demo lifecycle
+  // ever moves between.
+  const oldSeries = replacementSeries === currentSeries ? (replacementSeries === "A" ? "B" : "A") : currentSeries;
   const requestedUnits = operation.requested_units ?? "150000";
 
   return (
