@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Nav, Footer } from "@/components/primitives";
+import { Nav, Footer, Stat } from "@/components/primitives";
 
 /**
  * Landing page.
@@ -90,97 +90,186 @@ export default function Landing() {
             </p>
             <div className="row" style={{ gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
               <Link className="btn btn-primary btn-lg" href="/app/onboarding">Open Usance</Link>
-              <Link className="btn btn-ghost btn-lg" href="/assets">Explore supported assets</Link>
+              <Link className="btn btn-ghost btn-lg" href="/simulate">See how it works</Link>
             </div>
+            <p style={{ marginTop: 18 }}>
+              <Link href="/institutional" className="faq-link" style={{ color: "var(--warm-ash)" }}>
+                View institutional proof
+              </Link>
+            </p>
           </div>
         </section>
 
-        <section className="section">
+        {/* ---------------------------------------------------------------- infrastructure rail
+            Quiet supporting evidence, not a sponsor wall. See docs/BRAND_ASSET_SOURCES.md — these
+            are typographic wordmarks pending verified official SVGs. */}
+        <section className="infra-rail" aria-label="Infrastructure across Usance">
           <div className="shell">
-            <div className="grid-3">
-              {[
-                {
-                  n: "01",
-                  h: "Bring a supported asset",
-                  p: "Connect your wallet. Usance finds the tokenized assets you already hold and tells you which ones it can work with.",
-                },
-                {
-                  n: "02",
-                  h: "See how much is usable",
-                  p: "Market value is not borrowing power. Usance shows you the difference and explains, line by line, exactly where it went.",
-                },
-                {
-                  n: "03",
-                  h: "Borrow, hedge, or keep holding",
-                  p: "Draw cash against the recognised value. Keep the exposure. Repay whenever you want and take the asset back.",
-                },
-              ].map((s) => (
-                <div key={s.n} className="card">
-                  <div className="micro">{s.n}</div>
-                  <h3 className="subheading" style={{ margin: "14px 0 10px" }}>
-                    {s.h}
-                  </h3>
-                  <p className="muted" style={{ margin: 0, fontSize: 15 }}>
-                    {s.p}
-                  </p>
-                </div>
+            <div className="micro infra-rail-heading">Infrastructure across Usance</div>
+            <div className="infra-rail-row">
+              {["Base", "X Layer", "Hedera", "ENS", "Privy", "Chainlink"].map((name) => (
+                <span key={name} className="infra-mark">{name}</span>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------- honesty */}
+        {/* ---------------------------------------------------------------- the gap */}
+        <section className="section">
+          <div className="shell">
+            <h2 className="heading-lg" style={{ margin: "0 0 16px", maxWidth: "18ch" }}>
+              Tokenized assets are easy to hold. Harder to use.
+            </h2>
+            <p className="muted" style={{ margin: "0 0 32px", maxWidth: "62ch" }}>
+              A token balance tells you what you own. It does not tell you what value can safely
+              become collateral, how much capital is available, which actions policy allows, or
+              where that capital should execute.
+            </p>
+            <div className="card card-flush" style={{ padding: 28 }}>
+              <div className="grid-2" style={{ gap: 20 }}>
+                <Stat label="Portfolio value" value="4.20M" hint="Example figures" />
+                <Stat label="Recognized collateral" value="2.65M" hint="After stress haircuts" />
+                <Stat label="Available credit" value="1.90M" hint="Undrawn" prefix="$" />
+                <Stat label="Open facilities" value="2" hint="Active" prefix="" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- capital account */}
+        <section className="section">
+          <div className="shell">
+            <h2 className="heading-lg" style={{ margin: "0 0 10px", maxWidth: "20ch" }}>
+              One capital account. Multiple market domains.
+            </h2>
+            <p className="muted" style={{ margin: 0, maxWidth: "58ch" }}>
+              Three jobs, one connected workstation — not three separate products.
+            </p>
+            <div className="editorial-cols">
+              <div className="editorial-col">
+                <div className="micro">Understand the asset</div>
+                <ul>
+                  <li>Asset Passports</li>
+                  <li>Evidence</li>
+                  <li>Instrument semantics</li>
+                </ul>
+              </div>
+              <div className="editorial-col">
+                <div className="micro">Turn it into capital</div>
+                <ul>
+                  <li>Recognized collateral</li>
+                  <li>Capital requests</li>
+                  <li>Facilities</li>
+                  <li>Routing</li>
+                </ul>
+              </div>
+              <div className="editorial-col">
+                <div className="micro">Operate it safely</div>
+                <ul>
+                  <li>Organization policy</li>
+                  <li>Authority</li>
+                  <li>Receipts</li>
+                  <li>Risk state</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- institutional proof */}
+        <section className="section">
+          <div className="shell">
+            <div className="micro">Institutional proof</div>
+            <h2 className="heading-lg" style={{ margin: "14px 0 16px", maxWidth: "20ch" }}>
+              Keep the financing open. Replace the collateral.
+            </h2>
+            <p className="muted" style={{ margin: "0 0 8px", maxWidth: "62ch" }}>
+              A live testnet proof: an organization replaces its posted collateral for a different
+              eligible asset while financing stays open the entire time. Old collateral is never
+              released until the replacement is provably secured.
+            </p>
+            <div className="proof-flow">
+              <span className="proof-flow-step">Replacement collateral secured</span>
+              <span className="proof-flow-arrow">→</span>
+              <span className="proof-flow-step">Financial safety checked</span>
+              <span className="proof-flow-arrow">→</span>
+              <span className="proof-flow-step">Previous collateral released</span>
+              <span className="proof-flow-arrow">→</span>
+              <span className="proof-flow-step">Financing remained open</span>
+            </div>
+            <div className="grid-2" style={{ gap: 16, maxWidth: 640 }}>
+              <Stat label="Facility" value="ACTIVE" prefix="" />
+              <Stat label="Financing" value="OPEN" prefix="" />
+              <Stat label="Series A" value="RELEASED" prefix="" />
+              <Stat label="Series B" value="150,000 SECURED" prefix="" />
+            </div>
+            <p className="caption" style={{ marginTop: 18, maxWidth: 560 }}>
+              Hedera testnet, test securities and test settlement. Not a claim of production funds.
+            </p>
+            <Link className="btn btn-primary" style={{ marginTop: 8 }} href="/institutional">
+              View live proof
+            </Link>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- multi-domain */}
+        <section className="section">
+          <div className="shell">
+            <h2 className="heading-lg" style={{ margin: "0 0 10px", maxWidth: "22ch" }}>
+              Usance is the operating layer. Networks are domains beneath it.
+            </h2>
+            <p className="muted" style={{ margin: 0, maxWidth: "58ch" }}>
+              One facility has one authoritative financial home — Usance does not imply a shared
+              cross-chain ledger or fungible assets across networks.
+            </p>
+            <div className="editorial-cols">
+              <div className="editorial-col">
+                <div className="micro">Market domains</div>
+                <ul>
+                  <li>Base</li>
+                  <li>X Layer</li>
+                  <li>Hedera</li>
+                </ul>
+              </div>
+              <div className="editorial-col">
+                <div className="micro">Organization / authority</div>
+                <ul>
+                  <li>ENS</li>
+                  <li>Privy</li>
+                </ul>
+              </div>
+              <div className="editorial-col">
+                <div className="micro">Policy evidence</div>
+                <ul>
+                  <li>Chainlink</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- evidence */}
         <section className="section">
           <div className="shell">
             <div className="row-between" style={{ alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
               <div style={{ maxWidth: 560 }}>
-                <div className="micro">Where it stands</div>
+                <div className="micro">Evidence</div>
                 <h2 className="heading" style={{ margin: "14px 0 0" }}>
-                  What is live, and what is not
+                  Every capital action leaves a receipt.
                 </h2>
               </div>
               <Link href="/status" className="btn btn-ghost">
                 Full integration status
               </Link>
             </div>
-
-            <div className="card card-flush scroll-x" style={{ marginTop: 28 }}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Capability</th>
-                    <th>Status</th>
-                    <th>Detail</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ["X Layer settlement", "Live", "Chain 196 / 1952, verified against the live RPC."],
-                    ["Chainlink price feeds", "Live", "26 Data Feeds on X Layer, read back onchain."],
-                    ["Evidence → Passport → capacity", "Live", "Deterministic, independent implementations agree to the wei."],
-                    ["Builder Code attribution", "Live", "ERC-8021 suffix on every write path."],
-                    ["ChainGPT extraction", "Live", "Verified against the live API. Public Passports are built single-source by design, so they stay capped."],
-                    ["Exchange OS execution", "Needs access", "No builder deployment access. Hedging is off and no fill is ever simulated."],
-                    ["Chainlink Data Streams", "Not on X Layer", "Adapter retained. Nothing routes through it."],
-                  ].map(([cap, status, detail]) => (
-                    <tr key={cap}>
-                      <td style={{ fontWeight: 500 }}>{cap}</td>
-                      <td>
-                        <span className="tag">{status}</span>
-                      </td>
-                      <td className="muted">{detail}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <p className="caption" style={{ marginTop: 18, maxWidth: 620 }}>
-              Anything Usance cannot do yet is disabled in the product with the reason shown. It is
-              never replaced with a simulation dressed up as the real thing.
+            <p className="muted" style={{ margin: "18px 0 0", maxWidth: "62ch" }}>
+              Authority, policy, valuation, routing, execution and settlement are each written to a
+              public receipt. Current financial state is always shown ahead of historical proof —
+              a hash is evidence you can check, never the headline.
             </p>
           </div>
         </section>
+
         {/* ---------------------------------------------------------------- features */}
         <section className="section features-section">
           <div className="shell">
@@ -245,28 +334,11 @@ export default function Landing() {
         {/* ---------------------------------------------------------------- audience */}
         <section className="section">
           <div className="shell">
-            <h2 className="heading-lg" style={{ margin: "0 0 32px" }}>Who this is for</h2>
-            <div className="audience-grid">
-              {[
-                {
-                  who: "If you already hold tokenized assets",
-                  body: "Treasuries, tokenized stocks, funds. Usance lets you use them without selling, and tells you exactly how much is usable rather than how much they are quoted at.",
-                },
-                {
-                  who: "If you trade",
-                  body: "Portfolio margin against admitted collateral, an exit path that is priced rather than assumed, and restrictions that arrive before a liquidation rather than during one.",
-                },
-                {
-                  who: "If you build agents",
-                  body: "One interface to ask whether an asset is admissible, what it is recognised at, and what changed since the last risk epoch. Bounded authority, revocable in one transaction.",
-                },
-              ].map((a) => (
-                <article className="feature-card" key={a.who}>
-                  <h3>{a.who}</h3>
-                  <p>{a.body}</p>
-                </article>
-              ))}
-            </div>
+            <h2 className="heading-lg" style={{ margin: "0 0 24px" }}>Who this is for</h2>
+            <p className="muted" style={{ margin: 0, maxWidth: "70ch", lineHeight: 1.7 }}>
+              RWA asset managers · Crypto-native funds · Fintech treasury teams · Market makers ·
+              Tokenized-asset platforms · Structured-product operators
+            </p>
           </div>
         </section>
 
@@ -308,13 +380,18 @@ export default function Landing() {
           className="closer-art"
         />
         <div className="closer-inner">
-          <h2 className="closer-headline">Stop holding assets that cannot work.</h2>
+          <h2 className="closer-headline">Make tokenized assets usable as capital.</h2>
           <p className="closer-sub">
-            Bring a supported tokenized asset. See what is actually usable. Decide what to do next.
+            Explore Usance on testnet, or talk to us about a design partnership.
           </p>
-          <Link className="btn btn-primary btn-lg closer-cta" href="/app/onboarding">
-            Launch Usance
-          </Link>
+          <div className="row" style={{ gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link className="btn btn-primary btn-lg closer-cta" href="/app/onboarding">
+              Open Usance
+            </Link>
+            <Link className="btn btn-ghost btn-lg" href="mailto:hello@usance.xyz">
+              Talk to Usance
+            </Link>
+          </div>
         </div>
       </section>
 

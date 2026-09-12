@@ -143,10 +143,10 @@ test.describe("connection is not a session", () => {
     await expect(page).toHaveURL(/\/app\/onboarding/, { timeout: 10_000 });
   });
 
-  test("Launch Usance enters through onboarding, not the dashboard", async ({ page }) => {
+  test("Open Usance enters through onboarding, not the dashboard", async ({ page }) => {
     await installWallet(page);
     await page.goto("/");
-    await page.getByRole("link", { name: /launch usance/i }).first().click();
+    await page.locator("#site-header").getByRole("link", { name: /open usance/i }).click();
     await expect(page).toHaveURL(/\/app\/onboarding/);
   });
 });

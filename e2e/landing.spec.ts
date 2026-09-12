@@ -37,7 +37,7 @@ test.describe("hero", () => {
   test("offers a way in and a way to look first", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("link", { name: /launch usance/i }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /explore supported assets/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /see how it works/i })).toBeVisible();
   });
 });
 

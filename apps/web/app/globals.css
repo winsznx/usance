@@ -1798,6 +1798,119 @@ h4 {
   gap: 18px;
 }
 
+/* ------------------------------------------------------------------ infrastructure rail
+ *
+ * Quiet supporting evidence, not a sponsor wall: no cards, no borders, no glow. Wordmarks are
+ * typographic (not vector logo recreations) until verified official SVGs replace them — see
+ * docs/BRAND_ASSET_SOURCES.md. Uppercase, restrained weight, wide tracking, muted colour so the
+ * row reads as metadata rather than a second identity system competing with Usance's own mark.
+ */
+.infra-rail {
+  padding: 28px 0 40px;
+  border-top: 1px solid var(--hairline);
+}
+
+.infra-rail-heading {
+  text-align: center;
+  margin: 0 0 22px;
+}
+
+.infra-rail-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 5vw, 56px);
+}
+
+.infra-mark {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--warm-ash);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------------ editorial columns
+ *
+ * Three product jobs and the architecture roles both use this: quiet columns separated by a
+ * hairline rule rather than card chrome, matching the FAQ's restraint.
+ */
+.editorial-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--hairline);
+  margin-top: 32px;
+}
+
+.editorial-col {
+  padding: 28px 28px 32px 0;
+  border-left: 1px solid var(--hairline);
+}
+
+.editorial-col:first-child {
+  border-left: none;
+  padding-left: 0;
+}
+
+.editorial-col .micro {
+  margin-bottom: 14px;
+}
+
+.editorial-col ul {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editorial-col li {
+  color: var(--graphite);
+  font-size: 14.5px;
+}
+
+/* ------------------------------------------------------------------ institutional proof flow */
+.proof-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 28px 0;
+}
+
+.proof-flow-step {
+  padding: 10px 16px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  color: var(--espresso);
+  background: var(--paper);
+}
+
+.proof-flow-arrow {
+  color: var(--stone);
+  font-size: 15px;
+}
+
+@media (max-width: 860px) {
+  .editorial-cols {
+    grid-template-columns: 1fr;
+  }
+  .editorial-col {
+    border-left: none;
+    border-top: 1px solid var(--hairline);
+    padding: 24px 0;
+  }
+  .editorial-col:first-child {
+    border-top: none;
+  }
+}
+
 /* ------------------------------------------------------------------ faq
  *
  * Native <details> accordions: accessible, keyboard-operable and JS-free, so they work on the
