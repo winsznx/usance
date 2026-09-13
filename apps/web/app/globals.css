@@ -1833,6 +1833,152 @@ h4 {
   line-height: 1;
 }
 
+/* ------------------------------------------------------------------ Ask Usance
+ *
+ * A contextual explanation drawer, not a chatbot: a quiet text-button trigger, a restrained side
+ * panel on desktop, a bottom sheet on phones. No avatar, no sparkle icon, no gradient — the same
+ * Linen/Paper/Aubergine/Graphite system as the rest of the product.
+ */
+.ask-usance-trigger {
+  font-size: 13.5px;
+}
+
+.ask-usance-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(22, 15, 12, 0.28);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ask-usance-panel {
+  width: min(420px, 100%);
+  height: 100%;
+  background: var(--paper);
+  border-left: 1px solid var(--hairline);
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ask-usance-panel-header {
+  align-items: flex-start;
+}
+
+.ask-usance-close {
+  background: none;
+  border: none;
+  color: var(--warm-ash);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.ask-usance-close:hover {
+  color: var(--aubergine-ink);
+}
+
+.ask-usance-suggestions {
+  gap: 8px;
+}
+
+.ask-usance-suggestion {
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
+  background: var(--linen);
+  color: var(--aubergine-ink);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ask-usance-suggestion:hover {
+  background: var(--bone);
+}
+
+.ask-usance-conversation {
+  gap: 12px;
+}
+
+.ask-usance-question {
+  font-weight: 500;
+  color: var(--aubergine-ink);
+  margin: 0;
+}
+
+.ask-usance-answer {
+  color: var(--graphite);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ask-usance-failure {
+  color: var(--risk-restricted);
+}
+
+.ask-usance-sources {
+  font-size: 13px;
+  color: var(--warm-ash);
+}
+
+.ask-usance-evidence-toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--warm-ash);
+  font-size: 12.5px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ask-usance-evidence {
+  border-top: 1px solid var(--hairline);
+  padding-top: 10px;
+}
+
+.ask-usance-input-row {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+.ask-usance-input-row .input {
+  flex: 1;
+}
+
+@media (max-width: 700px) {
+  .ask-usance-overlay {
+    align-items: flex-end;
+  }
+  .ask-usance-panel {
+    width: 100%;
+    height: min(80vh, 640px);
+    border-left: none;
+    border-top: 1px solid var(--hairline);
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ask-usance-overlay {
+    animation: ask-usance-fade-in 160ms ease;
+  }
+}
+
+@keyframes ask-usance-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* ------------------------------------------------------------------ figure grid
  *
  * A dense 2x2 of example figures rather than a card with four islands floating in it. Hairline

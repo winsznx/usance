@@ -107,7 +107,7 @@ export default function Landing() {
           <div className="shell">
             <div className="micro infra-rail-heading">Infrastructure across Usance</div>
             <div className="infra-rail-row">
-              {["Base", "X Layer", "Hedera", "ENS", "Privy", "Chainlink"].map((name) => (
+              {["Base", "X Layer", "Hedera", "ENS", "Privy", "Chainlink", "0G"].map((name) => (
                 <span key={name} className="infra-mark">{name}</span>
               ))}
             </div>

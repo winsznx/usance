@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Notice } from "@/components/primitives";
+import { AskUsancePanel } from "@/components/ask-usance-panel";
 import { AUTHORITY_PROOFS } from "@/lib/institutional-proof";
 import type { TimelineItem } from "@/lib/substitution-evidence-timeline";
 
@@ -109,7 +110,10 @@ function SummaryCard({ operation, isCompleted, isBlocked, seriesA, seriesB }: {
             {isCompleted ? "Completed" : isBlocked ? "Release paused" : operation.state.replace(/_/g, " ").toLowerCase()}
           </h2>
         </div>
-        <span className="tag">Financing remains open</span>
+        <div className="stack-sm" style={{ alignItems: "flex-end", gap: 10 }}>
+          <span className="tag">Financing remains open</span>
+          <AskUsancePanel contextType="replacement" requestId={operation.request_id} />
+        </div>
       </div>
       <div className="grid-2" style={{ gap: 16, marginTop: 18 }}>
         <div className="stack-sm">

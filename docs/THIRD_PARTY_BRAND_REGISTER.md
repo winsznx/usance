@@ -13,6 +13,7 @@ usage stays inside what each vendor actually permits.
 | ENS | Homepage infrastructure rail | Plain text | N/A — no logo used | N/A | N/A | ENS brand usage carries explicit trademark/license requirements not yet reviewed. |
 | Privy | Homepage infrastructure rail | Plain text | N/A — no logo used | N/A | N/A | Privy's own guidance requires usage not imply affiliation; text-only avoids the question entirely. |
 | Chainlink | Homepage infrastructure rail | Plain text | N/A — no logo used | N/A | N/A | Chainlink publishes official downloadable assets; not sourced this unit — see `docs/BRAND_ASSET_SOURCES.md`. |
+| 0G | Homepage infrastructure rail | Plain text | N/A — no logo used | N/A | N/A | Added only after a real, visitor-usable live capability (Ask Usance, over the 0G Compute Router) existed — not for symmetry with the other names. |
 
 ## Rule
 
